@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+
+echo "First arg: $1"
+mkdir -p build
+cd build
+
+cmake ..
+
+
+
