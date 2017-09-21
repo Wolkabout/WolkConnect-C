@@ -1,0 +1,24 @@
+#ifndef COMMON_H
+#define COMMON_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+enum {
+    MANIFEST_ITEM_MAX_REFERENCE_SIZE = 64,
+    MANIFEST_ITEM_MAX_DATA_DELIMITER_SIZE = 5,
+
+    READING_MAX_READING_SIZE = 128,
+    READING_MAX_READING_DIMENSIONS = 3,
+
+    SERIALIZER_MAX_PARSER_INTERNAL_BUFFER_SIZE = 128,
+
+    COMMAND_MAX_ARGUMENT_SIZE = 128
+};
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
