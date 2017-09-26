@@ -1,9 +1,11 @@
 #include "reading.h"
 #include "manifest_item.h"
-#include "utils.h"
+#include "wolk_utils.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 void reading_init(reading_t* reading, manifest_item_t* item)
@@ -45,19 +47,44 @@ char* reading_get_data(reading_t* reading)
     return reading_get_data_at(reading, 0);
 }
 
+bool reading_get_delimited_data(reading_t* reading, char* buffer, size_t buffer_size)
+{
+    size_t i;
+    size_t data_dimensions = manifest_item_get_data_dimensions(reading_get_manifest_item(reading));
+    char* data_delimiter = manifest_item_get_data_delimiter(reading_get_manifest_item(reading));
+
+    memset(buffer, '\0', buffer_size);
+    for (i = 0; i < data_dimensions; ++i) {
+        if (i != 0) {
+            size_t num_bytes_to_write = buffer_size - strlen(buffer);
+            if (snprintf(buffer + strlen(buffer), (int)num_bytes_to_write, "%s", data_delimiter) >= (int)num_bytes_to_write) {
+                return false;
+            }
+        }
+
+        size_t num_bytes_to_write = buffer_size - strlen(buffer);
+        if (snprintf(buffer + strlen(buffer), (int)num_bytes_to_write, "%s", reading_get_data_at(reading, i)) >= (int)num_bytes_to_write) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void reading_set_data_at(reading_t* reading, char* data, size_t data_position)
 {
     /* Sanity check */
-    ASSERT(data_position < READING_MAX_READING_SIZE);
+    WOLK_ASSERT(strlen(data) < READING_SIZE);
+    WOLK_ASSERT(data_position < READING_DIMENSIONS);
 
-    memcpy(reading->reading_data[data_position], data, strlen(data));
+    strcpy(reading->reading_data[data_position], data);
     reading->rtc = 0;
 }
 
 char* reading_get_data_at(reading_t* reading, size_t data_position)
 {
     /* Sanity check */
-    ASSERT(data_position < reading->manifest_item->data_dimensions);
+    WOLK_ASSERT(data_position < reading->manifest_item->data_dimensions);
 
     return reading->reading_data[data_position];
 }
@@ -77,18 +104,18 @@ uint32_t reading_get_rtc(reading_t* reading)
     return reading->rtc;
 }
 
-void reading_set_actuator_status(reading_t* reading, actuator_state_t actuator_status)
+void reading_set_actuator_status(reading_t* reading, actuator_status_t actuator_status)
 {
     /* Sanity check */
-    ASSERT(manifest_item_get_reading_type(reading_get_manifest_item(reading)) & READING_TYPE_ACTUATOR);
+    WOLK_ASSERT(manifest_item_get_reading_type(reading_get_manifest_item(reading)) & READING_TYPE_ACTUATOR);
 
     reading->actuator_status = actuator_status;
 }
 
-actuator_state_t reading_get_actuator_status(reading_t* reading)
+actuator_status_t reading_get_actuator_status(reading_t* reading)
 {
     /* Sanity check */
-    ASSERT(manifest_item_get_reading_type(reading_get_manifest_item(reading)) & READING_TYPE_ACTUATOR);
+    WOLK_ASSERT(manifest_item_get_reading_type(reading_get_manifest_item(reading)) & READING_TYPE_ACTUATOR);
 
     return reading->actuator_status;
 }
