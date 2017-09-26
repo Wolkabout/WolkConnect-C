@@ -1,5 +1,5 @@
-#ifndef WOLK_UTILS_H
-#define WOLK_UTILS_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #define WOLK_UNUSED(x) ((void)x)
 #define WOLK_ASSERT(x)
