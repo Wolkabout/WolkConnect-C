@@ -32,6 +32,8 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 
+#include "WolkConn.h"
+
 #include "MQTTPacket.h"
 #include "transport.h"
 
@@ -69,7 +71,28 @@ static volatile int toStop = 0;
 
 enum states { READING, PUBLISHING };
 
-static int send_buffer_wifi(unsigned char* buffer, unsigned int len)
+////////////////////////
+/// \brief send_buffer_wifi
+/// \param buffer
+/// \param len
+/// \return
+
+
+//typedef uint32_t key_t;
+
+
+#define list_size 8
+#define mem_noown 0x0
+#define mem_using 0x1
+#define failed (~0x0)
+#ifndef nullptr
+#define nullptr NULL
+#endif // !nullptr
+
+
+
+
+int send_buffer_wifi(unsigned char* buffer, unsigned int len)
 {
     /* send the message line to the server */
     int n = write(sockfd, buffer, len);
@@ -86,6 +109,7 @@ static int receive_buffer_wifi(unsigned char* buffer, unsigned int max_bytes)
         return strlen(buffer);
     }*/
     bzero(buffer, max_bytes);
+    //   printf ("Receive buffer read\n");
     int n = read(sockfd, buffer, max_bytes);
     if (n < 0) 
       return RESP_FALSE;
@@ -93,7 +117,7 @@ static int receive_buffer_wifi(unsigned char* buffer, unsigned int max_bytes)
     return n;
 }
 
-int main(int argc, char *argv[])
+void setup_network ()
 {
     int portno, n;
     struct sockaddr_in serveraddr;
@@ -116,6 +140,12 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 100;
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
+
+
     /* build the server's Internet address */
     bzero((char *) &serveraddr, sizeof(serveraddr));
     serveraddr.sin_family = AF_INET;
@@ -126,110 +156,95 @@ int main(int argc, char *argv[])
     /* connect: create a connection with the server */
     if (connect(sockfd, &serveraddr, sizeof(serveraddr)) < 0)
         error("ERROR connecting");
+}
 
-    MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
-    int rc = 0;
-    int mysock = 0;
-    unsigned char buf[200];
-    int buflen = sizeof(buf);
-    int msgid = 1;
-    MQTTString topicString = MQTTString_initializer;
-    int req_qos = 0;
+int main(int argc, char *argv[])
+{
 
-    int payloadlen = strlen(message);
-    int len = 0;
-    MQTTTransport mytransport;
-    int state = READING;
-    transport_iofunctions_t iof = {send_buffer_wifi, receive_buffer_wifi};
+    wolk_ctx_t wolk;
 
-    mysock = transport_open(&iof);
-    if(mysock < 0)
-        return mysock;
+    setup_network();
 
-    mytransport.sck = &mysock;
-    mytransport.getfn = transport_getdatanb;
-    mytransport.state = 0;
-    data.clientID.cstring = serial_mqtt;
-    data.keepAliveInterval = KEEPALIVE_INTERVAL;
-    data.cleansession = 1;
-    data.username.cstring = serial_mqtt;
-    data.password.cstring = password_mqtt;
+    wolk_connect(&wolk, &send_buffer_wifi, &receive_buffer_wifi, serial_mqtt, password_mqtt);
 
 
-    len = MQTTSerialize_connect(buf, buflen, &data);
-    /* This one blocks until it finishes sending, you will probably not want this in real life,
-    in such a case replace this call by a scheme similar to the one you'll see in the main loop */
-    rc = transport_sendPacketBuffer(mysock, buf, len);
+
+    char reference[32];
+    char command [32];
+    char value[64];
 
 
-    printf("MQTT connected\n");
-    /* subscribe */
-    topicString.cstring = topic_sub;
-    len = MQTTSerialize_subscribe(buf, buflen, 0, msgid, 1, &topicString, &req_qos);
-
-    /* This is equivalent to the one above, but using the non-blocking functions. You will probably not want this in real life,
-    in such a case replace this call by a scheme similar to the one you'll see in the main loop */
-    transport_sendPacketBuffernb_start(mysock, buf, len);
-    while((rc=transport_sendPacketBuffernb(mysock)) != TRANSPORT_DONE);
 
 
-    /* loop getting msgs on subscribed topic */
     //topicString.cstring = topic_sub;
-    topicString.cstring = topic;
-    state = READING;
+    //topicString.cstring = topic;
+    //state = READING;
     while (!toStop)	{
-        /* do other stuff here */
-        switch(state){
-        case READING:
-            if((rc=MQTTPacket_readnb(buf, buflen, &mytransport)) == PUBLISH){
-                unsigned char dup;
-                int qos;
-                unsigned char retained;
-                unsigned short msgid;
-                int payloadlen_in;
-                unsigned char* payload_in;
-                int rc;
-                MQTTString receivedTopic;
+        //sleep(1);
+        wolk_receive (&wolk,3);
 
-                rc = MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &receivedTopic,
-                        &payload_in, &payloadlen_in, buf, buflen);
-                printf("message arrived %.*s\n", payloadlen_in, payload_in);
-                printf("publishing reading\n");
-                state = PUBLISHING;
-                len = MQTTSerialize_publish(buf, buflen, 0, 0, 0, 0, topicString, (unsigned char*)message, strlen(message));
-                transport_sendPacketBuffernb_start(mysock, buf, len);
-            } else if(rc == -1){
-                /* handle I/O errors here */
-                goto exit;
-            }	/* handle timeouts here */
-            break;
-        case PUBLISHING:
-            //Check readings , ...
-            switch(transport_sendPacketBuffernb(mysock)){
-            case TRANSPORT_DONE:
-                printf("Published\n");
-                state = READING;
-                break;
-            case TRANSPORT_ERROR:
-                /* handle any I/O errors here */
-                goto exit;
-                break;
-            case TRANSPORT_AGAIN:
-            default:
-                /* handle timeouts here, not probable unless there is a hardware problem */
-                break;
-            }
-            break;
+        memset (reference, 0, 32);
+        memset (command, 0, 32);
+        memset (value, 0, 64);
+
+        if (wolk_read_actuator (&wolk, command, reference, value)!= W_TRUE)
+        {
+            printf ("Command from queue: %s\n", command);
+            printf ("Reference from queue: %s\n", reference);
+            printf ("Value from queue: %s\n", value);
         }
+
+
+//        /* do other stuff here */
+//        switch(state){
+//        case READING:
+//            sleep(1);
+//            if((rc=MQTTPacket_readnb(buf, buflen, &(wolk.mytransport))) == PUBLISH){
+//                unsigned char dup;
+//                int qos;
+//                unsigned char retained;
+//                unsigned short msgid;
+//                int payloadlen_in;
+//                unsigned char* payload_in;
+//                int rc;
+//                MQTTString receivedTopic;
+
+//                rc = MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &receivedTopic,
+//                        &payload_in, &payloadlen_in, buf, buflen);
+//                printf("message arrived %.*s\n", payloadlen_in, payload_in);
+//                printf("publishing reading\n");
+//                state = PUBLISHING;
+//                len = MQTTSerialize_publish(buf, buflen, 0, 0, 0, 0, topicString, (unsigned char*)message, strlen(message));
+//                transport_sendPacketBuffernb_start(wolk.sock, buf, len);
+//            } else if(rc == -1){
+//                /* handle I/O errors here */
+//            }	/* handle timeouts here */
+//            break;
+//        case PUBLISHING:
+//            //Check readings , ...
+//            switch(transport_sendPacketBuffernb(wolk.sock)){
+//            case TRANSPORT_DONE:
+//                printf("Published\n");
+//                state = READING;
+//                toStop =1;
+//                break;
+//            case TRANSPORT_ERROR:
+//                /* handle any I/O errors here */
+//                break;
+//            case TRANSPORT_AGAIN:
+//            default:
+//                /* handle timeouts here, not probable unless there is a hardware problem */
+//                break;
+//            }
+//            break;
+//        }
     }
 
     printf("disconnecting\n");
-    len = MQTTSerialize_disconnect(buf, buflen);
-    /* Same blocking related stuff here */
-    rc = transport_sendPacketBuffer(mysock, buf, len);
 
-exit:
-    transport_close(mysock);
+    wolk_disconnect(&wolk);
+
+    close(sockfd);
 
     return 0;
 }

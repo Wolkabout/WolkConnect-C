@@ -14,7 +14,8 @@
  *    Ian Craggs - initial API and implementation and/or initial documentation
  *    Sergio R. Caprile - media specifics, nice api doc :^)
  *******************************************************************************/
-
+#ifndef TRANSPORT_H
+#define TRANSPORT_H
 typedef struct {
 	int (*send)(unsigned char *address, unsigned int bytes); 	///< pointer to function to send 'bytes' bytes, returns the actual number of bytes sent
 	int (*recv)(unsigned char *address, unsigned int maxbytes); 	///< pointer to function to receive upto 'maxbytes' bytes, returns the actual number of bytes copied
@@ -68,3 +69,4 @@ the AT+xSENDx / AT+xRECVx commands into the former sendPacketBuffer() and getdat
 */
 int transport_open(transport_iofunctions_t *thisio);
 int transport_close(int sock);
+#endif
