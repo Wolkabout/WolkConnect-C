@@ -27,7 +27,8 @@ typedef unsigned char WOLK_BOOL_T;
 #define TOPIC_SIZE 64
 
 #define READINGS_SIZE 10
-#define READINGS_BUFFER_SIZE 256
+#define READINGS_BUFFER_SIZE 192
+#define READINGS_MQTT_SIZE 256
 
 #define STR_64 64
 
@@ -68,7 +69,7 @@ WOLK_ERR_T wolk_add_numeric_reading(wolk_ctx_t *ctx,const char *reference,double
 WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool value);
 WOLK_ERR_T wolk_clear_readings (wolk_ctx_t *ctx);
 WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx);
-WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value);
+WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value, data_type_t type);
 // TODO Should we add single string, single numeric, single bool instead of generic psingle publish?
 WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t state);
 WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t state);

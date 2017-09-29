@@ -233,7 +233,7 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool valu
 
 WOLK_ERR_T wolk_clear_readings (wolk_ctx_t *ctx)
 {
-    reading_clear_array(ctx->readings, READINGS_SIZE);
+    reading_clear_array(ctx->readings, ctx->readings_index);
 
     ctx->readings_index = 0;
 
@@ -251,7 +251,7 @@ WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx)
     memset (readings_buffer, 0, READINGS_BUFFER_SIZE);
 
 
-    size_t serialized_readings = parser_serialize_readings(&ctx->wolk_parser, &ctx->readings[0], ctx->readings_index+1, readings_buffer, READINGS_BUFFER_SIZE);
+    size_t serialized_readings = parser_serialize_readings(&ctx->wolk_parser, &ctx->readings[0], ctx->readings_index, readings_buffer, READINGS_BUFFER_SIZE);
 
     wolk_clear_readings (ctx);
 
@@ -273,27 +273,51 @@ WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx)
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value)
+WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value, data_type_t type)
 {
-    unsigned char buf[200];
+    unsigned char buf[READINGS_MQTT_SIZE];
     int len;
     int buflen = sizeof(buf);
     parser_t parser;
     reading_t readings;
     char readings_buffer[READINGS_BUFFER_SIZE];
+    memset (readings_buffer, 0, READINGS_BUFFER_SIZE);
+    memset (buf, 0, READINGS_MQTT_SIZE);
     initialize_parser(&parser, PARSER_TYPE_MQTT);
 
     MQTTString topicString = MQTTString_initializer;
     topicString.cstring = ctx->pub_topic;
 
-    manifest_item_t string_sensor;
-    manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
 
-    reading_init(&readings, &string_sensor);
-    reading_set_data(&readings, value);
-    reading_set_rtc(&readings, 798123456);
+    if (type==DATA_TYPE_STRING)
+    {
+        manifest_item_t string_sensor;
+        manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
+
+        reading_init(&readings, &string_sensor);
+        reading_set_data(&readings, value);
+        reading_set_rtc(&readings, 798123456);
+    } else if (type==DATA_TYPE_BOOLEAN)
+    {
+        manifest_item_t bool_sensor;
+        manifest_item_init(&bool_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
+        reading_init(&readings, &bool_sensor);
+        reading_set_data(&readings, value);
+        reading_set_rtc(&readings, 456789123);
+    } else if (type==DATA_TYPE_NUMERIC)
+    {
+        manifest_item_t numeric_sensor;
+        manifest_item_init(&numeric_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
 
 
+        reading_init(&readings, &numeric_sensor);
+        reading_set_data(&readings, value);
+        reading_set_rtc(&readings, 123456789);
+
+    }
+
+
+    // ToDo: What if reading buffer is already full?
     size_t serialized_readings = parser_serialize_readings(&parser, &readings, 1, readings_buffer, READINGS_BUFFER_SIZE);
 
     printf("%lu reading(s) serialized:\n%s\n\n", serialized_readings, readings_buffer);

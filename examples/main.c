@@ -55,12 +55,12 @@ static unsigned char buffer[BUFFER_SIZE];
 static int buffer_length = sizeof(buffer);
 
 
-const char *serial_mqtt = "3332223";
-const char *topic = "sensors/3332223";
-const char *password_mqtt = "6099b9e6-f968-47a7-ad74-5ce863606d8b";
+const char *serial_mqtt = "222111";
+const char *topic = "sensors/222111";
+const char *password_mqtt = "e1828a2f-40dd-4fc0-a85f-f33109a14a25";
 //const char *message = "RTC 1463400060;READINGS R:1463400000,C:+100;";
 const char *message = "STATUS S:true:READY;";
-const char *topic_sub = "config/3332223";
+const char *topic_sub = "config/222111";
 
 int sockfd;
 
@@ -181,19 +181,79 @@ int main(int argc, char *argv[])
     //state = READING;
     while (!toStop)	{
         //sleep(1);
-        wolk_receive (&wolk,3);
+//        wolk_receive (&wolk,3);
 
-        memset (reference, 0, 32);
-        memset (command, 0, 32);
-        memset (value, 0, 64);
+//        memset (reference, 0, 32);
+//        memset (command, 0, 32);
+//        memset (value, 0, 64);
 
-        if (wolk_read_actuator (&wolk, command, reference, value)!= W_TRUE)
+//        if (wolk_read_actuator (&wolk, command, reference, value)!= W_TRUE)
+//        {
+//            printf ("Command from queue: %s\n", command);
+//            printf ("Reference from queue: %s\n", reference);
+//            printf ("Value from queue: %s\n", value);
+//        }
+
+        if (wolk_publish_single (&wolk, "TS","Testing", DATA_TYPE_STRING))
         {
-            printf ("Command from queue: %s\n", command);
-            printf ("Reference from queue: %s\n", reference);
-            printf ("Value from queue: %s\n", value);
+            printf ("Publishing single reading error\n");
         }
 
+
+        if (wolk_publish_single (&wolk, "TN","20", DATA_TYPE_NUMERIC) != W_FALSE)
+        {
+            printf ("Publishing single reading error\n");
+        }
+
+         if (wolk_publish_single (&wolk, "TB","true", DATA_TYPE_BOOLEAN))
+         {
+             printf ("Publishing single reading error\n");
+         }
+
+
+        sleep (3);
+
+        if ( wolk_add_string_reading(&wolk, "TS", "Periodic") != W_FALSE)
+        {
+            printf ("Adding string reading error\n");
+        }
+        if ( wolk_add_numeric_reading(&wolk, "TN", 11)!= W_FALSE)
+        {
+            printf ("Adding numeric reading error\n");
+        }
+        if ( wolk_add_bool_reading(&wolk, "TB", false)!= W_FALSE)
+        {
+            printf ("Adding bool reading error\n");
+        }
+
+//        if ( wolk_clear_readings (&wolk)!= W_FALSE)
+//        {
+//            printf ("Clear readings error\n");
+//        }
+//        if ( wolk_add_string_reading(&wolk, "TS", "Periodic 1") != W_FALSE)
+//        {
+//            printf ("Adding string reading error\n");
+//        }
+//        if ( wolk_add_numeric_reading(&wolk, "TN", 12)!= W_FALSE)
+//        {
+//            printf ("Adding numeric reading error\n");
+//        }
+//        if ( wolk_add_bool_reading(&wolk, "TB", true)!= W_FALSE)
+//        {
+//            printf ("Adding bool reading error\n");
+//        }
+
+        if ( wolk_publish (&wolk)!= W_FALSE)
+        {
+            printf ("Publish readings error\n");
+        }
+
+
+ sleep (30);
+
+
+
+        //break;
 
 //        /* do other stuff here */
 //        switch(state){
