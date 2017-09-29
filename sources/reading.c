@@ -13,7 +13,7 @@ void reading_init(reading_t* reading, manifest_item_t* item)
     uint8_t i;
     uint8_t reading_dimensions = manifest_item_get_data_dimensions(item);
 
-    reading->manifest_item = item;
+    memcpy(&reading->manifest_item, item, sizeof(reading->manifest_item));
     reading->actuator_status = ACTUATOR_STATUS_READY;
     reading->rtc = 0;
 
@@ -91,7 +91,7 @@ char* reading_get_data_at(reading_t* reading, size_t data_position)
 
 manifest_item_t* reading_get_manifest_item(reading_t* reading)
 {
-    return reading->manifest_item;
+    return &reading->manifest_item;
 }
 
 void reading_set_rtc(reading_t* reading, uint32_t rtc)

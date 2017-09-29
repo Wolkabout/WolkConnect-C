@@ -19,7 +19,7 @@ typedef enum {
 } actuator_status_t;
 
 typedef struct {
-    manifest_item_t* manifest_item;
+    manifest_item_t manifest_item;
 
     actuator_status_t actuator_status;
 
