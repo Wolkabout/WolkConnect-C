@@ -70,8 +70,8 @@ WOLK_ERR_T wolk_clear_readings (wolk_ctx_t *ctx);
 WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx);
 WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value);
 // TODO Should we add single string, single numeric, single bool instead of generic psingle publish?
-WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_state_t state);
-WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_state_t state);
+WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t state);
+WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t state);
 
 
 #ifdef __cplusplus

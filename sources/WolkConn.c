@@ -97,7 +97,7 @@ WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout)
     int buflen = sizeof(buf);
     int timeout_counter = 0;
     int timeout_microseconds = timeout * TIMEOUT_STEP * 2;
-    command_t commands_buffer[128];
+    actuator_command_t commands_buffer[128];
 
     while (timeout_counter != timeout_microseconds)
     {
@@ -129,25 +129,25 @@ WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout)
 
             printf("%lu command(s) deserialized:\n", num_deserialized_commands);
             for (i = 0; i < num_deserialized_commands; ++i) {
-                command_t* command = &commands_buffer[i];
+                actuator_command_t* command = &commands_buffer[i];
 
                 printf("Command type: ");
-                switch(command_get_type(command))
+                switch(actuator_command_get_type(command))
                 {
-                case COMMAND_TYPE_STATUS:
+                case ACTUATOR_COMMAND_TYPE_STATUS:
                     printf("STATUS\n");
-                    printf("  Reference:  %s\n", command_get_reference(command));
-                    wolk_queue_push(&ctx->actuator_queue, STATUS_COMMAND,   command_get_reference(command), NON_EXISTING);
+                    printf("  Reference:  %s\n", actuator_command_get_reference(command));
+                    wolk_queue_push(&ctx->actuator_queue, STATUS_COMMAND, actuator_command_get_reference(command), NON_EXISTING);
                     break;
 
-                case COMMAND_TYPE_SET:
+                case ACTUATOR_COMMAND_TYPE_SET:
                     printf("SET\n");
-                    printf("  Reference:  %s\n", command_get_reference(command));
-                    printf("  Value:      %s\n", command_get_value(command));
-                    wolk_queue_push(&ctx->actuator_queue, SET_COMMAND,   command_get_reference(command), command_get_value(command));
+                    printf("  Reference:  %s\n", actuator_command_get_reference(command));
+                    printf("  Value:      %s\n", actuator_command_get_value(command));
+                    wolk_queue_push(&ctx->actuator_queue, SET_COMMAND, actuator_command_get_reference(command), actuator_command_get_value(command));
                     break;
 
-                case COMMAND_TYPE_UNKNOWN:
+                case ACTUATOR_COMMAND_TYPE_UNKNOWN:
                     printf("UNKNOWN\n");
                     break;
                 }
@@ -316,7 +316,7 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
 
 // ToDo maybe add function that appends actuator to curent reading
 
-WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_state_t status)
+WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t status)
 {
     unsigned char buf[200];
     int len;
@@ -362,7 +362,7 @@ WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *referen
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_state_t status)
+WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t status)
 {
     unsigned char buf[200];
     int len;
