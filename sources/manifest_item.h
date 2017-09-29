@@ -4,7 +4,7 @@
 #include "size_definitions.h"
 
 #include <stdint.h>
-#include <string.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,14 +22,14 @@ typedef enum {
 } data_type_t;
 
 typedef struct {
-    char reference[MANIFEST_ITEM_MAX_REFERENCE_SIZE];
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
 
     reading_type_t reading_type;
     data_type_t data_type;
 
     size_t data_dimensions;
 
-    char data_delimiter[MANIFEST_ITEM_MAX_DATA_DELIMITER_SIZE];
+    char data_delimiter[MANIFEST_ITEM_DATA_DELIMITER_SIZE];
 } manifest_item_t;
 
 void manifest_item_init(manifest_item_t* item, char* reference, reading_type_t reading_type, data_type_t data_type);

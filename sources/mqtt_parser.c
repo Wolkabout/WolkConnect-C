@@ -2,17 +2,20 @@
 #include "size_definitions.h"
 #include "manifest_item.h"
 #include "reading.h"
-#include "utils.h"
+#include "wolk_utils.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 enum {
+    /* Maximum number of characters in command name */
     COMMAND_MAX_SIZE = 10,
 
-    COMMAND_MAX_ARGUMENT_PART_SIZE = MANIFEST_ITEM_MAX_REFERENCE_SIZE + 1 + READING_MAX_READING_SIZE /* +1 for ':' delimiter */
+    /* Maximum number of characters in command argument */
+    COMMAND_MAX_ARGUMENT_PART_SIZE = MANIFEST_ITEM_REFERENCE_SIZE + 1 + READING_DIMENSIONS /* +1 for ':' delimiter */
 };
 
 static bool append_to_buffer(char* buffer, size_t buffer_size, char* apendee)
@@ -25,9 +28,9 @@ static bool append_to_buffer(char* buffer, size_t buffer_size, char* apendee)
     return true;
 }
 
-static bool append_actuator_status(char* buffer, size_t buffer_size, actuator_state_t actuator_status)
+static bool append_actuator_status(char* buffer, size_t buffer_size, actuator_status_t actuator_status)
 {
-    char reading_buffer[SERIALIZER_MAX_PARSER_INTERNAL_BUFFER_SIZE];
+    char reading_buffer[PARSER_INTERNAL_BUFFER_SIZE];
 
     switch (actuator_status) {
     case ACTUATOR_STATUS_READY:
@@ -43,7 +46,8 @@ static bool append_actuator_status(char* buffer, size_t buffer_size, actuator_st
         break;
 
     default:
-        ASSERT(false);
+        /* Sanity check */
+        WOLK_ASSERT(false);
     }
 
     return append_to_buffer(buffer, buffer_size, reading_buffer);
@@ -51,13 +55,12 @@ static bool append_actuator_status(char* buffer, size_t buffer_size, actuator_st
 
 static bool append_reading_prefix(reading_t* reading, char* buffer, size_t buffer_size)
 {
-    int signed_buffer_size = buffer_size;
     if (manifest_item_get_reading_type(reading_get_manifest_item(reading)) == READING_TYPE_ACTUATOR) {
-        if (snprintf(buffer, buffer_size, "STATUS ") >= signed_buffer_size) {
+        if (snprintf(buffer, buffer_size, "STATUS ") >= (int)buffer_size) {
             return false;
         }
     } else if (manifest_item_get_reading_type(reading_get_manifest_item(reading)) == READING_TYPE_SENSOR) {
-        if (snprintf(buffer, buffer_size, "READINGS R:%u,", reading_get_rtc(reading)) >= signed_buffer_size) {
+        if (snprintf(buffer, buffer_size, "READINGS R:%u,", reading_get_rtc(reading)) >= (int)buffer_size) {
             return false;
         }
     } else {
@@ -69,11 +72,9 @@ static bool append_reading_prefix(reading_t* reading, char* buffer, size_t buffe
 
 static bool append_reading(reading_t* reading, char* buffer, size_t buffer_size)
 {
-    int signed_buffer_size = buffer_size;
-
     if (snprintf(buffer + strlen(buffer), buffer_size - strlen(buffer), "%s:%s",
                  manifest_item_get_reference(reading_get_manifest_item(reading)),
-                 reading_get_data_at(reading, 0)) >= signed_buffer_size) {
+                 reading_get_data_at(reading, 0)) >= (int)buffer_size) {
         return false;
     }
 
@@ -82,11 +83,10 @@ static bool append_reading(reading_t* reading, char* buffer, size_t buffer_size)
 
 static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_size)
 {
-    size_t reading_buffer_size = SERIALIZER_MAX_PARSER_INTERNAL_BUFFER_SIZE;
-    char reading_buffer[SERIALIZER_MAX_PARSER_INTERNAL_BUFFER_SIZE];
+    const size_t reading_buffer_size = PARSER_INTERNAL_BUFFER_SIZE;
+    char reading_buffer[PARSER_INTERNAL_BUFFER_SIZE];
 
     uint8_t i;
-    uint8_t data_size;
     manifest_item_t* manifest_item = reading_get_manifest_item(reading);
 
     if (!append_reading_prefix(reading, reading_buffer, reading_buffer_size)) {
@@ -97,7 +97,7 @@ static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_si
         return false;
     }
 
-    data_size = manifest_item_get_data_dimensions(manifest_item);
+    const uint8_t data_size = manifest_item_get_data_dimensions(manifest_item);
     if (data_size == 1) {
         if ((manifest_item_get_reading_type(reading_get_manifest_item(reading)) == READING_TYPE_ACTUATOR) &&
              !append_actuator_status(reading_buffer, reading_buffer_size, reading_get_actuator_status(reading))) {
@@ -109,11 +109,11 @@ static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_si
 
     char* delimiter = manifest_item_get_data_delimiter(manifest_item);
     for (i = 1; i < manifest_item_get_data_dimensions(manifest_item); ++i) {
-        uint8_t numb_bytes_to_write = reading_buffer_size - strlen(reading_buffer);
-        if (snprintf(reading_buffer + strlen(reading_buffer), numb_bytes_to_write,
+        size_t num_bytes_to_write = reading_buffer_size - strlen(reading_buffer);
+        if (snprintf(reading_buffer + strlen(reading_buffer), num_bytes_to_write,
                      "%s%s",
                      delimiter,
-                     reading_get_data_at(reading, i)) >= numb_bytes_to_write) {
+                     reading_get_data_at(reading, i)) >= (int)num_bytes_to_write) {
             return false;
         }
     }
@@ -128,18 +128,20 @@ static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_si
 
 static bool serialize_readings_delimiter(char* buffer, size_t buffer_size)
 {
-    int delimiter_buffer_size = MANIFEST_ITEM_MAX_DATA_DELIMITER_SIZE;
-    char delimiter_buffer[MANIFEST_ITEM_MAX_DATA_DELIMITER_SIZE];
+    char delimiter_buffer[MANIFEST_ITEM_DATA_DELIMITER_SIZE + 1];
 
-    if(snprintf(delimiter_buffer, delimiter_buffer_size, ";") >= delimiter_buffer_size) {
+    if(snprintf(delimiter_buffer, (int)WOLK_ARRAY_LENGTH(delimiter_buffer), ";") >= (int)WOLK_ARRAY_LENGTH(delimiter_buffer)) {
         return false;
     }
 
     return append_to_buffer(buffer, buffer_size, delimiter_buffer);
 }
 
-static bool deserialize_command(char* buffer, command_t* command)
+static bool deserialize_command(char* buffer, actuator_command_t* command)
 {
+    /* Sanity check */
+    WOLK_ASSERT(strlen(buffer) <= COMMAND_MAX_SIZE + COMMAND_MAX_ARGUMENT_PART_SIZE + 1);
+
     char type_part[COMMAND_MAX_SIZE];
     char argument_part[COMMAND_MAX_ARGUMENT_PART_SIZE];
 
@@ -148,17 +150,17 @@ static bool deserialize_command(char* buffer, command_t* command)
     }
 
     if (strcmp(type_part, "STATUS") == 0) {
-        command_init(command, COMMAND_TYPE_STATUS, argument_part, "");
+        actuator_command_init(command, ACTUATOR_COMMAND_TYPE_STATUS, argument_part, "");
         return true;
     } else if (strcmp(type_part, "SET") == 0){
-        char reference[MANIFEST_ITEM_MAX_REFERENCE_SIZE];
-        char argument[COMMAND_MAX_ARGUMENT_SIZE];
+        char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+        char argument[COMMAND_ARGUMENT_SIZE];
 
         if (sscanf(argument_part, "%[^:]:%s", reference, argument) != 2) {
             return false;
         }
 
-        command_init(command, COMMAND_TYPE_SET, reference, argument);
+        actuator_command_init(command, ACTUATOR_COMMAND_TYPE_SET, reference, argument);
         return true;
     }
 
@@ -167,6 +169,9 @@ static bool deserialize_command(char* buffer, command_t* command)
 
 size_t mqtt_serialize_readings(reading_t* first_reading, size_t num_readings, char* buffer, size_t buffer_size)
 {
+    /* Sanity check */
+    WOLK_ASSERT(num_readings > 0);
+
     size_t num_serialized_readings;
     reading_t* current_reading = first_reading;
 
@@ -181,16 +186,16 @@ size_t mqtt_serialize_readings(reading_t* first_reading, size_t num_readings, ch
     return num_serialized_readings;
 }
 
-size_t mqtt_deserialize_commands(char* buffer, size_t buffer_size, command_t* commands_buffer, size_t commands_buffer_size)
+size_t mqtt_deserialize_commands(char* buffer, size_t buffer_size, actuator_command_t* commands_buffer, size_t commands_buffer_size)
 {
-    UNUSED(buffer_size);
+    WOLK_UNUSED(buffer_size);
 
     /* Sanity check */
-    ASSERT(SERIALIZER_MAX_PARSER_INTERNAL_BUFFER_SIZE >= buffer_size);
+    WOLK_ASSERT(PARSER_INTERNAL_BUFFER_SIZE >= buffer_size);
 
     size_t num_serialized_commands = 0;
-    command_t* current_command = commands_buffer;
-    char tmp_buffer[SERIALIZER_MAX_PARSER_INTERNAL_BUFFER_SIZE];
+    actuator_command_t* current_command = commands_buffer;
+    char tmp_buffer[PARSER_INTERNAL_BUFFER_SIZE];
     strcpy(tmp_buffer, buffer);
 
     char* p = strtok (tmp_buffer, ";");
@@ -208,4 +213,30 @@ size_t mqtt_deserialize_commands(char* buffer, size_t buffer_size, command_t* co
     }
 
     return num_serialized_commands;
+}
+
+size_t mqtt_serialize_configuration_items(configuration_item_t* first_config_item, size_t num_config_items, char* buffer, size_t buffer_size)
+{
+    WOLK_UNUSED(first_config_item);
+    WOLK_UNUSED(num_config_items);
+    WOLK_UNUSED(buffer);
+    WOLK_UNUSED(buffer_size);
+
+    /* Sanity check */
+    WOLK_ASSERT(false);
+
+    return 0;
+}
+
+size_t mqtt_deserialize_configuration_items(char* buffer, size_t buffer_size, configuration_item_command_t* commands_buffer, size_t commands_buffer_size)
+{
+    WOLK_UNUSED(buffer);
+    WOLK_UNUSED(buffer_size);
+    WOLK_UNUSED(commands_buffer);
+    WOLK_UNUSED(commands_buffer_size);
+
+    /* Sanity check */
+    WOLK_ASSERT(false);
+
+    return 0;
 }
