@@ -17,7 +17,7 @@
 #define SET_COMMAND "SET"
 #define STATUS_COMMAND "STATUS"
 
-const char *message2 = "STATUS S:true:READY;";
+#define KEEP_ALIVE "PING REQ"
 
 WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func, const char *serial, const char *password)
 {
@@ -57,9 +57,9 @@ WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func
     if(ctx->sock < 0)
         return ctx->sock;
 
-    ctx->mytransport.sck = &ctx->sock;
-    ctx->mytransport.getfn = transport_getdatanb;
-    ctx->mytransport.state = 0;
+    ctx->mqtt_transport.sck = &ctx->sock;
+    ctx->mqtt_transport.getfn = transport_getdatanb;
+    ctx->mqtt_transport.state = 0;
     ctx->data.clientID.cstring = serial;
     ctx->data.keepAliveInterval = KEEPALIVE_INTERVAL;
     ctx->data.cleansession = 1;
@@ -86,7 +86,6 @@ WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func
     return W_FALSE;
 }
 
-// TODO Rename mytransport
 
 
 WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout)
@@ -101,7 +100,7 @@ WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout)
 
     while (timeout_counter != timeout_microseconds)
     {
-        if((rc=MQTTPacket_readnb(buf, buflen, &(ctx->mytransport))) == PUBLISH){
+        if((rc=MQTTPacket_readnb(buf, buflen, &(ctx->mqtt_transport))) == PUBLISH){
             unsigned char dup;
             int qos;
             unsigned char retained;
@@ -137,14 +136,14 @@ WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout)
                 case ACTUATOR_COMMAND_TYPE_STATUS:
                     printf("STATUS\n");
                     printf("  Reference:  %s\n", actuator_command_get_reference(command));
-                    wolk_queue_push(&ctx->actuator_queue, STATUS_COMMAND, actuator_command_get_reference(command), NON_EXISTING);
+                    wolk_queue_push(&ctx->actuator_queue, actuator_command_get_reference(command), STATUS_COMMAND, NON_EXISTING);
                     break;
 
                 case ACTUATOR_COMMAND_TYPE_SET:
                     printf("SET\n");
                     printf("  Reference:  %s\n", actuator_command_get_reference(command));
                     printf("  Value:      %s\n", actuator_command_get_value(command));
-                    wolk_queue_push(&ctx->actuator_queue, SET_COMMAND, actuator_command_get_reference(command), actuator_command_get_value(command));
+                    wolk_queue_push(&ctx->actuator_queue,  actuator_command_get_reference(command), SET_COMMAND, actuator_command_get_value(command));
                     break;
 
                 case ACTUATOR_COMMAND_TYPE_UNKNOWN:
@@ -185,7 +184,7 @@ WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t *ctx,const char *reference,const c
 
     reading_init(&ctx->readings[ctx->readings_index], &string_sensor);
     reading_set_data(&ctx->readings[ctx->readings_index], value);
-    reading_set_rtc(&ctx->readings[ctx->readings_index], 798123456);
+    reading_set_rtc(&ctx->readings[ctx->readings_index], 1506696323);
 
     ctx->readings_index++;
 
@@ -203,7 +202,7 @@ WOLK_ERR_T wolk_add_numeric_reading(wolk_ctx_t *ctx,const char *reference,double
 
     reading_init(&ctx->readings[ctx->readings_index], &numeric_sensor);
     reading_set_data(&ctx->readings[ctx->readings_index], value_str);
-    reading_set_rtc(&ctx->readings[ctx->readings_index], 123456789);
+    reading_set_rtc(&ctx->readings[ctx->readings_index], 1506696323);
 
     ctx->readings_index++;
 
@@ -224,7 +223,7 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool valu
     {
         reading_set_data(&ctx->readings[ctx->readings_index], BOOL_FALSE);
     }
-    reading_set_rtc(&ctx->readings[ctx->readings_index], 456789123);
+    reading_set_rtc(&ctx->readings[ctx->readings_index], 1506696323);
 
     ctx->readings_index++;
 
@@ -242,13 +241,13 @@ WOLK_ERR_T wolk_clear_readings (wolk_ctx_t *ctx)
 
 WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx)
 {
-    unsigned char buf[200];
+    unsigned char buf[READINGS_MQTT_SIZE];
     int len;
-    int buflen = sizeof(buf);
     char readings_buffer[READINGS_BUFFER_SIZE];
     MQTTString topicString = MQTTString_initializer;
     topicString.cstring = ctx->pub_topic;
     memset (readings_buffer, 0, READINGS_BUFFER_SIZE);
+    memset (buf, 0, READINGS_MQTT_SIZE);
 
 
     size_t serialized_readings = parser_serialize_readings(&ctx->wolk_parser, &ctx->readings[0], ctx->readings_index, readings_buffer, READINGS_BUFFER_SIZE);
@@ -257,12 +256,11 @@ WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx)
 
     printf("%lu reading(s) serialized:\n%s\n\n", serialized_readings, readings_buffer);
 
-    len = MQTTSerialize_publish(buf, buflen, 0, 0, 0, 0, topicString, (unsigned char*)readings_buffer, strlen(readings_buffer));
+    len = MQTTSerialize_publish(buf, READINGS_MQTT_SIZE, 0, 0, 0, 0, topicString, (unsigned char*)readings_buffer, strlen(readings_buffer));
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
 
     switch(transport_sendPacketBuffernb(ctx->sock)){
         case TRANSPORT_DONE:
-            printf("Published\n");
             break;
         case TRANSPORT_ERROR:
             return W_TRUE;
@@ -296,14 +294,14 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
 
         reading_init(&readings, &string_sensor);
         reading_set_data(&readings, value);
-        reading_set_rtc(&readings, 798123456);
+        reading_set_rtc(&readings, 1506695657);
     } else if (type==DATA_TYPE_BOOLEAN)
     {
         manifest_item_t bool_sensor;
         manifest_item_init(&bool_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
         reading_init(&readings, &bool_sensor);
         reading_set_data(&readings, value);
-        reading_set_rtc(&readings, 456789123);
+        reading_set_rtc(&readings, 1506695657);
     } else if (type==DATA_TYPE_NUMERIC)
     {
         manifest_item_t numeric_sensor;
@@ -312,7 +310,7 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
 
         reading_init(&readings, &numeric_sensor);
         reading_set_data(&readings, value);
-        reading_set_rtc(&readings, 123456789);
+        reading_set_rtc(&readings, 1506695657);
 
     }
 
@@ -342,12 +340,13 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
 
 WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t status)
 {
-    unsigned char buf[200];
+    unsigned char buf[READINGS_MQTT_SIZE];
     int len;
-    int buflen = sizeof(buf);
     parser_t parser;
     reading_t readings;
     char readings_buffer[READINGS_BUFFER_SIZE];
+    memset (readings_buffer, 0, READINGS_BUFFER_SIZE);
+    memset (buf, 0, READINGS_MQTT_SIZE);
     initialize_parser(&parser, PARSER_TYPE_MQTT);
 
     MQTTString topicString = MQTTString_initializer;
@@ -355,13 +354,13 @@ WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *referen
 
     char value_str[STR_64];
     memset (value_str, 0, STR_64);
-    sprintf(value_str, "%f", value);
+    sprintf(value_str, "%lf", value);
 
     manifest_item_t numeric_actuator;
     manifest_item_init(&numeric_actuator, reference, READING_TYPE_ACTUATOR, DATA_TYPE_NUMERIC);
 
     reading_init(&readings, &numeric_actuator);
-    reading_set_rtc(&readings, 789789789);
+    reading_set_rtc(&readings, 1506695657);
     reading_set_data(&readings, value_str);
     reading_set_actuator_status(&readings, status);
 
@@ -369,12 +368,11 @@ WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *referen
 
     printf("%lu reading(s) serialized:\n%s\n\n", serialized_readings, readings_buffer);
 
-    len = MQTTSerialize_publish(buf, buflen, 0, 0, 0, 0, topicString, (unsigned char*)readings_buffer, strlen(readings_buffer));
+    len = MQTTSerialize_publish(buf, READINGS_MQTT_SIZE, 0, 0, 0, 0, topicString, (unsigned char*)readings_buffer, strlen(readings_buffer));
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
 
     switch(transport_sendPacketBuffernb(ctx->sock)){
         case TRANSPORT_DONE:
-            printf("Published\n");
             break;
         case TRANSPORT_ERROR:
             return W_TRUE;
@@ -388,12 +386,13 @@ WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *referen
 
 WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t status)
 {
-    unsigned char buf[200];
+    unsigned char buf[READINGS_MQTT_SIZE];
     int len;
-    int buflen = sizeof(buf);
     parser_t parser;
     reading_t readings;
     char readings_buffer[READINGS_BUFFER_SIZE];
+    memset (readings_buffer, 0, READINGS_BUFFER_SIZE);
+    memset (buf, 0, READINGS_MQTT_SIZE);
     initialize_parser(&parser, PARSER_TYPE_MQTT);
 
     MQTTString topicString = MQTTString_initializer;
@@ -403,7 +402,7 @@ WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *refere
     manifest_item_init(&bool_actuator, reference, READING_TYPE_ACTUATOR, DATA_TYPE_BOOLEAN);
 
     reading_init(&readings, &bool_actuator);
-    reading_set_rtc(&readings, 987654321);
+    reading_set_rtc(&readings, 1506695657);
 
     if (value == true)
     {
@@ -418,12 +417,11 @@ WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *refere
 
     printf("%lu reading(s) serialized:\n%s\n\n", serialized_readings, readings_buffer);
 
-    len = MQTTSerialize_publish(buf, buflen, 0, 0, 0, 0, topicString, (unsigned char*)readings_buffer, strlen(readings_buffer));
+    len = MQTTSerialize_publish(buf, READINGS_MQTT_SIZE, 0, 0, 0, 0, topicString, (unsigned char*)readings_buffer, strlen(readings_buffer));
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
 
     switch(transport_sendPacketBuffernb(ctx->sock)){
         case TRANSPORT_DONE:
-            printf("Published\n");
             break;
         case TRANSPORT_ERROR:
             return W_TRUE;
@@ -431,6 +429,29 @@ WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *refere
             return W_TRUE;
     }
 
+
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_keep_alive (wolk_ctx_t *ctx)
+{
+    unsigned char buf[READINGS_MQTT_SIZE];
+    int len;
+    MQTTString topicString = MQTTString_initializer;
+    topicString.cstring = ctx->pub_topic;
+    memset (buf, 0, READINGS_MQTT_SIZE);
+
+    len = MQTTSerialize_publish(buf, READINGS_MQTT_SIZE, 0, 0, 0, 0, topicString, KEEP_ALIVE, strlen(KEEP_ALIVE));
+    transport_sendPacketBuffernb_start(ctx->sock, buf, len);
+
+    switch(transport_sendPacketBuffernb(ctx->sock)){
+        case TRANSPORT_DONE:
+            break;
+        case TRANSPORT_ERROR:
+            return W_TRUE;
+        case TRANSPORT_AGAIN:
+            return W_TRUE;
+    }
 
     return W_FALSE;
 }

@@ -41,7 +41,7 @@ struct _wolk_ctx_t {
     char pub_topic[TOPIC_SIZE];
     MQTTPacket_connectData data;
     transport_iofunctions_t iof;
-    MQTTTransport mytransport;
+    MQTTTransport mqtt_transport;
     int sock;
     parser_t wolk_parser;
     wolk_queue actuator_queue;
@@ -73,6 +73,8 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
 // TODO Should we add single string, single numeric, single bool instead of generic psingle publish?
 WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t state);
 WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t state);
+WOLK_ERR_T wolk_keep_alive (wolk_ctx_t *ctx);
+
 
 
 #ifdef __cplusplus

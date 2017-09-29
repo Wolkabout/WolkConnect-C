@@ -178,40 +178,85 @@ int main(int argc, char *argv[])
 
     //topicString.cstring = topic_sub;
     //topicString.cstring = topic;
+
+
+    if ( wolk_publish_num_actuator_status (&wolk, "SI",30, ACTUATOR_STATUS_READY) != W_FALSE)
+    {
+        printf ("Numeric actuator status error\n");
+    }
+    if ( wolk_publish_bool_actuator_status (&wolk,"SW", true, ACTUATOR_STATUS_READY) != W_FALSE)
+    {
+        printf ("Bool actuator status error\n");
+    }
+
+
+
+
     //state = READING;
     while (!toStop)	{
         //sleep(1);
-//        wolk_receive (&wolk,3);
+       // printf ("Mark 1\n");
+        wolk_receive (&wolk,1);
 
-//        memset (reference, 0, 32);
-//        memset (command, 0, 32);
-//        memset (value, 0, 64);
+        memset (reference, 0, 32);
+        memset (command, 0, 32);
+        memset (value, 0, 64);
 
-//        if (wolk_read_actuator (&wolk, command, reference, value)!= W_TRUE)
-//        {
-//            printf ("Command from queue: %s\n", command);
-//            printf ("Reference from queue: %s\n", reference);
-//            printf ("Value from queue: %s\n", value);
-//        }
+        while (wolk_read_actuator (&wolk, command, reference, value)!= W_TRUE)
+        {
+            printf ("Command from queue: %s\n", command);
+            printf ("Reference from queue: %s\n", reference);
+            printf ("Value from queue: %s\n", value);
 
-        if (wolk_publish_single (&wolk, "TS","Testing", DATA_TYPE_STRING))
+            if (strcmp(reference,"SW")==0)
+            {
+                if (strcmp(value,"true")==0)
+                {
+                    if ( wolk_publish_bool_actuator_status (&wolk,"SW", true, ACTUATOR_STATUS_READY) != W_FALSE)
+                    {
+                        printf ("Bool actuator status error\n");
+                    }
+
+                } else if (strcmp(value,"false")==0)
+                {
+                    if ( wolk_publish_bool_actuator_status (&wolk,"SW", false, ACTUATOR_STATUS_READY) != W_FALSE)
+                    {
+                        printf ("Bool actuator status error\n");
+                    }
+
+                }
+            }
+
+        }
+
+
+        //Every 60 seconds send keep alive message
+        if (wolk_keep_alive (&wolk)!= W_FALSE)
+        {
+            printf('Keep alive error\n');
+        }
+
+        sleep (10);
+
+
+        if (wolk_publish_single (&wolk, "TS","Mark 1", DATA_TYPE_STRING))
         {
             printf ("Publishing single reading error\n");
         }
 
 
-        if (wolk_publish_single (&wolk, "TN","20", DATA_TYPE_NUMERIC) != W_FALSE)
+        if (wolk_publish_single (&wolk, "TN","22", DATA_TYPE_NUMERIC) != W_FALSE)
         {
             printf ("Publishing single reading error\n");
         }
 
-         if (wolk_publish_single (&wolk, "TB","true", DATA_TYPE_BOOLEAN))
+         if (wolk_publish_single (&wolk, "TB","false", DATA_TYPE_BOOLEAN))
          {
              printf ("Publishing single reading error\n");
          }
 
 
-        sleep (3);
+         sleep (30);
 
         if ( wolk_add_string_reading(&wolk, "TS", "Periodic") != W_FALSE)
         {
@@ -226,22 +271,22 @@ int main(int argc, char *argv[])
             printf ("Adding bool reading error\n");
         }
 
-//        if ( wolk_clear_readings (&wolk)!= W_FALSE)
-//        {
-//            printf ("Clear readings error\n");
-//        }
-//        if ( wolk_add_string_reading(&wolk, "TS", "Periodic 1") != W_FALSE)
-//        {
-//            printf ("Adding string reading error\n");
-//        }
-//        if ( wolk_add_numeric_reading(&wolk, "TN", 12)!= W_FALSE)
-//        {
-//            printf ("Adding numeric reading error\n");
-//        }
-//        if ( wolk_add_bool_reading(&wolk, "TB", true)!= W_FALSE)
-//        {
-//            printf ("Adding bool reading error\n");
-//        }
+////        if ( wolk_clear_readings (&wolk)!= W_FALSE)
+////        {
+////            printf ("Clear readings error\n");
+////        }
+////        if ( wolk_add_string_reading(&wolk, "TS", "Periodic 1") != W_FALSE)
+////        {
+////            printf ("Adding string reading error\n");
+////        }
+////        if ( wolk_add_numeric_reading(&wolk, "TN", 12)!= W_FALSE)
+////        {
+////            printf ("Adding numeric reading error\n");
+////        }
+////        if ( wolk_add_bool_reading(&wolk, "TB", true)!= W_FALSE)
+////        {
+////            printf ("Adding bool reading error\n");
+////        }
 
         if ( wolk_publish (&wolk)!= W_FALSE)
         {
@@ -249,7 +294,7 @@ int main(int argc, char *argv[])
         }
 
 
- sleep (30);
+// sleep (30);
 
 
 
