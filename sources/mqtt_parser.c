@@ -53,14 +53,18 @@ static bool append_actuator_status(char* buffer, size_t buffer_size, actuator_st
     return append_to_buffer(buffer, buffer_size, reading_buffer);
 }
 
-static bool append_reading_prefix(reading_t* reading, char* buffer, size_t buffer_size)
+static bool append_reading_prefix(reading_t* reading, char* buffer, size_t buffer_size, bool is_first_reading)
 {
     if (manifest_item_get_reading_type(reading_get_manifest_item(reading)) == READING_TYPE_ACTUATOR) {
         if (snprintf(buffer, buffer_size, "STATUS ") >= (int)buffer_size) {
             return false;
         }
-    } else if (manifest_item_get_reading_type(reading_get_manifest_item(reading)) == READING_TYPE_SENSOR) {
+    } else if (manifest_item_get_reading_type(reading_get_manifest_item(reading)) == READING_TYPE_SENSOR && is_first_reading) {
         if (snprintf(buffer, buffer_size, "READINGS R:%u,", reading_get_rtc(reading)) >= (int)buffer_size) {
+            return false;
+        }
+    } else if (manifest_item_get_reading_type(reading_get_manifest_item(reading)) == READING_TYPE_SENSOR && !is_first_reading) {
+        if (snprintf(buffer, buffer_size, "R:%u,", reading_get_rtc(reading)) >= (int)buffer_size) {
             return false;
         }
     } else {
@@ -81,7 +85,7 @@ static bool append_reading(reading_t* reading, char* buffer, size_t buffer_size)
     return true;
 }
 
-static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_size)
+static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_size, bool is_first_reading)
 {
     const size_t reading_buffer_size = PARSER_INTERNAL_BUFFER_SIZE;
     char reading_buffer[PARSER_INTERNAL_BUFFER_SIZE];
@@ -89,7 +93,7 @@ static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_si
     uint8_t i;
     manifest_item_t* manifest_item = reading_get_manifest_item(reading);
 
-    if (!append_reading_prefix(reading, reading_buffer, reading_buffer_size)) {
+    if (!append_reading_prefix(reading, reading_buffer, reading_buffer_size, is_first_reading)) {
         return false;
     }
 
@@ -126,7 +130,17 @@ static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_si
     return append_to_buffer(buffer, buffer_size, reading_buffer);
 }
 
-static bool serialize_readings_delimiter(char* buffer, size_t buffer_size)
+static bool serialize_readings_delimiter(char* buffer, size_t buffer_size, char* delimiter)
+{
+    char delimiter_buffer[MANIFEST_ITEM_DATA_DELIMITER_SIZE + 1];
+    if(snprintf(delimiter_buffer, (int)WOLK_ARRAY_LENGTH(delimiter_buffer), "%s", delimiter) >= (int)WOLK_ARRAY_LENGTH(delimiter_buffer)) {
+        return false;
+    }
+
+    return append_to_buffer(buffer, buffer_size, delimiter_buffer);
+}
+
+static bool serialize_readings_ending(char* buffer, size_t buffer_size)
 {
     char delimiter_buffer[MANIFEST_ITEM_DATA_DELIMITER_SIZE + 1];
 
@@ -174,14 +188,40 @@ size_t mqtt_serialize_readings(reading_t* first_reading, size_t num_readings, ch
 
     size_t num_serialized_readings;
     reading_t* current_reading = first_reading;
-
+    reading_t* previous_reading = current_reading;
     for(num_serialized_readings = 0; num_serialized_readings < num_readings; ++num_serialized_readings, ++current_reading) {
-        if(!serialize_reading(current_reading, buffer, buffer_size)) {
+        bool is_first_reading = num_serialized_readings == 0;
+
+        if (num_serialized_readings != 0) {
+            switch(manifest_item_get_reading_type(reading_get_manifest_item(current_reading)))
+            {
+            case READING_TYPE_SENSOR:
+                if (manifest_item_get_reading_type(reading_get_manifest_item(previous_reading)) == READING_TYPE_SENSOR) {
+                    serialize_readings_delimiter(buffer, buffer_size, "|");
+                } else {
+                    serialize_readings_delimiter(buffer, buffer_size, ";");
+                    is_first_reading = true;
+                }
+                break;
+
+            case READING_TYPE_ACTUATOR:
+                serialize_readings_delimiter(buffer, buffer_size, ";");
+                break;
+
+            default:
+                serialize_readings_delimiter(buffer, buffer_size, ";");
+                break;
+            }
+        }
+
+        if(!serialize_reading(current_reading, buffer, buffer_size, is_first_reading)) {
             break;
         }
 
-        serialize_readings_delimiter(buffer, buffer_size);
+        previous_reading = current_reading;
     }
+
+    serialize_readings_ending(buffer, buffer_size);
 
     return num_serialized_readings;
 }
