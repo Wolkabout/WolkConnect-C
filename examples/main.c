@@ -55,12 +55,12 @@ static unsigned char buffer[BUFFER_SIZE];
 static int buffer_length = sizeof(buffer);
 
 
-const char *serial_mqtt = "222111";
-const char *topic = "sensors/222111";
-const char *password_mqtt = "e1828a2f-40dd-4fc0-a85f-f33109a14a25";
+const char *serial_mqtt = "123567";
+const char *topic = "sensors/123567";
+const char *password_mqtt = "4c098907-0a23-4246-8e3d-fdf4e73409a1";
 //const char *message = "RTC 1463400060;READINGS R:1463400000,C:+100;";
 const char *message = "STATUS S:true:READY;";
-const char *topic_sub = "config/222111";
+const char *topic_sub = "config/123567";
 
 int sockfd;
 
@@ -161,11 +161,19 @@ void setup_network ()
 int main(int argc, char *argv[])
 {
 
+    int counter = 0;
     wolk_ctx_t wolk;
 
     setup_network();
 
+    //fprintf(stdout, "%u\n", (unsigned)time(NULL));
+
+    wolk_set_parser (&wolk, PARSER_TYPE_JSON);
+
     wolk_connect(&wolk, &send_buffer_wifi, &receive_buffer_wifi, serial_mqtt, password_mqtt);
+
+
+    wolk_set_actuator_references (&wolk,2, "SL", "SW");
 
 
 
@@ -180,11 +188,11 @@ int main(int argc, char *argv[])
     //topicString.cstring = topic;
 
 
-    if ( wolk_publish_num_actuator_status (&wolk, "SI",30, ACTUATOR_STATUS_READY) != W_FALSE)
+    if ( wolk_publish_num_actuator_status (&wolk, "SL",0, ACTUATOR_STATUS_READY, 0) != W_FALSE)
     {
         printf ("Numeric actuator status error\n");
     }
-    if ( wolk_publish_bool_actuator_status (&wolk,"SW", true, ACTUATOR_STATUS_READY) != W_FALSE)
+    if ( wolk_publish_bool_actuator_status (&wolk,"SW", true, ACTUATOR_STATUS_READY, 0) != W_FALSE)
     {
         printf ("Bool actuator status error\n");
     }
@@ -212,14 +220,14 @@ int main(int argc, char *argv[])
             {
                 if (strcmp(value,"true")==0)
                 {
-                    if ( wolk_publish_bool_actuator_status (&wolk,"SW", true, ACTUATOR_STATUS_READY) != W_FALSE)
+                    if ( wolk_publish_bool_actuator_status (&wolk,"SW", true, ACTUATOR_STATUS_READY, 0) != W_FALSE)
                     {
                         printf ("Bool actuator status error\n");
                     }
 
                 } else if (strcmp(value,"false")==0)
                 {
-                    if ( wolk_publish_bool_actuator_status (&wolk,"SW", false, ACTUATOR_STATUS_READY) != W_FALSE)
+                    if ( wolk_publish_bool_actuator_status (&wolk,"SW", false, ACTUATOR_STATUS_READY, 0) != W_FALSE)
                     {
                         printf ("Bool actuator status error\n");
                     }
@@ -229,120 +237,70 @@ int main(int argc, char *argv[])
 
         }
 
-
-        //Every 60 seconds send keep alive message
-        if (wolk_keep_alive (&wolk)!= W_FALSE)
+        // ToDo Implement sending on change, this is just for demo
+        if (counter==0)
         {
-            printf('Keep alive error\n');
+
+
+            if (wolk_publish_single (&wolk, "TS","Mark 1", DATA_TYPE_STRING, 0))
+            {
+                printf ("Publishing single reading error\n");
+            }
+
+
+            if (wolk_publish_single (&wolk, "TN","22", DATA_TYPE_NUMERIC, 0) != W_FALSE)
+            {
+                printf ("Publishing single reading error\n");
+            }
+
+            if (wolk_publish_single (&wolk, "TB","false", DATA_TYPE_BOOLEAN, 0))
+            {
+                printf ("Publishing single reading error\n");
+            }
+
+
+
+            //Every 60 seconds send keep alive message
+            if (wolk_keep_alive (&wolk)!= W_FALSE)
+            {
+                printf('Keep alive error\n');
+            }
+
+
+
+            if ( wolk_add_string_reading(&wolk, "TS", "Periodic", 0) != W_FALSE)
+            {
+                printf ("Adding string reading error\n");
+            }
+            if ( wolk_add_numeric_reading(&wolk, "TN", 11, 0)!= W_FALSE)
+            {
+                printf ("Adding numeric reading error\n");
+            }
+            if ( wolk_add_bool_reading(&wolk, "TB", false, 0)!= W_FALSE)
+            {
+                printf ("Adding bool reading error\n");
+            }
+
+            if ( wolk_publish (&wolk)!= W_FALSE)
+            {
+                printf ("Publish readings error\n");
+            }
+
+            //Every 60 seconds send keep alive message
+            if (wolk_keep_alive (&wolk)!= W_FALSE)
+            {
+                printf('Keep alive error\n');
+            }
         }
 
-        sleep (10);
-
-
-        if (wolk_publish_single (&wolk, "TS","Mark 1", DATA_TYPE_STRING))
-        {
-            printf ("Publishing single reading error\n");
-        }
-
-
-        if (wolk_publish_single (&wolk, "TN","22", DATA_TYPE_NUMERIC) != W_FALSE)
-        {
-            printf ("Publishing single reading error\n");
-        }
-
-         if (wolk_publish_single (&wolk, "TB","false", DATA_TYPE_BOOLEAN))
+         counter ++;
+         if (counter == 10)
          {
-             printf ("Publishing single reading error\n");
+             counter = 0;
          }
 
 
-         sleep (30);
 
-        if ( wolk_add_string_reading(&wolk, "TS", "Periodic") != W_FALSE)
-        {
-            printf ("Adding string reading error\n");
-        }
-        if ( wolk_add_numeric_reading(&wolk, "TN", 11)!= W_FALSE)
-        {
-            printf ("Adding numeric reading error\n");
-        }
-        if ( wolk_add_bool_reading(&wolk, "TB", false)!= W_FALSE)
-        {
-            printf ("Adding bool reading error\n");
-        }
-
-////        if ( wolk_clear_readings (&wolk)!= W_FALSE)
-////        {
-////            printf ("Clear readings error\n");
-////        }
-////        if ( wolk_add_string_reading(&wolk, "TS", "Periodic 1") != W_FALSE)
-////        {
-////            printf ("Adding string reading error\n");
-////        }
-////        if ( wolk_add_numeric_reading(&wolk, "TN", 12)!= W_FALSE)
-////        {
-////            printf ("Adding numeric reading error\n");
-////        }
-////        if ( wolk_add_bool_reading(&wolk, "TB", true)!= W_FALSE)
-////        {
-////            printf ("Adding bool reading error\n");
-////        }
-
-        if ( wolk_publish (&wolk)!= W_FALSE)
-        {
-            printf ("Publish readings error\n");
-        }
-
-
-// sleep (30);
-
-
-
-        //break;
-
-//        /* do other stuff here */
-//        switch(state){
-//        case READING:
-//            sleep(1);
-//            if((rc=MQTTPacket_readnb(buf, buflen, &(wolk.mytransport))) == PUBLISH){
-//                unsigned char dup;
-//                int qos;
-//                unsigned char retained;
-//                unsigned short msgid;
-//                int payloadlen_in;
-//                unsigned char* payload_in;
-//                int rc;
-//                MQTTString receivedTopic;
-
-//                rc = MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &receivedTopic,
-//                        &payload_in, &payloadlen_in, buf, buflen);
-//                printf("message arrived %.*s\n", payloadlen_in, payload_in);
-//                printf("publishing reading\n");
-//                state = PUBLISHING;
-//                len = MQTTSerialize_publish(buf, buflen, 0, 0, 0, 0, topicString, (unsigned char*)message, strlen(message));
-//                transport_sendPacketBuffernb_start(wolk.sock, buf, len);
-//            } else if(rc == -1){
-//                /* handle I/O errors here */
-//            }	/* handle timeouts here */
-//            break;
-//        case PUBLISHING:
-//            //Check readings , ...
-//            switch(transport_sendPacketBuffernb(wolk.sock)){
-//            case TRANSPORT_DONE:
-//                printf("Published\n");
-//                state = READING;
-//                toStop =1;
-//                break;
-//            case TRANSPORT_ERROR:
-//                /* handle any I/O errors here */
-//                break;
-//            case TRANSPORT_AGAIN:
-//            default:
-//                /* handle timeouts here, not probable unless there is a hardware problem */
-//                break;
-//            }
-//            break;
-//        }
     }
 
     printf("disconnecting\n");

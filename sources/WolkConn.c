@@ -1,5 +1,5 @@
+#include <stdarg.h>
 #include "WolkConn.h"
-
 #include "MQTTPacket.h"
 #include "parser.h"
 
@@ -10,39 +10,43 @@
 #define BOOL_FALSE "false"
 #define BOOL_TRUE "true"
 
-#define KEEPALIVE_INTERVAL 20
+#define KEEPALIVE_INTERVAL 60
 #define CONFIG_PATH "config/"
 #define SENSOR_PATH "sensors/"
+
+#define RADINGS_PATH "readings/"
+
+#define ACTUATORS_STATUS_PATH "actuators/status/"
+#define ACTUATORS_COMMANDS "actuators/commands/"
+
 
 #define SET_COMMAND "SET"
 #define STATUS_COMMAND "STATUS"
 
-#define KEEP_ALIVE "PING REQ"
+static WOLK_ERR_T wolk_subscribe (wolk_ctx_t *ctx, const char *topic);
 
 WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func, const char *serial, const char *password)
 {
     wolk_queue_init (&ctx->actuator_queue);
     wolk_queue_init (&ctx->config_queue);
-    initialize_parser(&ctx->wolk_parser, PARSER_TYPE_MQTT);
+    initialize_parser(&ctx->wolk_parser, ctx->parser_type);
     ctx->readings_index = 0;
 
+    memset (ctx->serial, 0, SERIAL_SIZE);
+    strcpy (ctx->serial, serial);
 
-    memset (ctx->pub_topic, 0, TOPIC_SIZE);
     memset (ctx->sub_topic, 0, TOPIC_SIZE);
-
-    strcpy(ctx->pub_topic,SENSOR_PATH);
-    strcat(ctx->pub_topic,serial);
 
     strcpy(ctx->sub_topic, CONFIG_PATH);
     strcat(ctx->sub_topic, serial);
 
-    // TODO: Danger, check memory
     MQTTPacket_connectData data_temp = MQTTPacket_connectData_initializer;
 
     ctx->data = data_temp;
     //ctx->data = MQTTPacket_connectData_initializer;
     int rc = 0;
     ctx->sock = 0;
+    // ToDo no Hardcoded values
     unsigned char buf[200];
     int buflen = sizeof(buf);
     int msgid = 1;
@@ -74,14 +78,83 @@ WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func
 
 
     printf("MQTT connected\n");
-    /* subscribe */
-    topicString.cstring = ctx->sub_topic;
-    len = MQTTSerialize_subscribe(buf, buflen, 0, msgid, 1, &topicString, &req_qos);
 
-    /* This is equivalent to the one above, but using the non-blocking functions. You will probably not want this in real life,
-    in such a case replace this call by a scheme similar to the one you'll see in the main loop */
+    if (ctx->parser_type == PARSER_TYPE_MQTT)
+    {
+        /* subscribe */
+        topicString.cstring = ctx->sub_topic;
+        len = MQTTSerialize_subscribe(buf, buflen, 0, msgid, 1, &topicString, &req_qos);
+
+        transport_sendPacketBuffernb_start(ctx->sock, buf, len);
+        while((rc=transport_sendPacketBuffernb(ctx->sock)) != TRANSPORT_DONE);
+    }
+
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_set_parser (wolk_ctx_t *ctx, parser_type_t parser_type)
+{
+    ctx->parser_type = parser_type;
+
+    return W_FALSE;
+
+}
+
+WOLK_ERR_T wolk_subscribe (wolk_ctx_t *ctx, const char *topic)
+{
+    unsigned char buf[READINGS_MQTT_SIZE];
+    int msgid = 1;
+    int len=0;
+    int req_qos = 0;
+    int rc = 0;
+    MQTTString topicString = MQTTString_initializer;
+
+    memset (buf, 0, READINGS_MQTT_SIZE);
+
+
+    /* subscribe */
+    topicString.cstring = topic;
+    len = MQTTSerialize_subscribe(buf, READINGS_MQTT_SIZE, 0, msgid, 1, &topicString, &req_qos);
+
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
     while((rc=transport_sendPacketBuffernb(ctx->sock)) != TRANSPORT_DONE);
+
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_set_actuator_references (wolk_ctx_t *ctx, int num_of_items,  const char *item, ...)
+{
+    va_list argptr;
+    char pub_topic[TOPIC_SIZE];
+    int i;
+    if (ctx->parser_type == PARSER_TYPE_JSON)
+    {
+
+
+        va_start( argptr, item );
+
+        const char* str = item;
+        //while ( str != NULL ) // terminate if end of argument list
+        for (i=0;i<num_of_items;i++)
+        {
+            printf( "%s\n", str );
+            memset (pub_topic, 0, TOPIC_SIZE);
+
+            strcpy(pub_topic,ACTUATORS_COMMANDS);
+            strcat(pub_topic,ctx->serial);
+            strcat(pub_topic,"/");
+            strcat(pub_topic,str);
+
+            if (wolk_subscribe(ctx,pub_topic)!=W_FALSE)
+            {
+                printf ("Error in subscribing\n");
+                return W_TRUE;
+            }
+
+            str = va_arg( argptr, const char* );
+        }
+        va_end( argptr );
+    }
 
     return W_FALSE;
 }
@@ -108,6 +181,8 @@ WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout)
             int payloadlen_in;
             unsigned char* payload_in;
             MQTTString receivedTopic;
+            char reference[STR_64];
+            memset (reference, 0, STR_64);
 
             rc = MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &receivedTopic,
                                          &payload_in, &payloadlen_in, buf, buflen);
@@ -117,16 +192,26 @@ WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout)
             }
 
 
+            if (ctx->parser_type == PARSER_TYPE_JSON)
+            {
+                char *end_ptr = strstr (receivedTopic.lenstring.data, "{");
+                if (end_ptr != NULL)
+                {
+                    char *start_ptr = strrchr(receivedTopic.lenstring.data, '/');
+                    if (start_ptr != NULL)
+                    {
 
-            printf("message arrived %.*s\n", payloadlen_in, payload_in);
-            printf("publishing reading\n");
+                        strncpy(reference, start_ptr+1, end_ptr-start_ptr-1);
+                    }
+
+                }
+            }
 
 
 
             size_t num_deserialized_commands = parser_deserialize_commands(&ctx->wolk_parser, payload_in, payloadlen_in, &commands_buffer[0], 128);
             printf("Received commands buffer after command deserialization: %s\n\n", payload_in);
 
-            printf("%lu command(s) deserialized:\n", num_deserialized_commands);
             for (i = 0; i < num_deserialized_commands; ++i) {
                 actuator_command_t* command = &commands_buffer[i];
 
@@ -134,16 +219,23 @@ WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout)
                 switch(actuator_command_get_type(command))
                 {
                 case ACTUATOR_COMMAND_TYPE_STATUS:
-                    printf("STATUS\n");
-                    printf("  Reference:  %s\n", actuator_command_get_reference(command));
-                    wolk_queue_push(&ctx->actuator_queue, actuator_command_get_reference(command), STATUS_COMMAND, NON_EXISTING);
+                    if (ctx->parser_type==PARSER_TYPE_MQTT)
+                    {
+                        wolk_queue_push(&ctx->actuator_queue, actuator_command_get_reference(command), STATUS_COMMAND, NON_EXISTING);
+                    } else if (ctx->parser_type==PARSER_TYPE_JSON)
+                    {
+                        wolk_queue_push(&ctx->actuator_queue, reference, STATUS_COMMAND, NON_EXISTING);
+                    }
                     break;
 
                 case ACTUATOR_COMMAND_TYPE_SET:
-                    printf("SET\n");
-                    printf("  Reference:  %s\n", actuator_command_get_reference(command));
-                    printf("  Value:      %s\n", actuator_command_get_value(command));
-                    wolk_queue_push(&ctx->actuator_queue,  actuator_command_get_reference(command), SET_COMMAND, actuator_command_get_value(command));
+                    if (ctx->parser_type==PARSER_TYPE_MQTT)
+                    {
+                        wolk_queue_push(&ctx->actuator_queue,  actuator_command_get_reference(command), SET_COMMAND, actuator_command_get_value(command));
+                    } else if (ctx->parser_type==PARSER_TYPE_JSON)
+                    {
+                        wolk_queue_push(&ctx->actuator_queue,  reference, SET_COMMAND, actuator_command_get_value(command));
+                    }
                     break;
 
                 case ACTUATOR_COMMAND_TYPE_UNKNOWN:
@@ -177,21 +269,21 @@ WOLK_ERR_T wolk_read_config (wolk_ctx_t *ctx, char *command, char *reference, ch
 
 // ToDo: Set RTC
 
-WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t *ctx,const char *reference,const char *value)
+WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t *ctx,const char *reference,const char *value, uint32_t utc_time)
 {
     manifest_item_t string_sensor;
     manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
 
     reading_init(&ctx->readings[ctx->readings_index], &string_sensor);
     reading_set_data(&ctx->readings[ctx->readings_index], value);
-    reading_set_rtc(&ctx->readings[ctx->readings_index], 1506696323);
+    reading_set_rtc(&ctx->readings[ctx->readings_index], utc_time);
 
     ctx->readings_index++;
 
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_add_numeric_reading(wolk_ctx_t *ctx,const char *reference,double value)
+WOLK_ERR_T wolk_add_numeric_reading(wolk_ctx_t *ctx,const char *reference,double value, uint32_t utc_time)
 {
     manifest_item_t numeric_sensor;
     manifest_item_init(&numeric_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
@@ -202,14 +294,14 @@ WOLK_ERR_T wolk_add_numeric_reading(wolk_ctx_t *ctx,const char *reference,double
 
     reading_init(&ctx->readings[ctx->readings_index], &numeric_sensor);
     reading_set_data(&ctx->readings[ctx->readings_index], value_str);
-    reading_set_rtc(&ctx->readings[ctx->readings_index], 1506696323);
+    reading_set_rtc(&ctx->readings[ctx->readings_index], utc_time);
 
     ctx->readings_index++;
 
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool value)
+WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool value, uint32_t utc_time)
 {
     manifest_item_t bool_sensor;
     manifest_item_init(&bool_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
@@ -223,7 +315,7 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool valu
     {
         reading_set_data(&ctx->readings[ctx->readings_index], BOOL_FALSE);
     }
-    reading_set_rtc(&ctx->readings[ctx->readings_index], 1506696323);
+    reading_set_rtc(&ctx->readings[ctx->readings_index], utc_time);
 
     ctx->readings_index++;
 
@@ -244,34 +336,61 @@ WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx)
     unsigned char buf[READINGS_MQTT_SIZE];
     int len;
     char readings_buffer[READINGS_BUFFER_SIZE];
-    MQTTString topicString = MQTTString_initializer;
-    topicString.cstring = ctx->pub_topic;
     memset (readings_buffer, 0, READINGS_BUFFER_SIZE);
     memset (buf, 0, READINGS_MQTT_SIZE);
 
+    if (ctx->parser_type == PARSER_TYPE_MQTT )
+    {
+        MQTTString topicString = MQTTString_initializer;
 
-    size_t serialized_readings = parser_serialize_readings(&ctx->wolk_parser, &ctx->readings[0], ctx->readings_index, readings_buffer, READINGS_BUFFER_SIZE);
+        char pub_topic[TOPIC_SIZE];
+        memset (pub_topic, 0, TOPIC_SIZE);
 
-    wolk_clear_readings (ctx);
+        strcpy(pub_topic,SENSOR_PATH);
+        strcat(pub_topic,ctx->serial);
 
-    printf("%lu reading(s) serialized:\n%s\n\n", serialized_readings, readings_buffer);
+        topicString.cstring = pub_topic;
 
-    len = MQTTSerialize_publish(buf, READINGS_MQTT_SIZE, 0, 0, 0, 0, topicString, (unsigned char*)readings_buffer, strlen(readings_buffer));
-    transport_sendPacketBuffernb_start(ctx->sock, buf, len);
+        size_t serialized_readings = parser_serialize_readings(&ctx->wolk_parser, &ctx->readings[0], ctx->readings_index, readings_buffer, READINGS_BUFFER_SIZE);
 
-    switch(transport_sendPacketBuffernb(ctx->sock)){
+        wolk_clear_readings (ctx);
+
+        printf("%lu reading(s) serialized:\n%s\n\n", serialized_readings, readings_buffer);
+
+        len = MQTTSerialize_publish(buf, READINGS_MQTT_SIZE, 0, 0, 0, 0, topicString, (unsigned char*)readings_buffer, strlen(readings_buffer));
+        transport_sendPacketBuffernb_start(ctx->sock, buf, len);
+
+        switch(transport_sendPacketBuffernb(ctx->sock)){
         case TRANSPORT_DONE:
             break;
         case TRANSPORT_ERROR:
             return W_TRUE;
         case TRANSPORT_AGAIN:
             return W_TRUE;
+        }
+    } else if (ctx->parser_type == PARSER_TYPE_JSON)
+    {
+        int i=0;
+        for (i=0; i<ctx->readings_index; i++)
+        {
+
+            char* value = reading_get_data(&ctx->readings[i]);
+
+            if (wolk_publish_single (ctx,ctx->readings[i].manifest_item.reference,value, ctx->readings[i].manifest_item.data_type, ctx->readings[i].rtc) != W_FALSE)
+            {
+                return W_TRUE;
+            }
+        }
+
+        wolk_clear_readings (ctx);
+
+
     }
 
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value, data_type_t type)
+WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value, data_type_t type, uint32_t utc_time)
 {
     unsigned char buf[READINGS_MQTT_SIZE];
     int len;
@@ -281,11 +400,22 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
     char readings_buffer[READINGS_BUFFER_SIZE];
     memset (readings_buffer, 0, READINGS_BUFFER_SIZE);
     memset (buf, 0, READINGS_MQTT_SIZE);
-    initialize_parser(&parser, PARSER_TYPE_MQTT);
+    initialize_parser(&parser, ctx->parser_type);
 
     MQTTString topicString = MQTTString_initializer;
-    topicString.cstring = ctx->pub_topic;
+    char pub_topic[TOPIC_SIZE];
+   // topicString.cstring = ctx->pub_topic;
+    memset (pub_topic, 0, TOPIC_SIZE);
 
+
+    strcpy(pub_topic,RADINGS_PATH);
+    strcat(pub_topic,ctx->serial);
+    strcat(pub_topic,"/");
+    strcat(pub_topic,reference);
+
+    topicString.cstring = pub_topic;
+
+    reading_set_rtc(&readings, utc_time);
 
     if (type==DATA_TYPE_STRING)
     {
@@ -294,24 +424,18 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
 
         reading_init(&readings, &string_sensor);
         reading_set_data(&readings, value);
-        reading_set_rtc(&readings, 1506695657);
     } else if (type==DATA_TYPE_BOOLEAN)
     {
         manifest_item_t bool_sensor;
         manifest_item_init(&bool_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
         reading_init(&readings, &bool_sensor);
         reading_set_data(&readings, value);
-        reading_set_rtc(&readings, 1506695657);
     } else if (type==DATA_TYPE_NUMERIC)
     {
         manifest_item_t numeric_sensor;
         manifest_item_init(&numeric_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
-
-
         reading_init(&readings, &numeric_sensor);
         reading_set_data(&readings, value);
-        reading_set_rtc(&readings, 1506695657);
-
     }
 
 
@@ -338,7 +462,7 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
 
 // ToDo maybe add function that appends actuator to curent reading
 
-WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t status)
+WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t status, uint32_t utc_time)
 {
     unsigned char buf[READINGS_MQTT_SIZE];
     int len;
@@ -347,10 +471,19 @@ WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *referen
     char readings_buffer[READINGS_BUFFER_SIZE];
     memset (readings_buffer, 0, READINGS_BUFFER_SIZE);
     memset (buf, 0, READINGS_MQTT_SIZE);
-    initialize_parser(&parser, PARSER_TYPE_MQTT);
+    initialize_parser(&parser, ctx->parser_type);
 
     MQTTString topicString = MQTTString_initializer;
-    topicString.cstring = ctx->pub_topic;
+
+    char pub_topic[TOPIC_SIZE];
+    memset (pub_topic, 0, TOPIC_SIZE);
+
+    strcpy(pub_topic,ACTUATORS_STATUS_PATH);
+    strcat(pub_topic,ctx->serial);
+    strcat(pub_topic,"/");
+    strcat(pub_topic,reference);
+
+    topicString.cstring = pub_topic;
 
     char value_str[STR_64];
     memset (value_str, 0, STR_64);
@@ -360,7 +493,7 @@ WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *referen
     manifest_item_init(&numeric_actuator, reference, READING_TYPE_ACTUATOR, DATA_TYPE_NUMERIC);
 
     reading_init(&readings, &numeric_actuator);
-    reading_set_rtc(&readings, 1506695657);
+    reading_set_rtc(&readings, utc_time);
     reading_set_data(&readings, value_str);
     reading_set_actuator_status(&readings, status);
 
@@ -384,7 +517,7 @@ WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *referen
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t status)
+WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t status, uint32_t utc_time)
 {
     unsigned char buf[READINGS_MQTT_SIZE];
     int len;
@@ -393,16 +526,25 @@ WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *refere
     char readings_buffer[READINGS_BUFFER_SIZE];
     memset (readings_buffer, 0, READINGS_BUFFER_SIZE);
     memset (buf, 0, READINGS_MQTT_SIZE);
-    initialize_parser(&parser, PARSER_TYPE_MQTT);
+    initialize_parser(&parser, ctx->parser_type);
 
     MQTTString topicString = MQTTString_initializer;
-    topicString.cstring = ctx->pub_topic;
+
+    char pub_topic[TOPIC_SIZE];
+    memset (pub_topic, 0, TOPIC_SIZE);
+
+    strcpy(pub_topic,ACTUATORS_STATUS_PATH);
+    strcat(pub_topic,ctx->serial);
+    strcat(pub_topic,"/");
+    strcat(pub_topic,reference);
+
+    topicString.cstring = pub_topic;
 
     manifest_item_t bool_actuator;
     manifest_item_init(&bool_actuator, reference, READING_TYPE_ACTUATOR, DATA_TYPE_BOOLEAN);
 
     reading_init(&readings, &bool_actuator);
-    reading_set_rtc(&readings, 1506695657);
+    reading_set_rtc(&readings, utc_time);
 
     if (value == true)
     {
@@ -438,10 +580,20 @@ WOLK_ERR_T wolk_keep_alive (wolk_ctx_t *ctx)
     unsigned char buf[READINGS_MQTT_SIZE];
     int len;
     MQTTString topicString = MQTTString_initializer;
-    topicString.cstring = ctx->pub_topic;
+    char pub_topic[TOPIC_SIZE];
+    memset (pub_topic, 0, TOPIC_SIZE);
+
+
+    strcpy(pub_topic,RADINGS_PATH);
+    strcat(pub_topic,ctx->serial);
+   // strcat(pub_topic,"/");
+
+    topicString.cstring = pub_topic;
     memset (buf, 0, READINGS_MQTT_SIZE);
 
-    len = MQTTSerialize_publish(buf, READINGS_MQTT_SIZE, 0, 0, 0, 0, topicString, KEEP_ALIVE, strlen(KEEP_ALIVE));
+
+    len = MQTTSerialize_pingreq(buf, READINGS_MQTT_SIZE);
+
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
 
     switch(transport_sendPacketBuffernb(ctx->sock)){
