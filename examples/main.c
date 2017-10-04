@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <time.h>
+#include <pthread.h>
 
 #include "WolkConn.h"
 
@@ -22,20 +23,22 @@
 #include <sys/time.h>
 
 #define BUFFER_SIZE 256
+#define STR_16 16
 
 static unsigned char buffer[BUFFER_SIZE];
 static int buffer_length = sizeof(buffer);
+int sockfd;
 
-const char *serial_mqtt = "123567";
-const char *topic = "sensors/123567";
-const char *password_mqtt = "4c098907-0a23-4246-8e3d-fdf4e73409a1";
-const char *message = "STATUS S:true:READY;";
-const char *topic_sub = "config/123567";
+
+//const char *device_key = "222111";
+//const char *password = "dshuojw0a932ui5j";
+const char *device_key = "123567";
+const char *password = "4c098907-0a23-4246-8e3d-fdf4e73409a1";
 const char *hostname = "integration.wolksense.com";
 int portno = 1883;
-int sockfd;
 const char *numeric_slider_reference = "SL";
 const char *bool_switch_refernece = "SW";
+wolk_ctx_t wolk;
 
 static volatile int toStop = 0;
 
@@ -99,6 +102,119 @@ void setup_network ()
         printf("ERROR connecting\n");
 }
 
+/* this function is run by the second thread */
+void *input_thread(void *arg)
+{
+    char selection[STR_16];
+    char reference[STR_16];
+    char value[STR_64];
+    while (1)
+    {
+        memset (selection, 0, STR_16);
+        printf ("Wolk client - Control interface\n");
+        printf ("Wolk client - Available commands:\n ");
+        printf ("\tWolk client - A - Add reading\n");
+        printf ("\tWolk client - PS - Publish single reading\n");
+        printf ("\tWolk client - CL - Clear readings\n");
+        printf ("\tWolk client - P - Publish acumulated readings\n");
+        printf ("\tWolk client - Q - Quit\n");
+        printf("Wolk client - Command:");
+        scanf("%s", selection);
+        if (strcmp(selection, "A")==0)
+        {
+            printf ("Wolk client - Add reading\n");
+            printf("\tWolk client - Enter reading type (string/bool/numeric):");
+            memset (selection, 0, STR_16);
+            memset (reference, 0, STR_16);
+            memset (value, 0, STR_64);
+            scanf("%s", selection);
+            printf ("\tWolk client - Enter reference:");
+            scanf("%s", reference);
+            printf ("\tWolk client - Enter value:");
+            scanf("%s", value);
+            if (strcmp(selection,"string")==0)
+            {
+                if ( wolk_add_string_reading(&wolk, reference, value, 0) != W_FALSE)
+                {
+                    printf ("Wolk client - Adding string reading error\n");
+                }
+            }else if (strcmp(selection,"bool")==0)
+            {
+                if (strcmp(value,"true")==0)
+                {
+                    if ( wolk_add_bool_reading(&wolk, reference, true, 0)!= W_FALSE)
+                    {
+                        printf ("Wolk client - Adding bool reading error\n");
+                    }
+                } else if (strcmp(value,"false")==0)
+                {
+                    if ( wolk_add_bool_reading(&wolk, reference, false, 0)!= W_FALSE)
+                    {
+                        printf ("Wolk client - Adding bool reading error\n");
+                    }
+                }
+            }else if (strcmp(selection,"numeric")==0)
+            {
+                int num_value = atof(value);
+                if ( wolk_add_numeric_reading(&wolk, reference, num_value, 0)!= W_FALSE)
+                {
+                    printf ("Wolk client - Adding numeric reading error\n");
+                }
+            }
+        } else if (strcmp(selection, "PS")==0)
+        {
+            printf ("Wolk client - Publish single reading\n");
+            printf("\tWolk client - Enter reading type (string/bool/numeric):");
+            memset (selection, 0, STR_16);
+            memset (reference, 0, STR_16);
+            memset (value, 0, STR_64);
+            scanf("%s", selection);
+            printf ("\tWolk client - Enter reference:");
+            scanf("%s", reference);
+            printf ("\tWolk client - Enter value:");
+            scanf("%s", value);
+            if (strcmp(selection,"string")==0)
+            {
+                if (wolk_publish_single (&wolk, reference, value, DATA_TYPE_STRING, 0)!= W_FALSE)
+                {
+                    printf ("Wolk client - Publishing single reading error\n");
+                }
+            }else if (strcmp(selection,"bool")==0)
+            {
+                if (wolk_publish_single (&wolk, reference, value, DATA_TYPE_BOOLEAN, 0)!= W_FALSE)
+                {
+                    printf ("Wolk client - Publishing single reading error\n");
+                }
+            }else if (strcmp(selection,"numeric")==0)
+            {
+                if (wolk_publish_single (&wolk, reference, value, DATA_TYPE_NUMERIC, 0)!= W_FALSE)
+                {
+                    printf ("Wolk client - Publishing single reading error\n");
+                }
+            }
+        } else if (strcmp(selection, "CL")==0)
+        {
+            if (wolk_clear_readings(&wolk) != W_FALSE)
+            {
+                 printf ("Wolk client - Clear readings error\n");
+            }
+        } else if (strcmp(selection, "P")==0)
+        {
+            if ( wolk_publish (&wolk)!= W_FALSE)
+            {
+                printf ("Wolk client - Publish readings error\n");
+            }
+        } else if (strcmp(selection, "Q")==0)
+        {
+            toStop = 1;
+            break;
+        }
+
+    }
+    return NULL;
+
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -106,7 +222,6 @@ int main(int argc, char *argv[])
     char command [32];
     char value[64];
     int counter = 0;
-    wolk_ctx_t wolk;
     unsigned current_time = (unsigned)time(NULL);
 
     printf ("Wolk client - Establishing tcp connection\n");
@@ -114,7 +229,7 @@ int main(int argc, char *argv[])
 
     wolk_set_protocol(&wolk, PROTOCOL_TYPE_JSON);
     printf ("Wolk client - Connecting to server\n");
-    wolk_connect(&wolk, &send_buffer, &receive_buffer, serial_mqtt, password_mqtt);
+    wolk_connect(&wolk, &send_buffer, &receive_buffer, device_key, password);
 
     printf ("Wolk client - Seting actuator references\n");
     wolk_set_actuator_references (&wolk, 2, numeric_slider_reference, bool_switch_refernece);
@@ -128,6 +243,16 @@ int main(int argc, char *argv[])
     if ( wolk_publish_bool_actuator_status (&wolk,bool_switch_refernece, false, ACTUATOR_STATUS_READY, current_time) != W_FALSE)
     {
         printf ("Wolk client - Bool actuator status error\n");
+    }
+
+    /* this variable is our reference to the second thread */
+    pthread_t wolk_thread;
+
+    /* create a second thread which executes inc_x(&x) */
+    if(pthread_create(&wolk_thread, NULL, input_thread, NULL))
+    {
+        fprintf(stderr, "Error creating thread\n");
+        return 1;
     }
 
 
@@ -172,42 +297,6 @@ int main(int argc, char *argv[])
 
         if (counter==0)
         {
-            if (wolk_publish_single (&wolk, "TS","Mark 1", DATA_TYPE_STRING, 0))
-            {
-                printf ("Wolk client - Publishing single reading error\n");
-            }
-
-
-            if (wolk_publish_single (&wolk, "TN","22", DATA_TYPE_NUMERIC, 0) != W_FALSE)
-            {
-                printf ("Wolk client - Publishing single reading error\n");
-            }
-
-            if (wolk_publish_single (&wolk, "TB","false", DATA_TYPE_BOOLEAN, 0))
-            {
-                printf ("Wolk client - Publishing single reading error\n");
-            }
-
-
-            if ( wolk_add_string_reading(&wolk, "TS", "Periodic", 0) != W_FALSE)
-            {
-                printf ("Wolk client - Adding string reading error\n");
-            }
-            if ( wolk_add_numeric_reading(&wolk, "TN", 11, 0)!= W_FALSE)
-            {
-                printf ("Wolk client - Adding numeric reading error\n");
-            }
-            if ( wolk_add_bool_reading(&wolk, "TB", false, 0)!= W_FALSE)
-            {
-                printf ("Wolk client - Adding bool reading error\n");
-            }
-
-            if ( wolk_publish (&wolk)!= W_FALSE)
-            {
-                printf ("Wolk client - Publish readings error\n");
-            }
-
-            //Every 60 seconds send keep alive message
             if (wolk_keep_alive (&wolk)!= W_FALSE)
             {
                 printf("Wolk client -Keep alive error\n");
@@ -222,6 +311,12 @@ int main(int argc, char *argv[])
 
     }
 
+
+    if(pthread_join(wolk_thread, NULL))
+    {
+        fprintf(stderr, "Error joining thread\n");
+        return 1;
+    }
     printf("Wolk client - Diconnecting\n");
 
     wolk_disconnect(&wolk);

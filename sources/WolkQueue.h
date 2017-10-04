@@ -10,7 +10,7 @@ extern "C" {
  */
 typedef unsigned char QUEUE_ERR_T;
 /**
- * @brief WOLK_ERR_T Boolean used in Queue module
+ * @brief WOLK_ERR_T Boolean used in Queuel module
  */
 typedef unsigned char QUEUE_BOOL_T;
 

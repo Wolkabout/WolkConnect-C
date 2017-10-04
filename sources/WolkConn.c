@@ -362,10 +362,17 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
     memset (pub_topic, 0, TOPIC_SIZE);
 
 
-    strcpy(pub_topic,RADINGS_PATH);
-    strcat(pub_topic,ctx->serial);
-    strcat(pub_topic,"/");
-    strcat(pub_topic,reference);
+    if (ctx->parser_type == PARSER_TYPE_JSON)
+    {
+        strcpy(pub_topic,RADINGS_PATH);
+        strcat(pub_topic,ctx->serial);
+        strcat(pub_topic,"/");
+        strcat(pub_topic,reference);
+    } else if (ctx->parser_type == PARSER_TYPE_MQTT)
+    {
+        strcpy(pub_topic,SENSOR_PATH);
+        strcat(pub_topic,ctx->serial);
+    }
 
     topicString.cstring = pub_topic;
 
@@ -418,10 +425,18 @@ WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *referen
     char pub_topic[TOPIC_SIZE];
     memset (pub_topic, 0, TOPIC_SIZE);
 
-    strcpy(pub_topic,ACTUATORS_STATUS_PATH);
-    strcat(pub_topic,ctx->serial);
-    strcat(pub_topic,"/");
-    strcat(pub_topic,reference);
+
+    if (ctx->parser_type==PARSER_TYPE_JSON)
+    {
+        strcpy(pub_topic,ACTUATORS_STATUS_PATH);
+        strcat(pub_topic,ctx->serial);
+        strcat(pub_topic,"/");
+        strcat(pub_topic,reference);
+    } else if (ctx->parser_type==PARSER_TYPE_MQTT)
+    {
+        strcpy(pub_topic,SENSOR_PATH);
+        strcat(pub_topic,ctx->serial);
+    }
 
     topicString.cstring = pub_topic;
 
@@ -463,10 +478,17 @@ WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *refere
     char pub_topic[TOPIC_SIZE];
     memset (pub_topic, 0, TOPIC_SIZE);
 
-    strcpy(pub_topic,ACTUATORS_STATUS_PATH);
-    strcat(pub_topic,ctx->serial);
-    strcat(pub_topic,"/");
-    strcat(pub_topic,reference);
+    if (ctx->parser_type == PARSER_TYPE_JSON)
+    {
+        strcpy(pub_topic,ACTUATORS_STATUS_PATH);
+        strcat(pub_topic,ctx->serial);
+        strcat(pub_topic,"/");
+        strcat(pub_topic,reference);
+    } else if (ctx->parser_type == PARSER_TYPE_MQTT)
+    {
+        strcpy(pub_topic,SENSOR_PATH);
+        strcat(pub_topic,ctx->serial);
+    }
 
     topicString.cstring = pub_topic;
 
@@ -517,12 +539,12 @@ WOLK_ERR_T wolk_keep_alive (wolk_ctx_t *ctx)
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
 
     switch(transport_sendPacketBuffernb(ctx->sock)){
-        case TRANSPORT_DONE:
-            break;
-        case TRANSPORT_ERROR:
-            return W_TRUE;
-        case TRANSPORT_AGAIN:
-            return W_TRUE;
+    case TRANSPORT_DONE:
+        break;
+    case TRANSPORT_ERROR:
+        return W_TRUE;
+    case TRANSPORT_AGAIN:
+        return W_TRUE;
     }
 
     return W_FALSE;
@@ -557,12 +579,12 @@ WOLK_ERR_T _wolk_publish (wolk_ctx_t *ctx, MQTTString topic, char *readings)
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
 
     switch(transport_sendPacketBuffernb(ctx->sock)){
-        case TRANSPORT_DONE:
-            break;
-        case TRANSPORT_ERROR:
-            return W_TRUE;
-        case TRANSPORT_AGAIN:
-            return W_TRUE;
+    case TRANSPORT_DONE:
+        break;
+    case TRANSPORT_ERROR:
+        return W_TRUE;
+    case TRANSPORT_AGAIN:
+        return W_TRUE;
     }
     return W_FALSE;
 }
