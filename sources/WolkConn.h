@@ -33,12 +33,9 @@ typedef unsigned char WOLK_BOOL_T;
 
 #define STR_64 64
 
-
 typedef struct _wolk_ctx_t wolk_ctx_t;
 
 struct _wolk_ctx_t {
-    char payload[PAYLOAD_SIZE];
-    char sub_topic[TOPIC_SIZE];
     char serial[SERIAL_SIZE];
     MQTTPacket_connectData data;
     transport_iofunctions_t iof;
@@ -52,23 +49,25 @@ struct _wolk_ctx_t {
     parser_type_t parser_type;
 };
 
+typedef enum {
+    PROTOCOL_TYPE_WOLKSENSOR = 0,
+    PROTOCOL_TYPE_JSON
+} protocol_type_t;
+
 typedef int (*send_func)(unsigned char *, unsigned int);
 typedef int (*recv_func)(unsigned char *, unsigned int);
 
 
 
-
-//Add parametrs for mikroe
-WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func, const char *serial, const char *password);
-WOLK_ERR_T wolk_set_parser (wolk_ctx_t *ctx, parser_type_t parser_type);
+WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func, const char *device_key, const char *password);
 WOLK_ERR_T wolk_disconnect (wolk_ctx_t *ctx);
+WOLK_ERR_T wolk_set_protocol (wolk_ctx_t *ctx, protocol_type_t protocol);
 WOLK_ERR_T wolk_set_actuator_references (wolk_ctx_t *ctx, int num_of_items, const char *item, ...);
 
 //Receiving data
 WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout);
 WOLK_ERR_T wolk_read_actuator (wolk_ctx_t *ctx, char *command, char *reference, char *value);
-WOLK_ERR_T wolk_read_config (wolk_ctx_t *ctx, char *command, char *reference, char *value); // ToDo Add this when it vecomes available
-// TODO add more wolk_read if necessary
+WOLK_ERR_T wolk_read_config (wolk_ctx_t *ctx, char *command, char *reference, char *value);
 
 //Sending data
 WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t *ctx,const char *reference,const char *value, uint32_t utc_time);
@@ -77,7 +76,6 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool valu
 WOLK_ERR_T wolk_clear_readings (wolk_ctx_t *ctx);
 WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx);
 WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value, data_type_t type, uint32_t utc_time);
-// TODO Should we add single string, single numeric, single bool instead of generic psingle publish?
 WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t state, uint32_t utc_time);
 WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t state, uint32_t utc_time);
 WOLK_ERR_T wolk_keep_alive (wolk_ctx_t *ctx);

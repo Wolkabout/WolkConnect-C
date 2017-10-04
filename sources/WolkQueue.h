@@ -6,11 +6,11 @@ extern "C" {
 #endif
 
 /**
- * @brief WOLK_ERR_T Boolean used for error handling in Wolk conenction module
+ * @brief WOLK_ERR_T Boolean used for error handling in Queue module
  */
 typedef unsigned char QUEUE_ERR_T;
 /**
- * @brief WOLK_ERR_T Boolean used in Wolk connection module
+ * @brief WOLK_ERR_T Boolean used in Queue module
  */
 typedef unsigned char QUEUE_BOOL_T;
 
@@ -22,6 +22,7 @@ typedef unsigned char QUEUE_BOOL_T;
 #define COMMAND_SIZE 32
 #define VALUE_SIZE 128
 #define QUEUE_SIZE 30
+
 typedef struct _wolk_queue wolk_queue;
 typedef struct _wolk_queue_elem wolk_queue_elem;
 
