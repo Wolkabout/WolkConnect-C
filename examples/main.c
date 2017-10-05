@@ -30,11 +30,10 @@ static int buffer_length = sizeof(buffer);
 int sockfd;
 
 
-//const char *device_key = "222111";
-//const char *password = "dshuojw0a932ui5j";
-const char *device_key = "123567";
-const char *password = "4c098907-0a23-4246-8e3d-fdf4e73409a1";
-const char *hostname = "integration.wolksense.com";
+
+const char *device_key = "device_key";
+const char *password = "password";
+const char *hostname = "wolksense.com";
 int portno = 1883;
 const char *numeric_slider_reference = "SL";
 const char *bool_switch_refernece = "SW";
