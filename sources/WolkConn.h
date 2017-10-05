@@ -59,25 +59,164 @@ typedef int (*recv_func)(unsigned char *, unsigned int);
 
 
 
+/** @brief Connect to WolkSense via mqtt
+ *
+ *  @param ctx library context
+ *  @param snd_func function callback that will handle outgoing traffic
+ *  @param rcv_func function callback that will handle incoming traffic
+ *  @param device_key device key acquired through device registration on WolkSense
+ *  @param password password acquired through device registration on WolkSense
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func, const char *device_key, const char *password);
+
+/** @brief Disconnect from WolkSense
+ *
+ *  @param ctx library context
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_disconnect (wolk_ctx_t *ctx);
+
+/** @brief Choos between JSON and WolkSense protocol
+ *
+ *  If you set protocol PROTOCOL_TYPE_WOLKSENSOR then old protocol that has been used on WolkSensor is used.
+ *  If PROTOCOL_TYPE_JSON is used then new JSON protocol is used.
+ *
+ *  @param ctx library context
+ *  @param protocol protocol that will be used
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_set_protocol (wolk_ctx_t *ctx, protocol_type_t protocol);
+
+/** @brief Set actuator references
+ *
+ *  If JSON protocol is used, then all actuator references needs to be set so that library can receive actuation messages from those actuators.
+ *  If WolkSensor protocol is used, then this function is not used.
+ *
+ *  @param ctx library context
+ *  @param num_of_items Number of references that are being set
+ *  @param item actuator references
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_set_actuator_references (wolk_ctx_t *ctx, int num_of_items, const char *item, ...);
 
-//Receiving data
+/** @brief Receive mqtt messages
+ *
+ *  Receiving mqtt messages on actuator topics.
+ *  All messages are stored into queues and they are later used with functions wolk_read_actuator and wolk_read_config.
+ *
+ *  @param ctx library context
+ *  @param timeout read timeout
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_receive (wolk_ctx_t *ctx, unsigned int timeout);
+
+/** @brief Extract actuation message from queue
+ *
+ *  Extract actuator message from queue. Messages is deleted after it is extracted.
+ *
+ *  @param ctx library context
+ *  @param command Command received
+ *  @param reference Reference received received
+ *  @param value Value received
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_read_actuator (wolk_ctx_t *ctx, char *command, char *reference, char *value);
+
+/** @brief Under contruction
+ *
+ *  @param ctx library context
+ *  @param command Command received
+ *  @param reference Reference received received
+ *  @param value Value received
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_read_config (wolk_ctx_t *ctx, char *command, char *reference, char *value);
 
-//Sending data
+/** @brief Add string reading
+ *
+ *  @param ctx library context
+ *  @param reference Parameter reference
+ *  @param value Parameter value
+ *  @param utc_time Parameter UTC time. If unable to retrieve UTC set 0
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t *ctx,const char *reference,const char *value, uint32_t utc_time);
+
+/** @brief Add numeric reading
+ *
+ *  @param ctx library context
+ *  @param reference Parameter reference
+ *  @param value Parameter value
+ *  @param utc_time Parameter UTC time. If unable to retrieve UTC set 0
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_add_numeric_reading(wolk_ctx_t *ctx,const char *reference,double value, uint32_t utc_time);
+
+/** @brief Add bool reading
+ *
+ *  @param ctx library context
+ *  @param reference Parameter reference
+ *  @param value Parameter value
+ *  @param utc_time Parameter UTC time. If unable to retrieve UTC set 0
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool value, uint32_t utc_time);
+
+/** @brief Clear acumulated readings
+ *
+ *  @param ctx library context
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_clear_readings (wolk_ctx_t *ctx);
+
+/** @brief Publish accumulated readings
+ *
+ *  @param ctx library context
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx);
+
+/** @brief Publish single reading
+ *
+ *  @param ctx library context
+ *  @param reference Parameter reference
+ *  @param value Parameter value
+ *  @param type Parameter type. Available values are: DATA_TYPE_NUMERIC, DATA_TYPE_BOOLEAN, DATA_TYPE_STRING
+ *  @param utc_time Parameter UTC time. If unable to retrieve UTC set 0
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value, data_type_t type, uint32_t utc_time);
+
+/** @brief Publish Numeric actuator status
+ *
+ *  @param ctx library context
+ *  @param reference Parameter reference
+ *  @param value Parameter value
+ *  @param state Actuator state. Available states are: ACTUATOR_STATUS_READY, ACTUATOR_STATUS_BUSY, ACTUATOR_STATUS_ERROR
+ *  @param utc_time Parameter UTC time. If unable to retrieve UTC set 0
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t state, uint32_t utc_time);
+
+/** @brief Publish Boolean actuator status
+ *
+ *  @param ctx library context
+ *  @param reference Parameter reference
+ *  @param value Parameter value
+ *  @param state Actuator state. Available states are: ACTUATOR_STATUS_READY, ACTUATOR_STATUS_BUSY, ACTUATOR_STATUS_ERROR
+ *  @param utc_time Parameter UTC time. If unable to retrieve UTC set 0
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t state, uint32_t utc_time);
+
+/** @brief Keep alive message
+ *
+ *  Function that needs to be called in main loop in order to keep connection alive
+ *
+ *  @param ctx library context
+ *  @return Error value is returned
+ */
 WOLK_ERR_T wolk_keep_alive (wolk_ctx_t *ctx);
 
 

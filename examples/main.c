@@ -27,23 +27,21 @@
 
 static unsigned char buffer[BUFFER_SIZE];
 static int buffer_length = sizeof(buffer);
-int sockfd;
+static int sockfd;
 
 
 
-const char *device_key = "device_key";
-const char *password = "password";
+static const char *device_key = "device_key";
+static const char *password = "password";
 const char *hostname = "wolksense.com";
-int portno = 1883;
-const char *numeric_slider_reference = "SL";
-const char *bool_switch_refernece = "SW";
-wolk_ctx_t wolk;
+static int portno = 1883;
+static const char *numeric_slider_reference = "SL";
+static const char *bool_switch_refernece = "SW";
+static wolk_ctx_t wolk;
 
 static volatile int toStop = 0;
 
-enum states { READING, PUBLISHING };
-
-int send_buffer(unsigned char* buffer, unsigned int len)
+static int send_buffer(unsigned char* buffer, unsigned int len)
 {
     int n = write(sockfd, buffer, len);
     if (n < 0)
