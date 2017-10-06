@@ -392,8 +392,6 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
 
     topicString.cstring = pub_topic;
 
-    reading_set_rtc(&readings, utc_time);
-
     if (type==DATA_TYPE_STRING)
     {
         manifest_item_t string_sensor;
@@ -401,6 +399,7 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
 
         reading_init(&readings, &string_sensor);
         reading_set_data(&readings, (char *)value);
+
     } else if (type==DATA_TYPE_BOOLEAN)
     {
         manifest_item_t bool_sensor;
@@ -414,6 +413,8 @@ WOLK_ERR_T wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char
         reading_init(&readings, &numeric_sensor);
         reading_set_data(&readings, (char *)value);
     }
+
+    reading_set_rtc(&readings, utc_time);
 
     size_t serialized_readings = parser_serialize_readings(&parser, &readings, 1, readings_buffer, READINGS_BUFFER_SIZE);
 

@@ -29,11 +29,9 @@ static unsigned char buffer[BUFFER_SIZE];
 static int buffer_length = sizeof(buffer);
 static int sockfd;
 
-
-
 static const char *device_key = "device_key";
 static const char *password = "password";
-const char *hostname = "wolksense.com";
+static const char *hostname = "wolksense.com";
 static int portno = 1883;
 static const char *numeric_slider_reference = "SL";
 static const char *bool_switch_refernece = "SW";
@@ -112,6 +110,7 @@ void *input_thread(void *arg)
     char value[STR_64];
     while (1)
     {
+        unsigned current_time = (unsigned)time(NULL);
         memset (selection, 0, STR_16);
         printf ("Wolk client - Control interface\n");
         printf ("Wolk client - Available commands:\n ");
@@ -136,7 +135,7 @@ void *input_thread(void *arg)
             scanf("%s", value);
             if (strcmp(selection,"string")==0)
             {
-                if ( wolk_add_string_reading(&wolk, reference, value, 0) != W_FALSE)
+                if ( wolk_add_string_reading(&wolk, reference, value, current_time) != W_FALSE)
                 {
                     printf ("Wolk client - Adding string reading error\n");
                 }
@@ -144,13 +143,13 @@ void *input_thread(void *arg)
             {
                 if (strcmp(value,"true")==0)
                 {
-                    if ( wolk_add_bool_reading(&wolk, reference, true, 0)!= W_FALSE)
+                    if ( wolk_add_bool_reading(&wolk, reference, true, current_time)!= W_FALSE)
                     {
                         printf ("Wolk client - Adding bool reading error\n");
                     }
                 } else if (strcmp(value,"false")==0)
                 {
-                    if ( wolk_add_bool_reading(&wolk, reference, false, 0)!= W_FALSE)
+                    if ( wolk_add_bool_reading(&wolk, reference, false, current_time)!= W_FALSE)
                     {
                         printf ("Wolk client - Adding bool reading error\n");
                     }
@@ -158,7 +157,7 @@ void *input_thread(void *arg)
             }else if (strcmp(selection,"numeric")==0)
             {
                 int num_value = atof(value);
-                if ( wolk_add_numeric_reading(&wolk, reference, num_value, 0)!= W_FALSE)
+                if ( wolk_add_numeric_reading(&wolk, reference, num_value, current_time)!= W_FALSE)
                 {
                     printf ("Wolk client - Adding numeric reading error\n");
                 }
@@ -166,7 +165,7 @@ void *input_thread(void *arg)
         } else if (strcmp(selection, "PS")==0)
         {
             printf ("Wolk client - Publish single reading\n");
-            printf("\tWolk client - Enter reading type (string/bool/numeric):");
+            printf ("\tWolk client - Enter reading type (string/bool/numeric):");
             memset (selection, 0, STR_16);
             memset (reference, 0, STR_16);
             memset (value, 0, STR_64);
@@ -177,19 +176,19 @@ void *input_thread(void *arg)
             scanf("%s", value);
             if (strcmp(selection,"string")==0)
             {
-                if (wolk_publish_single (&wolk, reference, value, DATA_TYPE_STRING, 0)!= W_FALSE)
+                if (wolk_publish_single (&wolk, reference, value, DATA_TYPE_STRING, current_time)!= W_FALSE)
                 {
                     printf ("Wolk client - Publishing single reading error\n");
                 }
             }else if (strcmp(selection,"bool")==0)
             {
-                if (wolk_publish_single (&wolk, reference, value, DATA_TYPE_BOOLEAN, 0)!= W_FALSE)
+                if (wolk_publish_single (&wolk, reference, value, DATA_TYPE_BOOLEAN, current_time)!= W_FALSE)
                 {
                     printf ("Wolk client - Publishing single reading error\n");
                 }
             }else if (strcmp(selection,"numeric")==0)
             {
-                if (wolk_publish_single (&wolk, reference, value, DATA_TYPE_NUMERIC, 0)!= W_FALSE)
+                if (wolk_publish_single (&wolk, reference, value, DATA_TYPE_NUMERIC, current_time)!= W_FALSE)
                 {
                     printf ("Wolk client - Publishing single reading error\n");
                 }
