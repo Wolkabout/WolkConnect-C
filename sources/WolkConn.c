@@ -21,6 +21,9 @@
 #define ACTUATORS_STATUS_PATH "actuators/status/"
 #define ACTUATORS_COMMANDS "actuators/commands/"
 
+#define LASWILL_STRING "lastwill/"
+#define GONE_OFFLINE "Gone offline"
+
 
 #define SET_COMMAND "SET"
 #define STATUS_COMMAND "STATUS"
@@ -31,11 +34,22 @@ static WOLK_ERR_T _wolk_publish (wolk_ctx_t *ctx, MQTTString topic, char *readin
 
 WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func, const char *device_key, const char *password)
 {
+    char lastwill_topic[TOPIC_SIZE];
     char sub_topic[TOPIC_SIZE];
+    MQTTString lastwill_topic_string = MQTTString_initializer;
+    MQTTString lastwill_message_string = MQTTString_initializer;
     wolk_queue_init (&ctx->actuator_queue);
     wolk_queue_init (&ctx->config_queue);
     initialize_parser(&ctx->wolk_parser, ctx->parser_type);
     ctx->readings_index = 0;
+
+    memset (lastwill_topic, 0, TOPIC_SIZE);
+    strcpy (lastwill_topic, LASWILL_STRING);
+    strcat (lastwill_topic, device_key);
+
+    lastwill_topic_string.cstring = lastwill_topic;
+    lastwill_message_string.cstring = GONE_OFFLINE;
+
 
     memset (ctx->serial, 0, SERIAL_SIZE);
     strcpy (ctx->serial, device_key);
@@ -66,6 +80,8 @@ WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func
     ctx->data.cleansession = 1;
     ctx->data.username.cstring = (char *)device_key;
     ctx->data.password.cstring = (char *)password;
+    ctx->data.will.topicName = lastwill_topic_string;
+    ctx->data.will.message = lastwill_message_string;
 
 
     len = MQTTSerialize_connect(buf, READINGS_MQTT_SIZE, &ctx->data);

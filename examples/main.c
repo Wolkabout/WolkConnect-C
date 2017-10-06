@@ -60,7 +60,7 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     return n;
 }
 
-void setup_network ()
+int setup_network ()
 {
     int n;
     struct sockaddr_in serveraddr;
@@ -71,14 +71,14 @@ void setup_network ()
     if (sockfd < 0)
     {
         printf("ERROR opening socket\n");
-        return;
+        return -1;
     }
 
     /* gethostbyname: get the server's DNS entry */
     server = gethostbyname(hostname);
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host as %s\n", hostname);
-        exit(0);
+        return -1;
     }
 
     struct timeval tv;
@@ -96,7 +96,12 @@ void setup_network ()
 
     /* connect: create a connection with the server */
     if (connect(sockfd, &serveraddr, sizeof(serveraddr)) < 0)
+    {
         printf("ERROR connecting\n");
+        return -1;
+    }
+
+    return 0;
 }
 
 /* this function is run by the second thread */
@@ -221,8 +226,24 @@ int main(int argc, char *argv[])
     int counter = 0;
     unsigned current_time = (unsigned)time(NULL);
 
+    if (strcmp(device_key, "device_key")==0)
+    {
+        printf ("Wolk client - Error, device key not entered\n");
+        return 1;
+    }
+
+    if (strcmp(password, "password")==0)
+    {
+        printf ("Wolk client - Error, password key not entered\n");
+        return 1;
+    }
+
     printf ("Wolk client - Establishing tcp connection\n");
-    setup_network();
+    if (setup_network() != 0)
+    {
+        printf ("Wolk client - Error establishing tcp connection\n");
+        return 1;
+    }
 
     wolk_set_protocol(&wolk, PROTOCOL_TYPE_JSON);
     printf ("Wolk client - Connecting to server\n");
