@@ -1,6 +1,6 @@
 # WolkConnect-C
 
-Bare metal C connector for WolkAbout Platform 2.0
+Bare metal C connector for WolkAbout IoT platform
 
 ## Getting Started
 
