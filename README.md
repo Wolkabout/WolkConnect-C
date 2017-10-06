@@ -71,7 +71,7 @@ Set actuator references
 wolk_set_actuator_references (wolk_ctx_t *ctx, int num_of_items, const char *item, ...);
 ```
 
-If actuators are present, send initial actuator status to WolkSense
+If actuators are present, send initial actuator status to WolkAbout IoT platform
 Depending on the actuator type you can use:
 
 ```
