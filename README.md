@@ -140,3 +140,4 @@ wolk_publish_num_actuator_status (&wolk, "Actuator reference", value, ACTUATOR_S
 wolk_receive (&wolk, timeout);
 wolk_read_actuator (&wolk, command, reference, value);
 ```
+Example application contained in 'examples' folder is compatible with POSIX systems.
