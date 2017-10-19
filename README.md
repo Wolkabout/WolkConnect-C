@@ -26,7 +26,7 @@ WolkAbout C Connector library, and example are built from 'build' directory by i
 Binary of example app is located in out/bin folder.
 
 ## Library usage
-
+#### Setup
 Edit device information
 
 ```
@@ -35,7 +35,7 @@ static const char *password = "password";
 
 ```
 
-Set protocol which will be used
+Set protocol desired protocol
 
 ```
 wolk_set_protocol (wolk_ctx_t *ctx, protocol_type_t protocol);
@@ -55,24 +55,24 @@ Set actuator references
 wolk_set_actuator_references (wolk_ctx_t *ctx, int num_of_items, const char *item, ...);
 ```
 
-If actuators are present, send initial actuator status to WolkAbout IoT platform
-Depending on the actuator type you can use:
+When actuators are present, send initial actuator status to WolkAbout IoT platform
+Depending on the actuator type following functions can be used:
 
 ```
 wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t state, uint32_t utc_time);
 ```
-or
 ```
 wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t state, uint32_t utc_time);
 ```
 
-Publishing data can be done either through:
+#### Publishing data
 
+Single readings
 ```
 wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value, data_type_t type, uint32_t utc_time)
 ```
-or you can aggregate multiple readings and then publish them with use of:
 
+Aggregate readings
 ```
 wolk_add_string_reading(wolk_ctx_t *ctx,const char *reference,const char *value, uint32_t utc_time);
 wolk_add_numeric_reading(wolk_ctx_t *ctx,const char *reference,double value, uint32_t utc_time);
@@ -80,22 +80,22 @@ wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool value, uint32_t
 wolk_publish (wolk_ctx_t *ctx);
 ```
 
-Receiving actuation:
+#### Actuation
 
-First you read all incoming traffic and the read actuators
-
+First process received commands with
 ```
 wolk_receive (wolk_ctx_t *ctx, unsigned int timeout);
+```
+Then read actuation request
+```
 wolk_read_actuator (wolk_ctx_t *ctx, char *command, char *reference, char *value);
 ```
 
 ## Example
-Send readings example
-
+#### Setup connection
 ```
-////////////////////////
-Callback functions example:
-
+// Callback function:
+// Socked 'sockfd' is opened at some point earlier
 static int send_buffer(unsigned char* buffer, unsigned int len)
 {
     int n = write(sockfd, buffer, len);
@@ -114,30 +114,34 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
 
     return n;
 }
-///////////////////////
+// Callback functions
+
 const char *device_key = "device_key";
 const char *password = "password";
-wolk_ctx_t wolk;
-wolk_set_protocol(&wolk, PROTOCOL_TYPE_JSON);
-wolk_connect(&wolk, &send_buffer, &receive_buffer, device_key, password);
-wolk_publish_single (&wolk, "reference", "23.2", DATA_TYPE_NUMERIC, 0);
-```
 
-Receive actuation example
-
-```
-const char *device_key = "device_key";
-const char *password = "password";
+// Actuation variables
 char reference[32];
 char command [32];
 char value[64];
-unsigned current_time = (unsigned)time(NULL);
+
 wolk_ctx_t wolk;
 wolk_set_protocol(&wolk, PROTOCOL_TYPE_JSON);
-wolk_connect(&wolk, &send_buffer, &receive_buffer, device_key, password);
+
 wolk_set_actuator_references (&wolk, 1, "Actuator reference");
+
 wolk_publish_num_actuator_status (&wolk, "Actuator reference", value, ACTUATOR_STATUS_READY, current_time);
+
+wolk_connect(&wolk, &send_buffer, &receive_buffer, device_key, password);
+```
+#### Publish data
+```
+wolk_publish_single (&wolk, "reference", "23.2", DATA_TYPE_NUMERIC, 0);
+```
+
+#### Actuation
+```
 wolk_receive (&wolk, timeout);
 wolk_read_actuator (&wolk, command, reference, value);
 ```
-Example application contained in 'examples' folder is compatible with POSIX systems.
+
+**Note:** Example application contained in 'examples' folder is compatible with POSIX systems.
