@@ -35,7 +35,7 @@ static const char *password = "password";
 
 ```
 
-Set protocol desired protocol
+Set desired protocol
 
 ```
 wolk_set_protocol (wolk_ctx_t *ctx, protocol_type_t protocol);
