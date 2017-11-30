@@ -14,9 +14,32 @@
  * limitations under the License.
  */
 
-#ifndef PARSER_EXAMPLE_H
-#define PARSER_EXAMPLE_H
+#ifndef IN_MEMORY_PERSISTENCE_H
+#define IN_MEMORY_PERSISTENCE_H
 
-void parser_example(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "outbound_message.h"
+#include "persistence.h"
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+
+void in_memory_persistence_init(void* storage, size_t num_elements, bool wrap);
+
+bool in_memory_persistence_push(outbound_message_t* outbound_message);
+
+bool in_memory_persistence_pop(outbound_message_t* outbound_message);
+
+void in_memory_persistence_clear(void);
+
+bool in_memory_persistence_is_empty(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

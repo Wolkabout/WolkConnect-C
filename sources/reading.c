@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 WolkAbout Technology s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "reading.h"
 #include "manifest_item.h"
 #include "wolk_utils.h"
@@ -14,7 +30,7 @@ void reading_init(reading_t* reading, manifest_item_t* item)
     uint8_t reading_dimensions = manifest_item_get_data_dimensions(item);
 
     memcpy(&reading->manifest_item, item, sizeof(reading->manifest_item));
-    reading->actuator_status = ACTUATOR_STATUS_READY;
+    reading->actuator_status = ACTUATOR_STATE_READY;
     reading->rtc = 0;
 
     for (i = 0; i < reading_dimensions; ++i) {
@@ -78,13 +94,12 @@ void reading_set_data_at(reading_t* reading, char* data, size_t data_position)
     WOLK_ASSERT(data_position < READING_DIMENSIONS);
 
     strcpy(reading->reading_data[data_position], data);
-    reading->rtc = 0;
 }
 
 char* reading_get_data_at(reading_t* reading, size_t data_position)
 {
     /* Sanity check */
-    WOLK_ASSERT(data_position < reading->manifest_item->data_dimensions);
+    WOLK_ASSERT(data_position < reading->manifest_item.data_dimensions);
 
     return reading->reading_data[data_position];
 }
@@ -104,7 +119,7 @@ uint32_t reading_get_rtc(reading_t* reading)
     return reading->rtc;
 }
 
-void reading_set_actuator_status(reading_t* reading, actuator_status_t actuator_status)
+void reading_set_actuator_state(reading_t* reading, actuator_state_t actuator_status)
 {
     /* Sanity check */
     WOLK_ASSERT(manifest_item_get_reading_type(reading_get_manifest_item(reading)) & READING_TYPE_ACTUATOR);
@@ -112,7 +127,7 @@ void reading_set_actuator_status(reading_t* reading, actuator_status_t actuator_
     reading->actuator_status = actuator_status;
 }
 
-actuator_status_t reading_get_actuator_status(reading_t* reading)
+actuator_state_t reading_get_actuator_state(reading_t* reading)
 {
     /* Sanity check */
     WOLK_ASSERT(manifest_item_get_reading_type(reading_get_manifest_item(reading)) & READING_TYPE_ACTUATOR);
