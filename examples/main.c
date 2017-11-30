@@ -31,7 +31,7 @@ static int sockfd;
 
 static const char *device_key = "device_key";
 static const char *password = "password";
-static const char *hostname = "wolksense.com";
+static const char *hostname = "api-demo.wolkabout.com";
 static int portno = 1883;
 static const char *numeric_slider_reference = "SL";
 static const char *bool_switch_refernece = "SW";
