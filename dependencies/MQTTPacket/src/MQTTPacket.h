@@ -47,6 +47,14 @@ enum msgTypes
 	PINGREQ, PINGRESP, DISCONNECT
 };
 
+
+#if defined(__linux__)
+#include <endian.h>
+#if __BYTE_ORDER == __BIG_ENDIAN
+	#define REVERSED 1
+#endif
+#endif
+
 /**
  * Bitfields for the MQTT header byte.
  */

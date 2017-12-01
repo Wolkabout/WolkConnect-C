@@ -24,7 +24,6 @@
 #define LASWILL_STRING "lastwill/"
 #define GONE_OFFLINE "Gone offline"
 
-
 #define SET_COMMAND "SET"
 #define STATUS_COMMAND "STATUS"
 

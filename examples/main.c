@@ -12,23 +12,15 @@
 #include <netdb.h> 
 #include <time.h>
 #include <pthread.h>
-
+#include <signal.h>
+#include <sys/time.h>
 #include "WolkConn.h"
-
 #include "MQTTPacket.h"
 #include "transport.h"
 
-#include <signal.h>
-
-#include <sys/time.h>
-
-#define BUFFER_SIZE 256
 #define STR_16 16
 
-static unsigned char buffer[BUFFER_SIZE];
-static int buffer_length = sizeof(buffer);
 static int sockfd;
-
 static const char *device_key = "device_key";
 static const char *password = "password";
 static const char *hostname = "api-demo.wolkabout.com";
