@@ -566,7 +566,6 @@ WOLK_ERR_T _wolk_publish (wolk_ctx_t *ctx, outbound_message_t* outbound_message)
     case TRANSPORT_DONE:
         break;
     case TRANSPORT_ERROR:
-        return W_TRUE;
         /* Fallthrough */
     case TRANSPORT_AGAIN:
         return W_TRUE;
