@@ -14,9 +14,28 @@
  * limitations under the License.
  */
 
-#ifndef PARSER_EXAMPLE_H
-#define PARSER_EXAMPLE_H
+#ifndef OUTBOUND_MESSAGE_H
+#define OUTBOUND_MESSAGE_H
 
-void parser_example(void);
+#include "size_definitions.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct {
+    char topic[TOPIC_SIZE];
+    char payload[PAYLOAD_SIZE];
+} outbound_message_t;
+
+void outbound_message_init(outbound_message_t* outbound_message, const char* topic, const char* payload);
+
+char* outbound_message_get_topic(outbound_message_t* outbound_message);
+
+char* outbound_message_get_payload(outbound_message_t* outbound_message);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

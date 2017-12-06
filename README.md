@@ -27,66 +27,89 @@ Binary of example app is located in out/bin folder.
 
 ## Library usage
 #### Setup
-Edit device information
+Set protocol
 
 ```
-static const char *device_key = "device_key";
-static const char *password = "password";
-
+wolk_set_protocol(wolk_ctx_t *ctx, protocol_type_t protocol);
 ```
 
-Set desired protocol
+Configure in-memory persistence using
 
 ```
-wolk_set_protocol (wolk_ctx_t *ctx, protocol_type_t protocol);
+wolk_initialize_in_memory_persistence(wolk_ctx_t *ctx, void* storage, uint32_t size, bool wrap);
 ```
 
-Connect to server
+or custom persistence using
 
 ```
-wolk_connect (wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func, const char *device_key, const char *password);
-    send_buffer - function that will serve as callback when payload needs to be sent
-    receive_buffer  - function that will serve as callback when data needs to be received from cloud
+wolk_initialize_custom_persistence(wolk_ctx_t *ctx, persistence_push_t push, persistence_pop_t pop,
+                                   persistence_clear_t clear, persistence_is_empty_t is_empty);
 ```
 
-Set actuator references
+Connect to WolkAbout IoT Platform
+
+***Prior to connecting to WolkAbout IoT Platform protocol must be set, and persistence must be initialized***
 
 ```
-wolk_set_actuator_references (wolk_ctx_t *ctx, int num_of_items, const char *item, ...);
+wolk_connect(wolk_ctx_t *ctx, send_func snd_func, recv_func rcv_func, const char *device_key, const char *password);
+```
+
+Set actuator references, if any
+
+```
+wolk_set_actuator_references(wolk_ctx_t *ctx, int num_of_items, const char *item, ...);
 ```
 
 When actuators are present, send initial actuator status to WolkAbout IoT platform
 Depending on the actuator type following functions can be used:
 
 ```
-wolk_publish_num_actuator_status (wolk_ctx_t *ctx,const char *reference,double value, actuator_status_t state, uint32_t utc_time);
+wolk_publish_num_actuator_status(wolk_ctx_t *ctx,const char *reference,double value, actuator_state_t state, uint32_t utc_time);
 ```
 ```
-wolk_publish_bool_actuator_status (wolk_ctx_t *ctx,const char *reference,bool value, actuator_status_t state, uint32_t utc_time);
+wolk_publish_bool_actuator_status(wolk_ctx_t *ctx,const char *reference,bool value, actuator_state_t state, uint32_t utc_time);
+```
+```
+wolk_publish_string_actuator_status(wolk_ctx_t* ctx,const char* reference, char* value, actuator_state_t state, uint32_t utc_time);
 ```
 
 #### Publishing data
 
-Single readings
+Publish single reading
 ```
-wolk_publish_single (wolk_ctx_t *ctx,const char *reference,const char *value, data_type_t type, uint32_t utc_time)
+wolk_publish_single(wolk_ctx_t *ctx,const char *reference,const char *value, data_type_t type, uint32_t utc_time)
 ```
 
-Aggregate readings
+Publish single alarm
+```
+wolk_publish_alarm(wolk_ctx_t *ctx, const char *reference, const char* message, uint32_t utc_time);
+```
+
+Aggregate sensor readings
 ```
 wolk_add_string_reading(wolk_ctx_t *ctx,const char *reference,const char *value, uint32_t utc_time);
 wolk_add_numeric_reading(wolk_ctx_t *ctx,const char *reference,double value, uint32_t utc_time);
 wolk_add_bool_reading(wolk_ctx_t *ctx,const char *reference,bool value, uint32_t utc_time);
-wolk_publish (wolk_ctx_t *ctx);
+```
+
+Aggregate alarms
+```
+wolk_add_alarm(wolk_ctx_t *ctx, const char *reference, char* message, uint32_t utc_time);
+```
+
+Aggregated sensor readings, and alarms, are published to WolkAbout IoT platform by calling
+```
+wolk_publish(wolk_ctx_t *ctx);
 ```
 
 #### Actuation
 
-First process received commands with
+Following must be called periodically in order to receive actuation from WolkAbout IoT platform
 ```
-wolk_receive (wolk_ctx_t *ctx, unsigned int timeout);
+wolk_receive(wolk_ctx_t *ctx, unsigned int timeout);
 ```
-Then read actuation request
+
+After call to wolk_receive following will obtain actuation request
 ```
 wolk_read_actuator (wolk_ctx_t *ctx, char *command, char *reference, char *value);
 ```
@@ -94,8 +117,8 @@ wolk_read_actuator (wolk_ctx_t *ctx, char *command, char *reference, char *value
 ## Example
 #### Setup connection
 ```
-// Callback function:
-// Socked 'sockfd' is opened at some point earlier
+/* Callback functions */
+/* Procedure to open socket 'sockfd' is not shown here */
 static int send_buffer(unsigned char* buffer, unsigned int len)
 {
     int n = write(sockfd, buffer, len);
@@ -114,12 +137,12 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
 
     return n;
 }
-// Callback functions
+/* Callback functions */
 
 const char *device_key = "device_key";
 const char *password = "password";
 
-// Actuation variables
+/* Actuation variables */
 char reference[32];
 char command [32];
 char value[64];

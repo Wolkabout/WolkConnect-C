@@ -72,7 +72,4 @@ char* StackTrace_get(unsigned long);
 
 #endif
 
-
-
-
 #endif /* STACKTRACE_H_ */

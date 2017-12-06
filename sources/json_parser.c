@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 WolkAbout Technology s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "json_parser.h"
 #include "reading.h"
 #include "jsmn.h"
@@ -66,8 +82,8 @@ static bool serialize_actuator(reading_t* reading, char* buffer, size_t buffer_s
         return false;
     }
 
-    switch (reading_get_actuator_status(reading)) {
-    case ACTUATOR_STATUS_READY:
+    switch (reading_get_actuator_state(reading)) {
+    case ACTUATOR_STATE_READY:
         if (snprintf(buffer, buffer_size, "{\"status\":%s,\"value\":\"%s\"}",
                      "\"READY\"",
                      data_buffer) >= (int)buffer_size) {
@@ -75,7 +91,7 @@ static bool serialize_actuator(reading_t* reading, char* buffer, size_t buffer_s
         }
         break;
 
-    case ACTUATOR_STATUS_BUSY:
+    case ACTUATOR_STATE_BUSY:
         if (snprintf(buffer, buffer_size, "{\"status\":%s,\"value\":\"%s\"}",
                      "\"BUSY\"",
                      data_buffer) >= (int)buffer_size) {
@@ -83,7 +99,7 @@ static bool serialize_actuator(reading_t* reading, char* buffer, size_t buffer_s
         }
         break;
 
-    case ACTUATOR_STATUS_ERROR:
+    case ACTUATOR_STATE_ERROR:
         if (snprintf(buffer, buffer_size, "{\"status\":%s,\"value\":\"%s\"}",
                      "\"ERROR\"",
                      data_buffer) >= (int)buffer_size) {
@@ -99,6 +115,27 @@ static bool serialize_actuator(reading_t* reading, char* buffer, size_t buffer_s
     return true;
 }
 
+static bool serialize_alarm(reading_t* reading, char* buffer, size_t buffer_size)
+{
+    char data_buffer[PARSER_INTERNAL_BUFFER_SIZE];
+    if (!reading_get_delimited_data(reading, data_buffer, PARSER_INTERNAL_BUFFER_SIZE)) {
+        return false;
+    }
+
+    if (reading_get_rtc(reading) > 0 &&
+        snprintf(buffer, buffer_size, "{\"utc\":%u,\"data\":\"%s\"}",
+                 reading_get_rtc(reading),
+                 data_buffer) >= (int)buffer_size) {
+            return false;
+    } else if (reading_get_rtc(reading) == 0 &&
+        snprintf(buffer, buffer_size, "{\"data\":\"%s\"}",
+        data_buffer) >= (int)buffer_size) {
+        return false;
+    }
+
+    return true;
+}
+
 static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_size)
 {
     switch(manifest_item_get_reading_type(reading_get_manifest_item(reading))) {
@@ -107,6 +144,9 @@ static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_si
 
     case READING_TYPE_ACTUATOR:
         return serialize_actuator(reading, buffer, buffer_size);
+
+    case READING_TYPE_ALARM:
+        return serialize_alarm(reading, buffer, buffer_size);
 
     default:
         /* Sanity check*/

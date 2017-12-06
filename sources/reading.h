@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 WolkAbout Technology s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #ifndef READING_H
 #define READING_H
 
@@ -13,15 +29,15 @@ extern "C" {
 #endif
 
 typedef enum {
-    ACTUATOR_STATUS_READY = 0,
-    ACTUATOR_STATUS_BUSY,
-    ACTUATOR_STATUS_ERROR
-} actuator_status_t;
+    ACTUATOR_STATE_READY = 0,
+    ACTUATOR_STATE_BUSY,
+    ACTUATOR_STATE_ERROR
+} actuator_state_t;
 
 typedef struct {
     manifest_item_t manifest_item;
 
-    actuator_status_t actuator_status;
+    actuator_state_t actuator_status;
 
     char reading_data[READING_DIMENSIONS][READING_SIZE];
 
@@ -46,8 +62,8 @@ manifest_item_t* reading_get_manifest_item(reading_t* reading);
 void reading_set_rtc(reading_t* reading, uint32_t rtc);
 uint32_t reading_get_rtc(reading_t* reading);
 
-void reading_set_actuator_status(reading_t* reading, actuator_status_t actuator_status);
-actuator_status_t reading_get_actuator_status(reading_t* reading);
+void reading_set_actuator_state(reading_t* reading, actuator_state_t actuator_status);
+actuator_state_t reading_get_actuator_state(reading_t* reading);
 
 #ifdef __cplusplus
 }
