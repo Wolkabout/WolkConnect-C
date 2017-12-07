@@ -14,9 +14,26 @@
  * limitations under the License.
  */
 
-#ifndef PARSER_EXAMPLE_H
-#define PARSER_EXAMPLE_H
+#include "actuator_status.h"
+#include "wolk_utils.h"
 
-void parser_example(void);
+#include <string.h>
 
-#endif
+void actuator_status_init(actuator_status_t* actuator_status, char* value, actuator_state_t state)
+{
+    /* Sanity check */
+    WOLK_ASSERT(strlen(value) < READING_SIZE);
+
+    strcpy(&actuator_status->value[0], value);
+    actuator_status->state = state;
+}
+
+char* actuator_status_get_value(actuator_status_t* actuator_status)
+{
+    return actuator_status->value;
+}
+
+actuator_state_t actuator_status_get_state(actuator_status_t* actuator_status)
+{
+    return actuator_status->state;
+}

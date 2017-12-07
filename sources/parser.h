@@ -31,8 +31,7 @@ extern "C" {
 #endif
 
 typedef enum {
-    PARSER_TYPE_MQTT = 0,
-    PARSER_TYPE_JSON
+    PARSER_TYPE_JSON = 0
 } parser_type_t;
 
 typedef struct {
@@ -42,14 +41,18 @@ typedef struct {
     size_t (*serialize_readings)(reading_t* first_reading, size_t num_readings, char* buffer, size_t buffer_size);
     size_t (*deserialize_commands)(char* buffer, size_t buffer_size, actuator_command_t* commands_buffer, size_t commands_buffer_size);
 
+    bool (*serialize_topic)(reading_t* first_Reading, size_t num_readings, char* device_serial,  char* buffer, size_t buffer_size);
+
     size_t (*serialize_configuration_items)(configuration_item_t* first_config_item, size_t num_config_items, char* buffer, size_t buffer_size);
     size_t (*deserialize_configuration_items)(char* buffer, size_t buffer_size, configuration_item_command_t* first_config_item, size_t num_config_items);
 } parser_t;
 
-void parser_initialize(parser_t* parser, parser_type_t parser_type);
+void parser_init(parser_t* parser, parser_type_t parser_type);
 
 size_t parser_serialize_readings(parser_t* parser, reading_t* first_reading, size_t num_readings, char* buffer, size_t buffer_size);
 size_t parser_deserialize_commands(parser_t* parser, char* buffer, size_t buffer_size, actuator_command_t* commands_buffer, size_t commands_buffer_size);
+
+bool parser_serialize_topic(parser_t* parser, char* device_serial, reading_t* first_reading, size_t num_readings,  char* buffer, size_t buffer_size);
 
 size_t parser_serialize_configuration_items(parser_t* parser, configuration_item_t* first_config_item, size_t num_config_items, char* buffer, size_t buffer_size);
 size_t parser_deserialize_configuration_items(parser_t* parser, char* buffer, size_t buffer_size, configuration_item_command_t* first_config_item, size_t num_config_items);

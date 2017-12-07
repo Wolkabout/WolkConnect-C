@@ -14,25 +14,31 @@
  * limitations under the License.
  */
 
-#ifndef OUTBOUND_MESSAGE_FACTORY_H
-#define OUTBOUND_MESSAGE_FACTORY_H
+#ifndef ACTUATOR_STATUS_H
+#define ACTUATOR_STATUS_H
 
-#include "outbound_message.h"
-#include "parser.h"
-#include "reading.h"
-
-#include <stdbool.h>
-#include <stddef.h>
+#include "size_definitions.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_serial, reading_t* first_reading, size_t num_readings,
-                                           outbound_message_t* outbound_message);
+typedef enum {
+    ACTUATOR_STATE_READY = 0,
+    ACTUATOR_STATE_BUSY,
+    ACTUATOR_STATE_ERROR
+} actuator_state_t;
 
-size_t outbound_message_make_from_actuator_status(parser_t* parser, const char* device_serial, actuator_status_t* actuator_status, const char* reference,
-                                                  outbound_message_t* outbound_message);
+typedef struct {
+    char value[READING_SIZE];
+    actuator_state_t state;
+} actuator_status_t;
+
+void actuator_status_init(actuator_status_t* actuator_status, char* value, actuator_state_t state);
+
+char* actuator_status_get_value(actuator_status_t* actuator_status);
+
+actuator_state_t actuator_status_get_state(actuator_status_t* actuator_status);
 
 #ifdef __cplusplus
 }
