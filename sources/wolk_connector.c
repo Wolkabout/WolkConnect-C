@@ -97,8 +97,8 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx,
         return W_TRUE;
     }
 
-    strcpy(ctx->device_key, device_key);
-    strcpy(ctx->device_password, device_password);
+    strcpy(&ctx->device_key[0], device_key);
+    strcpy(&ctx->device_password[0], device_password);
 
     ctx->mqtt_transport.sck = &ctx->sock;
     ctx->mqtt_transport.getfn = transport_getdatanb;
@@ -386,15 +386,12 @@ WOLK_ERR_T _wolk_keep_alive (wolk_ctx_t *ctx)
         switch (transport_sendPacketBuffernb(ctx->sock)) {
         case TRANSPORT_DONE:
             return W_FALSE;
-            break;
 
         case TRANSPORT_ERROR:
             return W_TRUE;
-            break;
 
         case TRANSPORT_AGAIN:
             continue;
-            break;
 
         default:
             /* Sanity check */
