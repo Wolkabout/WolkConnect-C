@@ -23,44 +23,8 @@
 #include <stddef.h>
 #include <string.h>
 
-#define READINGS_PATH_JSON "readings/"
-#define READINGS_PATH_WOLKSENSE "sensors/"
-
-#define ACTUATORS_STATUS_PATH "actuators/status/"
-
-#define EVENTS_PATH "events/"
-
-size_t outbound_message_make_from_readings(parser_t* parser, char* device_serial, reading_t* first_reading, size_t num_readings,
-                                         outbound_message_t* outbound_message)
-{
-    char topic[TOPIC_SIZE];
-    char payload[PAYLOAD_SIZE];
-    size_t num_serialized;
-
-    memset(topic, '\0', sizeof(topic));
-    memset(payload, '\0', sizeof(payload));
-
-    const parser_type_t parser_type = parser_get_type(parser);
-    if (parser_type == PARSER_TYPE_JSON)
-    {
-        strcpy(topic, READINGS_PATH_JSON);
-        strcat(topic, device_serial);
-        strcat(topic, "/");
-        strcat(topic, manifest_item_get_reference(reading_get_manifest_item(first_reading)));
-    }
-    else if (parser_type == PARSER_TYPE_MQTT)
-    {
-        strcpy(topic, READINGS_PATH_WOLKSENSE);
-        strcat(topic, device_serial);
-    }
-
-    num_serialized = parser->serialize_readings(first_reading, num_readings, payload, PAYLOAD_SIZE);
-    outbound_message_init(outbound_message, topic, payload);
-    return num_serialized;
-}
-
-size_t outbound_message_make_from_actuator_status(parser_t* parser, char* device_serial, reading_t* first_reading, size_t num_readings,
-                                                 outbound_message_t* outbound_message)
+size_t outbound_message_make_from_readings(parser_t* parser, const char* device_serial, reading_t* first_reading, size_t num_readings,
+                                           outbound_message_t* outbound_message)
 {
     char topic[TOPIC_SIZE];
     char payload[PAYLOAD_SIZE];
@@ -69,47 +33,39 @@ size_t outbound_message_make_from_actuator_status(parser_t* parser, char* device
     memset(topic, '\0', sizeof(topic));
     memset(payload, '\0', sizeof(payload));
 
-    const parser_type_t parser_type = parser_get_type(parser);
-    if (parser_type == PARSER_TYPE_JSON)
+    if (!parser_serialize_topic(parser, device_serial, first_reading, num_readings, topic, sizeof(topic)))
     {
-        strcpy(topic, ACTUATORS_STATUS_PATH);
-        strcat(topic, device_serial);
-        strcat(topic, "/");
-        strcat(topic, manifest_item_get_reference(reading_get_manifest_item(first_reading)));
-    }
-    else if (parser_type == PARSER_TYPE_MQTT)
-    {
-        strcpy(topic, READINGS_PATH_WOLKSENSE);
-        strcat(topic, device_serial);
-    }
-
-    num_serialized = parser->serialize_readings(first_reading, num_readings, payload, PAYLOAD_SIZE);
-    outbound_message_init(outbound_message, topic, payload);
-    return num_serialized;
-}
-
-size_t outbound_message_make_from_alarm(parser_t* parser, char* device_serial, reading_t* first_reading, size_t num_readings, outbound_message_t* outbound_message)
-{
-    char topic[TOPIC_SIZE];
-    char payload[PAYLOAD_SIZE];
-    size_t num_serialized = 0;
-
-    const parser_type_t parser_type = parser_get_type(parser);
-    if (parser_type != PARSER_TYPE_JSON)
-    {
-        /* Wolksense protocol does not support alarms */
         return num_serialized;
     }
 
+    num_serialized = parser_serialize_readings(parser, first_reading, num_readings, payload, sizeof(payload));
+    outbound_message_init(outbound_message, topic, payload);
+    return num_serialized;
+}
+
+size_t outbound_message_make_from_actuator_status(parser_t* parser, const char* device_serial, actuator_status_t* actuator_status, const char* reference,
+                                                  outbound_message_t* outbound_message)
+{
+    manifest_item_t manifest_item;
+    reading_t reading;
+    char topic[TOPIC_SIZE];
+    char payload[PAYLOAD_SIZE];
+    size_t num_serialized = 0;
+
     memset(topic, '\0', sizeof(topic));
     memset(payload, '\0', sizeof(payload));
 
-    strcpy(topic, EVENTS_PATH);
-    strcat(topic, device_serial);
-    strcat(topic, "/");
-    strcat(topic, manifest_item_get_reference(reading_get_manifest_item(first_reading)));
+    manifest_item_init(&manifest_item, reference, READING_TYPE_ACTUATOR, DATA_TYPE_STRING);
+    reading_init(&reading, &manifest_item);
+    reading_set_data(&reading, actuator_status_get_value(actuator_status));
+    reading_set_actuator_state(&reading, actuator_status_get_state(actuator_status));
 
-    num_serialized = parser->serialize_readings(first_reading, num_readings, payload, PAYLOAD_SIZE);
+    if (!parser_serialize_topic(parser, device_serial, &reading, 1, topic, sizeof(topic)))
+    {
+        return num_serialized;
+    }
+
+    num_serialized = parser_serialize_readings(parser, &reading, 1, payload, sizeof(payload));
     outbound_message_init(outbound_message, topic, payload);
     return num_serialized;
 }

@@ -40,11 +40,6 @@ bool in_memory_persistence_pop(outbound_message_t* outbound_message)
     return circular_buffer_pop(&buffer, outbound_message);
 }
 
-void in_memory_persistence_clear(void)
-{
-    circular_buffer_clear(&buffer);
-}
-
 bool in_memory_persistence_is_empty()
 {
     return circular_buffer_empty(&buffer);

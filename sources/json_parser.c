@@ -26,6 +26,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#define READINGS_TOPIC          "readings/"
+#define ACTUATORS_STATUS_TOPIC  "actuators/status/"
+#define EVENTS_TOPIC            "events/"
+
 enum {
     /* Maximum number of characters in command name */
     COMMAND_MAX_SIZE = 10,
@@ -110,6 +114,7 @@ static bool serialize_actuator(reading_t* reading, char* buffer, size_t buffer_s
     default:
         /* Sanity check */
         WOLK_ASSERT(false);
+        return false;
     }
 
     return true;
@@ -151,6 +156,7 @@ static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_si
     default:
         /* Sanity check*/
         WOLK_ASSERT(false);
+        return false;
     }
 
     return false;
@@ -241,6 +247,45 @@ size_t json_deserialize_commands(char* buffer, size_t buffer_size, actuator_comm
     WOLK_UNUSED(commands_buffer_size);
 
     return deserialize_command(buffer, commands_buffer) ? 1 : 0;
+}
+
+bool json_serialize_topic(reading_t* first_Reading, size_t num_readings, char* device_serial, char* buffer, size_t buffer_size)
+{
+    manifest_item_t* manifest_item = reading_get_manifest_item(first_Reading);
+    reading_type_t reading_type = manifest_item_get_reading_type(manifest_item);
+
+    memset(buffer, '\0', buffer_size);
+
+    switch(reading_type)
+    {
+    case READING_TYPE_SENSOR:
+        strcpy(buffer, READINGS_TOPIC);
+        strcat(buffer, device_serial);
+        strcat(buffer, "/");
+        strcat(buffer, manifest_item_get_reference(manifest_item));
+        break;
+
+    case READING_TYPE_ACTUATOR:
+        strcpy(buffer, ACTUATORS_STATUS_TOPIC);
+        strcat(buffer, device_serial);
+        strcat(buffer, "/");
+        strcat(buffer, manifest_item_get_reference(manifest_item));
+        break;
+
+    case READING_TYPE_ALARM:
+        strcpy(buffer, EVENTS_TOPIC);
+        strcat(buffer, device_serial);
+        strcat(buffer, "/");
+        strcat(buffer, manifest_item_get_reference(manifest_item));
+        break;
+
+    default:
+        /* Sanity check */
+        WOLK_ASSERT(false);
+        return false;
+    }
+
+    return true;
 }
 
 size_t json_serialize_configuration_items(configuration_item_t* first_config_item, size_t num_config_items, char* buffer, size_t buffer_size)

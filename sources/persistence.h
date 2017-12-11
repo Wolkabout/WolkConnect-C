@@ -43,13 +43,6 @@ typedef bool (*persistence_push_t)(outbound_message_t*);
 typedef bool (*persistence_pop_t)(outbound_message_t*);
 
 /**
- * @brief persistence_clear signature.
- * Clears content of persistence
- *
- */
-typedef void (*persistence_clear_t)(void);
-
-/**
  * @brief persistence_is_empty signature.
  * Checks whether persistence contains item(s)
  *
@@ -60,22 +53,20 @@ typedef bool (*persistence_is_empty_t)(void);
 typedef struct {
     persistence_push_t push;
     persistence_pop_t pop;
-    persistence_clear_t clear;
     persistence_is_empty_t is_empty;
 
     bool is_initialized;
 } persistence_t;
 
-void persistence_init(persistence_t* persistence, persistence_push_t push, persistence_pop_t pop,
-                      persistence_clear_t clear, persistence_is_empty_t is_empty);
+void persistence_init(persistence_t* persistence,
+                      persistence_push_t push, persistence_pop_t pop,
+                      persistence_is_empty_t is_empty);
 
 bool persistence_is_initialized(const persistence_t* persistence);
 
 bool persistence_push(persistence_t* persistence, outbound_message_t* item);
 
 bool persistence_pop(persistence_t* persistence, outbound_message_t* item);
-
-void persistence_clear(persistence_t* persistence);
 
 bool persistence_is_empty(persistence_t* persistence);
 

@@ -19,12 +19,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-void persistence_init(persistence_t* persistence, persistence_push_t push, persistence_pop_t pop, persistence_clear_t clear,
+void persistence_init(persistence_t* persistence, persistence_push_t push, persistence_pop_t pop,
                       persistence_is_empty_t is_empty)
 {
     persistence->push = push;
     persistence->pop = pop;
-    persistence->clear = clear;
     persistence->is_empty = is_empty;
 
     persistence->is_initialized = true;
@@ -42,11 +41,6 @@ bool persistence_push(persistence_t* persistence, outbound_message_t* item)
 bool persistence_pop(persistence_t* persistence, outbound_message_t* item)
 {
     return persistence->pop(item);
-}
-
-void persistence_clear(persistence_t* persistence)
-{
-    persistence->clear();
 }
 
 bool persistence_is_empty(persistence_t* persistence)

@@ -19,6 +19,7 @@
 
 #include "size_definitions.h"
 #include "manifest_item.h"
+#include "actuator_status.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -27,12 +28,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef enum {
-    ACTUATOR_STATE_READY = 0,
-    ACTUATOR_STATE_BUSY,
-    ACTUATOR_STATE_ERROR
-} actuator_state_t;
 
 typedef struct {
     manifest_item_t manifest_item;

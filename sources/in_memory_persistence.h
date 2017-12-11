@@ -34,8 +34,6 @@ bool in_memory_persistence_push(outbound_message_t* outbound_message);
 
 bool in_memory_persistence_pop(outbound_message_t* outbound_message);
 
-void in_memory_persistence_clear(void);
-
 bool in_memory_persistence_is_empty(void);
 
 #ifdef __cplusplus
