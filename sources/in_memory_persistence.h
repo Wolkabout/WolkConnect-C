@@ -32,6 +32,8 @@ void in_memory_persistence_init(void* storage, size_t num_elements, bool wrap);
 
 bool in_memory_persistence_push(outbound_message_t* outbound_message);
 
+bool in_memory_persistence_peek(outbound_message_t* outbound_message);
+
 bool in_memory_persistence_pop(outbound_message_t* outbound_message);
 
 bool in_memory_persistence_is_empty(void);

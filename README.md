@@ -135,7 +135,8 @@ In cases when provided persistence implementation is suboptimal, one can use cus
 
 ```c
 wolk_init_custom_persistence(&wolk,
-                             persistence_push_impl, persistence_pop_impl,
+                             persistence_push_impl,
+                             persistence_peek_impl, persistence_pop_impl,
                              persistence_is_empty_impl);
 ```
 

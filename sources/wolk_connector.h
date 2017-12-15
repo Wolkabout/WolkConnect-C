@@ -145,7 +145,8 @@ WOLK_ERR_T wolk_init_in_memory_persistence(wolk_ctx_t *ctx, void* storage, uint3
  * @see persistence.h for signature of methods to be implemented, and implementation contract
  */
 WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t *ctx,
-                                        persistence_push_t push, persistence_pop_t pop,
+                                        persistence_push_t push,
+                                        persistence_peek_t peek, persistence_pop_t pop,
                                         persistence_is_empty_t is_empty);
 
 /**
