@@ -35,6 +35,11 @@ bool in_memory_persistence_push(outbound_message_t* outbound_message)
     return circular_buffer_add(&buffer, outbound_message);
 }
 
+bool in_memory_persistence_peek(outbound_message_t* outbound_message)
+{
+    return circular_buffer_peek(&buffer, 0, outbound_message);
+}
+
 bool in_memory_persistence_pop(outbound_message_t* outbound_message)
 {
     return circular_buffer_pop(&buffer, outbound_message);

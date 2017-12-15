@@ -126,15 +126,16 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx,
 WOLK_ERR_T wolk_init_in_memory_persistence(wolk_ctx_t* ctx, void* storage, uint32_t size, bool wrap)
 {
     in_memory_persistence_init(storage, size, wrap);
-    persistence_init(&ctx->persistence, in_memory_persistence_push, in_memory_persistence_pop,
+    persistence_init(&ctx->persistence, in_memory_persistence_push,
+                                        in_memory_persistence_peek, in_memory_persistence_pop,
                                         in_memory_persistence_is_empty);
 
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push, persistence_pop_t pop, persistence_is_empty_t is_empty)
+WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push, persistence_peek_t peek, persistence_pop_t pop, persistence_is_empty_t is_empty)
 {
-    persistence_init(&ctx->persistence, push, pop, is_empty);
+    persistence_init(&ctx->persistence, push, peek, pop, is_empty);
 
     return W_FALSE;
 }
@@ -359,7 +360,7 @@ WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx)
             return W_FALSE;
         }
 
-        if (!persistence_pop(&ctx->persistence, &outbound_message))
+        if (!persistence_peek(&ctx->persistence, &outbound_message))
         {
             continue;
         }
@@ -368,6 +369,8 @@ WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx)
         {
             return W_TRUE;
         }
+
+        persistence_pop(&ctx->persistence, &outbound_message);
     }
 
     return W_FALSE;
