@@ -39,9 +39,9 @@ See `send_func_t` and `send_func_t` in `wolk_connector.h`
 
 ```c
 const char *device_key = "device_key";
-const char *device_password = "device_password";
+const char *device_password = "some_password";
 
-const char* actuator_references[] = {"SLIDER_REF", "SWITCH_REF"};
+const char* actuator_references[] = {"SW", "SL"};
 const uint32_t num_actuator_references = 2;
 
 /* Sample in-memory persistence storage - size 1MB */
