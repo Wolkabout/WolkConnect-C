@@ -33,11 +33,11 @@
 
 static int sockfd;
 static const char *device_key = "device_key";
-static const char *device_password = "device_password";
+static const char *device_password = "some_password";
 static const char *hostname = "api-demo.wolkabout.com";
 static int portno = 1883;
 
-static const char* actuator_references[] = {"NA", "BA"};
+static const char* actuator_references[] = {"SW", "SL"};
 static const uint32_t num_actuator_references = 2;
 
 static uint8_t persistence_storage[1024*1024];
@@ -91,11 +91,11 @@ static actuator_status_t actuator_status_provider(const char* reference)
     actuator_status_t actuator_status;
     actuator_status_init(&actuator_status, "", ACTUATOR_STATE_ERROR);
 
-    if (strcmp(reference, "BA") == 0)
+    if (strcmp(reference, "SW") == 0)
     {
         actuator_status_init(&actuator_status, "true", ACTUATOR_STATE_READY);
     }
-    else if (strcmp(reference, "NA") == 0)
+    else if (strcmp(reference, "SL") == 0)
     {
         actuator_status_init(&actuator_status, "88", ACTUATOR_STATE_READY);
     }
@@ -194,13 +194,12 @@ int main(int argc, char *argv[])
     }
     printf ("Wolk client - Connected to server\n");
 
-    wolk_add_alarm(&wolk, "MA", "Accumulated message 1", 0);
-    wolk_add_alarm(&wolk, "MA", "Accumulated message 2", 0);
-    wolk_add_alarm(&wolk, "MA", "Accumulated message 3", 0);
+    wolk_add_alarm(&wolk, "HH", "High humidity", 0);
     wolk_publish(&wolk);
 
-    wolk_add_numeric_sensor_reading(&wolk, "T", 1337, 0);
-    wolk_add_bool_sensor_reading(&wolk, "ILO", false, 0);
+    wolk_add_numeric_sensor_reading(&wolk, "P", 1024, 0);
+    wolk_add_numeric_sensor_reading(&wolk, "T", 25.6, 0);
+    wolk_add_numeric_sensor_reading(&wolk, "H", 52, 0);
     wolk_publish(&wolk);
 
     while (keep_running)
