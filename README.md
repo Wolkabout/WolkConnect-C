@@ -44,7 +44,7 @@ const char *device_password = "device_password";
 const char* actuator_references[] = {"SLIDER_REF", "SWITCH_REF"};
 const uint32_t num_actuator_references = 2;
 
-/* Sample in-memory persistence storage - size 1kB */
+/* Sample in-memory persistence storage - size 1MB */
 uint8_t persistence_storage[1024*1024];
 
 /* WolkConnect-C Connector context */

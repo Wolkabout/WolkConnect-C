@@ -37,7 +37,7 @@ static const char *device_password = "device_password";
 static const char *hostname = "api-demo.wolkabout.com";
 static int portno = 1883;
 
-static const char* actuator_references[] = {"SL", "SW"};
+static const char* actuator_references[] = {"NA", "BA"};
 static const uint32_t num_actuator_references = 2;
 
 static uint8_t persistence_storage[1024*1024];
