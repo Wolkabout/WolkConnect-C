@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,24 +28,19 @@ extern "C" {
 #endif
 
 #include "MQTTPacket.h"
-#include "transport.h"
+#include "actuator_status.h"
+#include "firmware_update.h"
 #include "parser.h"
 #include "persistence.h"
 #include "size_definitions.h"
-#include "actuator_status.h"
+#include "transport.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 
-enum {
-    WOLK_VERSION_MAJOR = 2,
-    WOLK_VERSION_MINOR = 0,
-    WOLK_VERSION_PATCH = 0
-};
+enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 0, WOLK_VERSION_PATCH = 0 };
 
-typedef enum {
-    PROTOCOL_JSON_SINGLE = 0
-} protocol_t;
+typedef enum { PROTOCOL_JSON_SINGLE = 0 } protocol_t;
 
 /**
  * @brief WOLK_ERR_T Boolean used for error handling in WolkConnect-C library
@@ -56,10 +51,7 @@ typedef unsigned char WOLK_ERR_T;
  * @brief WOLK_BOOL_T Boolean used in WolkConnect-C library
  */
 typedef unsigned char WOLK_BOOL_T;
-enum WOLK_BOOL_T_values {
-    W_FALSE = 0,
-    W_TRUE = 1
-};
+enum WOLK_BOOL_T_values { W_FALSE = 0, W_TRUE = 1 };
 
 /**
  * @brief Callback for writting bytes to socket
@@ -74,7 +66,7 @@ typedef int (*recv_func_t)(unsigned char* bytes, unsigned int num_bytes);
 typedef void (*actuation_handler_t)(const char* reference, const char* value);
 typedef actuator_status_t (*actuator_status_provider_t)(const char* reference);
 
-typedef struct {
+typedef struct wolk_ctx {
     int sock;
     MQTTPacket_connectData connectData;
     MQTTTransport mqtt_transport;
@@ -91,6 +83,8 @@ typedef struct {
 
     persistence_t persistence;
 
+    firmware_update_t firmware_update;
+
     const char** actuator_references;
     uint32_t num_actuator_references;
 
@@ -105,32 +99,36 @@ typedef struct {
  * @param snd_func Callback function that handles outgoing traffic
  * @param rcv_func Callback function that handles incoming traffic
  *
- * @param device_key Device key provided by WolkAbout IoT Platform upon device creation
- * @param password Device password provided by WolkAbout IoT platform device upon device creation
+ * @param device_key Device key provided by WolkAbout IoT Platform upon device
+ * creation
+ * @param password Device password provided by WolkAbout IoT platform device
+ * upon device creation
  * @param protocol Protocol specified for device
  *
- * @param actuator_references Array of strings containing references of actuators that device possess
- * @param num_actuator_references Number of actuator references contained in actuator_references
+ * @param actuator_references Array of strings containing references of
+ * actuators that device possess
+ * @param num_actuator_references Number of actuator references contained in
+ * actuator_references
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_init(wolk_ctx_t* ctx,
-                     send_func_t snd_func, recv_func_t rcv_func,
-                     actuation_handler_t actuation_handler, actuator_status_provider_t actuator_status_provider,
-                     const char *device_key, const char *device_password, protocol_t protocol,
-                     const char** actuator_references, uint32_t num_actuator_references);
+WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler,
+                     actuator_status_provider_t actuator_status_provider, const char* device_key,
+                     const char* device_password, protocol_t protocol, const char** actuator_references,
+                     uint32_t num_actuator_references);
 
 /**
  * @brief Initializes persistence mechanism with in-memory implementation
  *
  * @param ctx Context
- * @param storage Address to start of the memory which will be used by persistence mechanism
+ * @param storage Address to start of the memory which will be used by
+ * persistence mechanism
  * @param size Size of memory in bytes
  * @param wrap If storage is full overwrite oldest item when pushing new item
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_init_in_memory_persistence(wolk_ctx_t *ctx, void* storage, uint32_t size, bool wrap);
+WOLK_ERR_T wolk_init_in_memory_persistence(wolk_ctx_t* ctx, void* storage, uint32_t size, bool wrap);
 
 /**
  * @brief Initializes persistence mechanism with custom implementation
@@ -142,31 +140,56 @@ WOLK_ERR_T wolk_init_in_memory_persistence(wolk_ctx_t *ctx, void* storage, uint3
  *
  * @return Error code
  *
- * @see persistence.h for signature of methods to be implemented, and implementation contract
+ * @see persistence.h for signatures of methods to be implemented, and
+ * implementation contract
  */
-WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t *ctx,
-                                        persistence_push_t push,
-                                        persistence_peek_t peek, persistence_pop_t pop,
-                                        persistence_is_empty_t is_empty);
+WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push, persistence_peek_t peek,
+                                        persistence_pop_t pop, persistence_is_empty_t is_empty);
+
+/**
+ * @brief wolk_init_firmware_update
+ *
+ * @param ctx Context
+ * @param version Current firmware version
+ * @param maximum_firmware_size Maximum acceptable size of firmware file, in bytes
+ * @param chunk_size Firmware file is transfered in chunks of size 'chunk_size'
+ * @param start Function pointer to 'firmware_update_start' implementation
+ * @param write_chunk Function pointer to 'firmware_update_write_chunk' implementation
+ * @param read_chunk Function pointer to 'firmware_update_read_chunk' implementation
+ * @param abort Function pointer to 'firmware_update_abort' implementation
+ * @param finalize Function pointer to 'firmware_update_finalize' implementation
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_t maximum_firmware_size,
+                                     size_t chunk_size, firmware_update_start_t start,
+                                     firmware_update_write_chunk_t write_chunk, firmware_update_read_chunk_t read_chunk,
+                                     firmware_update_abort_t abort, firmware_update_finalize_t finalize,
+                                     firmware_update_persist_firmware_version_t persist_version,
+                                     firmware_update_unpersist_firmware_version_t unpersist_version,
+                                     firmware_update_start_url_download_t start_url_download,
+                                     firmware_update_is_url_download_done_t is_url_download_done);
 
 /**
  * @brief Connect to WolkAbout IoT Platform
  *
  * Prior to connecting, following must be performed:
- *  1. Context must be initialized via wolk_init(wolk_ctx_t* ctx, send_func snd_func, recv_func rcv_func,
- *                                               const char *device_key, const char *password, protocol_t protocol)
+ *  1. Context must be initialized via wolk_init(wolk_ctx_t* ctx, send_func
+ * snd_func, recv_func rcv_func, const char *device_key, const char *password,
+ * protocol_t protocol)
  *  2. Persistence must be initialized using
- *      wolk_initialize_in_memory_persistence(wolk_ctx_t *ctx, void* storage, uint16_t num_elements, bool wrap)
- *      or
+ *      wolk_initialize_in_memory_persistence(wolk_ctx_t *ctx, void* storage,
+ * uint16_t num_elements, bool wrap) or
  *      wolk_initialize_custom_persistence(wolk_ctx_t *ctx,
- *                                         persistence_push_t push, persistence_pop_t pop,
- *                                         persistence_is_empty_t is_empty, persistence_size_t size)
+ *                                         persistence_push_t push,
+ * persistence_pop_t pop, persistence_is_empty_t is_empty, persistence_size_t
+ * size)
  *
  * @param ctx Context
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_connect(wolk_ctx_t *ctx);
+WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx);
 
 /**
  * @brief Disconnect from WolkAbout IoT Platform
@@ -175,18 +198,17 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t *ctx);
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_disconnect(wolk_ctx_t *ctx);
+WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx);
 
 /**
- * @brief Must be called periodically to keep alive connection to WolkAbout IoT platform, obtain and perform
- * actuation requests
+ * @brief Must be called periodically to keep alive connection to WolkAbout IoT
+ * platform, obtain and perform actuation requests
  *
  * @param ctx Context
- * @param timeout TODO
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_process(wolk_ctx_t *ctx);
+WOLK_ERR_T wolk_process(wolk_ctx_t* ctx);
 
 /** @brief Add string reading
  *
@@ -197,7 +219,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t *ctx);
  *
  *  @return Error code
  */
-WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t *ctx,const char *reference,const char *value, uint32_t utc_time);
+WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference, const char* value, uint32_t utc_time);
 
 /**
  * @brief Add numeric reading
@@ -209,7 +231,7 @@ WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t *ctx,const char *reference,
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t *ctx,const char *reference,double value, uint32_t utc_time);
+WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double value, uint32_t utc_time);
 
 /**
  * @brief Add bool reading
@@ -221,7 +243,7 @@ WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t *ctx,const char *reference
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t *ctx, const char *reference, bool value, uint32_t utc_time);
+WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool value, uint32_t utc_time);
 
 /**
  * @brief Add alarm
@@ -233,18 +255,18 @@ WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t *ctx, const char *reference, 
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_alarm(wolk_ctx_t *ctx, const char *reference, char* message, uint32_t utc_time);
+WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, char* message, uint32_t utc_time);
 
 /**
- * @brief Obtains actuator status via actuator_status_provider_t and publishes it.
- * If actuator status can not be published, it is persisted.
+ * @brief Obtains actuator status via actuator_status_provider_t and publishes
+ * it. If actuator status can not be published, it is persisted.
  *
  * @param ctx Context
  * @param reference Actuator reference
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_publish_actuator_status (wolk_ctx_t *ctx, const char* reference);
+WOLK_ERR_T wolk_publish_actuator_status(wolk_ctx_t* ctx, const char* reference);
 
 /**
  * @brief Publish accumulated sensor readings, and alarms
@@ -253,7 +275,7 @@ WOLK_ERR_T wolk_publish_actuator_status (wolk_ctx_t *ctx, const char* reference)
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx);
+WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx);
 
 #ifdef __cplusplus
 }

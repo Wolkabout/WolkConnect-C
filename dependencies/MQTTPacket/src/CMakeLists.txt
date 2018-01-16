@@ -20,12 +20,12 @@ add_library(paho-embed-mqtt3c ${SOURCES})
 
 target_compile_definitions(paho-embed-mqtt3c PRIVATE MQTT_SERVER MQTT_CLIENT)
 
-add_library(MQTTPacketClient SHARED MQTTFormat MQTTPacket
+add_library(MQTTPacketClient STATIC MQTTFormat MQTTPacket
             MQTTSerializePublish MQTTDeserializePublish
             MQTTConnectClient MQTTSubscribeClient MQTTUnsubscribeClient transport)
 target_compile_definitions(MQTTPacketClient PRIVATE MQTT_CLIENT)
 
-add_library(MQTTPacketServer SHARED MQTTFormat MQTTPacket
+add_library(MQTTPacketServer STATIC MQTTFormat MQTTPacket
             MQTTSerializePublish MQTTDeserializePublish
             MQTTConnectServer MQTTSubscribeServer MQTTUnsubscribeServer)
 target_compile_definitions(MQTTPacketServer PRIVATE MQTT_SERVER)

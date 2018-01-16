@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@
 
 #include <string.h>
 
-void actuator_command_init(actuator_command_t* command, actuator_command_type_t type, char* reference, char* argument)
+void actuator_command_init(actuator_command_t* command, actuator_command_type_t type, const char* reference,
+                           const char* argument)
 {
     /* Sanity check */
     WOLK_ASSERT(strlen(reference) <= MANIFEST_ITEM_REFERENCE_SIZE);
@@ -41,7 +42,7 @@ char* actuator_command_get_reference(actuator_command_t* command)
     return command->reference;
 }
 
-void actuator_command_set_reference(actuator_command_t* command, char* reference)
+void actuator_command_set_reference(actuator_command_t* command, const char* reference)
 {
     /* Sanity check */
     WOLK_ASSERT(strlen(reference) < MANIFEST_ITEM_REFERENCE_SIZE);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,15 @@
 
 #include "wolk_connector.h"
 #include "MQTTPacket.h"
-#include "parser.h"
-#include "persistence.h"
+#include "actuator_command.h"
+#include "firmware_update.h"
+#include "firmware_update_command.h"
+#include "firmware_update_packet.h"
 #include "in_memory_persistence.h"
 #include "outbound_message.h"
 #include "outbound_message_factory.h"
+#include "parser.h"
+#include "persistence.h"
 #include "wolk_utils.h"
 
 #include <stdarg.h>
@@ -33,37 +37,41 @@
 
 #define NON_EXISTING "N/A"
 
-#define BOOL_FALSE "false"
-#define BOOL_TRUE "true"
-
 #define KEEPALIVE_INTERVAL 60
 
-#define CONFIG_TOPIC "config/"
+static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "actuators/commands/";
 
-#define ACTUATOR_COMMANDS_TOPIC_JSON "actuators/commands/"
-#define ACTUATOR_COMMANDS_TOPIC_WOLKSENSE "config/"
+static const char* FIRMWARE_UPDATE_COMMANDS_TOPIC_JSON = "service/commands/firmware/";
+static const char* FIRMWARE_UPDATE_PACKET_TOPIC_JSON = "service/binary/";
 
-#define LASTWILL_TOPIC "lastwill/"
-#define LASTWILL_MESSAGE "Gone offline"
+static const char* LASTWILL_TOPIC = "lastwill/";
+static const char* LASTWILL_MESSAGE = "Gone offline";
 
 #define COMMAND_SET "SET"
 #define COMMAND_STATUS "STATUS"
 
-static WOLK_ERR_T _wolk_keep_alive (wolk_ctx_t *ctx);
-static WOLK_ERR_T _wolk_receive (wolk_ctx_t *ctx);
+static WOLK_ERR_T _keep_alive(wolk_ctx_t* ctx);
+static WOLK_ERR_T _receive(wolk_ctx_t* ctx);
 
-static WOLK_ERR_T _wolk_publish(wolk_ctx_t *ctx, outbound_message_t* outbound_message);
-static WOLK_ERR_T _wolk_subscribe(wolk_ctx_t *ctx, const char *topic);
+static WOLK_ERR_T _publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message);
+static WOLK_ERR_T _subscribe(wolk_ctx_t* ctx, const char* topic);
 
-static void _wolk_parser_init(wolk_ctx_t* ctx, protocol_t protocol);
+static void _parser_init(wolk_ctx_t* ctx, protocol_t protocol);
 
-static bool _wolk_is_initialized(wolk_ctx_t* ctx);
+static bool _is_wolk_initialized(wolk_ctx_t* ctx);
 
-WOLK_ERR_T wolk_init(wolk_ctx_t* ctx,
-                     send_func_t snd_func, recv_func_t rcv_func,
-                     actuation_handler_t actuation_handler, actuator_status_provider_t actuator_status_provider,
-                     const char* device_key, const char* device_password, protocol_t protocol,
-                     const char** actuator_references, uint32_t num_actuator_references)
+static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command);
+static void _handle_firmware_update_command(firmware_update_t* firmware_update,
+                                            firmware_update_command_t* firmware_update_command);
+static void _handle_firmware_update_packet(firmware_update_t* firmware_update, uint8_t* packet, size_t packet_size);
+
+static void _listener_on_status(firmware_update_t* firmware_update, firmware_update_status_t status);
+static void _listener_on_packet_request(firmware_update_t* firmware_update, firmware_update_packet_request_t request);
+
+WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler,
+                     actuator_status_provider_t actuator_status_provider, const char* device_key,
+                     const char* device_password, protocol_t protocol, const char** actuator_references,
+                     uint32_t num_actuator_references)
 {
     /* Sanity check */
     WOLK_ASSERT(snd_func != NULL);
@@ -77,8 +85,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx,
 
     WOLK_ASSERT(protocol == PROTOCOL_JSON_SINGLE);
 
-    if (num_actuator_references > 0 && (actuation_handler == NULL || actuator_status_provider == NULL))
-    {
+    if (num_actuator_references > 0 && (actuation_handler == NULL || actuator_status_provider == NULL)) {
         WOLK_ASSERT(false);
         return W_TRUE;
     }
@@ -92,8 +99,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx,
     ctx->iof.recv = rcv_func;
 
     ctx->sock = transport_open(&ctx->iof);
-    if(ctx->sock < 0)
-    {
+    if (ctx->sock < 0) {
         return W_TRUE;
     }
 
@@ -113,49 +119,69 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx,
     ctx->actuator_status_provider = actuator_status_provider;
 
     ctx->protocol = protocol;
-    _wolk_parser_init(ctx, protocol);
+    _parser_init(ctx, protocol);
 
     ctx->actuator_references = actuator_references;
     ctx->num_actuator_references = num_actuator_references;
 
     ctx->is_initialized = true;
 
+    wolk_init_firmware_update(ctx, "", 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     return W_FALSE;
 }
 
 WOLK_ERR_T wolk_init_in_memory_persistence(wolk_ctx_t* ctx, void* storage, uint32_t size, bool wrap)
 {
     in_memory_persistence_init(storage, size, wrap);
-    persistence_init(&ctx->persistence, in_memory_persistence_push,
-                                        in_memory_persistence_peek, in_memory_persistence_pop,
-                                        in_memory_persistence_is_empty);
+    persistence_init(&ctx->persistence, in_memory_persistence_push, in_memory_persistence_peek,
+                     in_memory_persistence_pop, in_memory_persistence_is_empty);
 
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push, persistence_peek_t peek, persistence_pop_t pop, persistence_is_empty_t is_empty)
+WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push, persistence_peek_t peek,
+                                        persistence_pop_t pop, persistence_is_empty_t is_empty)
 {
     persistence_init(&ctx->persistence, push, peek, pop, is_empty);
 
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx)
+WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_t maximum_firmware_size,
+                                     size_t chunk_size, firmware_update_start_t start,
+                                     firmware_update_write_chunk_t write_chunk, firmware_update_read_chunk_t read_chunk,
+                                     firmware_update_abort_t abort, firmware_update_finalize_t finalize,
+                                     firmware_update_persist_firmware_version_t persist_version,
+                                     firmware_update_unpersist_firmware_version_t unpersist_version,
+                                     firmware_update_start_url_download_t start_url_download,
+                                     firmware_update_is_url_download_done_t is_url_download_done)
+{
+    firmware_update_init(&ctx->firmware_update, ctx->device_key, version, maximum_firmware_size, chunk_size, start,
+                         write_chunk, read_chunk, abort, finalize, persist_version, unpersist_version,
+                         start_url_download, is_url_download_done, ctx);
+
+    firmware_update_set_on_status_listener(&ctx->firmware_update, _listener_on_status);
+    firmware_update_set_on_packet_request_listener(&ctx->firmware_update, _listener_on_packet_request);
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 {
     /* Sanity check */
-    WOLK_ASSERT(_wolk_is_initialized(ctx));
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
 
+    // TODO: Extract this
     uint64_t i;
-    unsigned char buf[MQTT_PACKET_SIZE];
-    unsigned char topic_buf[TOPIC_SIZE];
+    char buf[MQTT_PACKET_SIZE];
+    char topic_buf[TOPIC_SIZE];
 
     char lastwill_topic[TOPIC_SIZE];
     MQTTString lastwill_topic_string = MQTTString_initializer;
     MQTTString lastwill_message_string = MQTTString_initializer;
 
-    memset (lastwill_topic, 0, TOPIC_SIZE);
-    strcpy (lastwill_topic, LASTWILL_TOPIC);
-    strcat (lastwill_topic, ctx->device_key);
+    memset(lastwill_topic, 0, TOPIC_SIZE);
+    strcpy(lastwill_topic, LASTWILL_TOPIC);
+    strcat(lastwill_topic, ctx->device_key);
 
     lastwill_topic_string.cstring = lastwill_topic;
     lastwill_message_string.cstring = LASTWILL_MESSAGE;
@@ -163,58 +189,82 @@ WOLK_ERR_T wolk_connect (wolk_ctx_t *ctx)
     ctx->connectData.will.topicName = lastwill_topic_string;
     ctx->connectData.will.message = lastwill_message_string;
 
-    int len = MQTTSerialize_connect(buf, sizeof(buf), &ctx->connectData);
-    if(transport_sendPacketBuffer(ctx->sock, buf, len) == TRANSPORT_DONE)
-    {
+    int len = MQTTSerialize_connect((unsigned char*)buf, sizeof(buf), &ctx->connectData);
+    if (transport_sendPacketBuffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
 
-    for (i = 0; i < ctx->num_actuator_references; ++i)
-    {
+    // TODO: Extract this
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], FIRMWARE_UPDATE_COMMANDS_TOPIC_JSON);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    // TODO: Extract this
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], FIRMWARE_UPDATE_PACKET_TOPIC_JSON);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    // TODO: Extract this
+    for (i = 0; i < ctx->num_actuator_references; ++i) {
         const char* reference = ctx->actuator_references[i];
-        memset (topic_buf, '\0', sizeof(topic_buf));
+        memset(topic_buf, '\0', sizeof(topic_buf));
 
-        strcpy(topic_buf, ACTUATOR_COMMANDS_TOPIC_JSON);
-        strcat(topic_buf, ctx->device_key);
-        strcat(topic_buf, "/");
-        strcat(topic_buf, reference);
+        strcpy(&topic_buf[0], ACTUATOR_COMMANDS_TOPIC_JSON);
+        strcat(&topic_buf[0], ctx->device_key);
+        strcat(&topic_buf[0], "/");
+        strcat(&topic_buf[0], reference);
 
-        if (_wolk_subscribe(ctx, topic_buf) != W_FALSE)
-        {
+        if (_subscribe(ctx, topic_buf) != W_FALSE) {
             return W_TRUE;
         }
     }
 
-    for (i = 0; i < ctx->num_actuator_references; ++i)
-    {
+    // TODO: Extract this
+    for (i = 0; i < ctx->num_actuator_references; ++i) {
         const char* reference = ctx->actuator_references[i];
 
         actuator_status_t actuator_status = ctx->actuator_status_provider(reference);
         outbound_message_t outbound_message;
-        if (outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference, &outbound_message) == 0)
-        {
+        if (!outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference,
+                                                        &outbound_message)) {
             continue;
         }
 
-        if (_wolk_publish(ctx, &outbound_message) != W_FALSE)
-        {
+        if (_publish(ctx, &outbound_message) != W_FALSE) {
             persistence_push(&ctx->persistence, &outbound_message);
+        }
+    }
+
+    // TODO: Extract this
+    outbound_message_t firmware_version_message;
+    if (outbound_message_make_from_firmware_version(&ctx->parser, ctx->device_key,
+                                                    firmware_update_get_current_version(&ctx->firmware_update),
+                                                    &firmware_version_message)) {
+        if (_publish(ctx, &firmware_version_message) != W_FALSE) {
+            persistence_push(&ctx->persistence, &firmware_version_message);
         }
     }
 
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_disconnect(wolk_ctx_t *ctx)
+WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
 {
     /* Sanity check */
-    WOLK_ASSERT(_wolk_is_initialized(ctx));
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
 
     unsigned char buf[MQTT_PACKET_SIZE];
 
     int len = MQTTSerialize_disconnect(buf, sizeof(buf));
-    if(transport_sendPacketBuffer(ctx->sock, buf, len) != TRANSPORT_DONE)
-    {
+    if (transport_sendPacketBuffer(ctx->sock, buf, len) != TRANSPORT_DONE) {
         return W_TRUE;
     }
 
@@ -224,32 +274,32 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t *ctx)
 WOLK_ERR_T wolk_process(wolk_ctx_t* ctx)
 {
     /* Sanity check */
-    WOLK_ASSERT(_wolk_is_initialized(ctx));
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
 
-    if (_wolk_keep_alive(ctx) != W_FALSE)
-    {
+    if (_keep_alive(ctx) != W_FALSE) {
         return W_TRUE;
     }
 
-    if (_wolk_receive(ctx) != W_FALSE)
-    {
+    if (_receive(ctx) != W_FALSE) {
         return W_TRUE;
     }
+
+    firmware_update_process(&ctx->firmware_update);
 
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t *ctx, const char *reference,const char *value, uint32_t utc_time)
+WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference, const char* value, uint32_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_wolk_is_initialized(ctx));
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
 
     manifest_item_t string_sensor;
-    manifest_item_init(&string_sensor, (char *) reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
+    manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
 
     reading_t reading;
     reading_init(&reading, &string_sensor);
-    reading_set_data(&reading, (char*) value);
+    reading_set_data(&reading, value);
     reading_set_rtc(&reading, utc_time);
 
     outbound_message_t outbound_message;
@@ -258,16 +308,16 @@ WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t *ctx, const char *reference
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t *ctx, const char *reference,double value, uint32_t utc_time)
+WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double value, uint32_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_wolk_is_initialized(ctx));
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
 
     manifest_item_t numeric_sensor;
-    manifest_item_init(&numeric_sensor, (char *)reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
+    manifest_item_init(&numeric_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
 
     char value_str[READING_SIZE];
-    memset (value_str, 0, sizeof(value_str));
+    memset(value_str, 0, sizeof(value_str));
     sprintf(value_str, "%f", value);
 
     reading_t reading;
@@ -281,17 +331,17 @@ WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t *ctx, const char *referenc
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t *ctx, const char *reference, bool value, uint32_t utc_time)
+WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool value, uint32_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_wolk_is_initialized(ctx));
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
 
     manifest_item_t bool_sensor;
-    manifest_item_init(&bool_sensor, (char *)reference, READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
+    manifest_item_init(&bool_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
 
     reading_t reading;
     reading_init(&reading, &bool_sensor);
-    reading_set_data(&reading, value == true ? BOOL_TRUE : BOOL_FALSE);
+    reading_set_data(&reading, BOOL_TO_STR(value));
     reading_set_rtc(&reading, utc_time);
 
     outbound_message_t outbound_message;
@@ -304,10 +354,10 @@ WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t *ctx, const char *reference, 
 WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, char* message, uint32_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_wolk_is_initialized(ctx));
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
 
     manifest_item_t alarm;
-    manifest_item_init(&alarm, (char *)reference, READING_TYPE_ALARM, DATA_TYPE_STRING);
+    manifest_item_init(&alarm, reference, READING_TYPE_ALARM, DATA_TYPE_STRING);
 
     reading_t alarm_reading;
     reading_init(&alarm_reading, &alarm);
@@ -320,23 +370,21 @@ WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, char* message,
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_publish_actuator_status (wolk_ctx_t *ctx, const char* reference)
+WOLK_ERR_T wolk_publish_actuator_status(wolk_ctx_t* ctx, const char* reference)
 {
     /* Sanity check */
-    WOLK_ASSERT(_wolk_is_initialized(ctx));
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
 
-    if (ctx->actuator_status_provider != NULL)
-    {
+    if (ctx->actuator_status_provider != NULL) {
         actuator_status_t actuator_status = ctx->actuator_status_provider(reference);
 
         outbound_message_t outbound_message;
-        if (outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference, &outbound_message) == 0)
-        {
+        if (!outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference,
+                                                        &outbound_message)) {
             return W_TRUE;
         }
 
-        if (_wolk_publish(ctx, &outbound_message) != W_FALSE)
-        {
+        if (_publish(ctx, &outbound_message) != W_FALSE) {
             persistence_push(&ctx->persistence, &outbound_message);
         }
     }
@@ -344,29 +392,25 @@ WOLK_ERR_T wolk_publish_actuator_status (wolk_ctx_t *ctx, const char* reference)
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx)
+WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
 {
     /* Sanity check */
-    WOLK_ASSERT(_wolk_is_initialized(ctx));
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
 
     uint8_t i;
     uint16_t batch_size = 50;
     outbound_message_t outbound_message;
 
-    for (i = 0; i < batch_size; ++i)
-    {
-        if (persistence_is_empty(&ctx->persistence))
-        {
+    for (i = 0; i < batch_size; ++i) {
+        if (persistence_is_empty(&ctx->persistence)) {
             return W_FALSE;
         }
 
-        if (!persistence_peek(&ctx->persistence, &outbound_message))
-        {
+        if (!persistence_peek(&ctx->persistence, &outbound_message)) {
             continue;
         }
 
-        if (_wolk_publish (ctx, &outbound_message) != W_FALSE)
-        {
+        if (_publish(ctx, &outbound_message) != W_FALSE) {
             return W_TRUE;
         }
 
@@ -376,16 +420,15 @@ WOLK_ERR_T wolk_publish (wolk_ctx_t *ctx)
     return W_FALSE;
 }
 
-WOLK_ERR_T _wolk_keep_alive (wolk_ctx_t *ctx)
+static WOLK_ERR_T _keep_alive(wolk_ctx_t* ctx)
 {
     unsigned char buf[MQTT_PACKET_SIZE];
-    memset (buf, 0, MQTT_PACKET_SIZE);
+    memset(buf, 0, MQTT_PACKET_SIZE);
 
     int len = MQTTSerialize_pingreq(buf, MQTT_PACKET_SIZE);
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
 
-    do
-    {
+    do {
         switch (transport_sendPacketBuffernb(ctx->sock)) {
         case TRANSPORT_DONE:
             return W_FALSE;
@@ -401,102 +444,72 @@ WOLK_ERR_T _wolk_keep_alive (wolk_ctx_t *ctx)
             WOLK_ASSERT(false);
             return W_TRUE;
         }
-    } while(true);
+    } while (true);
 }
 
-WOLK_ERR_T _wolk_receive (wolk_ctx_t *ctx)
+static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
 {
-    unsigned char buf[PAYLOAD_SIZE];
-    int buflen = sizeof(buf);
+    unsigned char mqtt_packet[MQTT_PACKET_SIZE];
+    int mqtt_packet_len = sizeof(mqtt_packet);
 
-    if(MQTTPacket_readnb(buf, buflen, &(ctx->mqtt_transport)) == PUBLISH)
-    {
+    if (MQTTPacket_readnb(mqtt_packet, mqtt_packet_len, &(ctx->mqtt_transport)) == PUBLISH) {
         unsigned char dup;
         int qos;
         unsigned char retained;
         unsigned short msgid;
-        int payloadlen_in;
-        unsigned char* payload_in;
-        MQTTString receivedTopic;
 
-        actuator_command_t actuator_command;
-        char* reference;
-        char* value;
+        MQTTString topic_mqtt_str;
+        unsigned char* payload;
+        int payload_len;
 
-        if (MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &receivedTopic,
-                                    &payload_in, &payloadlen_in, buf, buflen) != 1)
-        {
+        if (MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &topic_mqtt_str, &payload, &payload_len, mqtt_packet,
+                                    mqtt_packet_len)
+            != 1) {
             return W_TRUE;
         }
 
-        size_t num_deserialized_commands = parser_deserialize_commands(&ctx->parser, (char*) payload_in, payloadlen_in, &actuator_command, 1);
-        if (num_deserialized_commands == 0)
-        {
-            return W_FALSE;
-        }
+        WOLK_ASSERT(TOPIC_SIZE > topic_mqtt_str.lenstring.len);
 
-        if (ctx->protocol == PROTOCOL_JSON_SINGLE)
-        {
-            char *end_ptr = strstr (receivedTopic.lenstring.data, "{");
-            if (end_ptr != NULL)
-            {
-                char *start_ptr = strrchr(receivedTopic.lenstring.data, '/');
-                if (start_ptr != NULL)
-                {
-                    strncpy(&actuator_command.reference[0], start_ptr+1, end_ptr-start_ptr-1);
-                }
+        char topic_str[TOPIC_SIZE];
+        memset(&topic_str[0], '\0', TOPIC_SIZE);
+        strncpy(&topic_str[0], topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
+
+        if (strstr(topic_str, ACTUATOR_COMMANDS_TOPIC_JSON) != NULL) {
+            actuator_command_t actuator_command;
+            const size_t num_deserialized_commands = parser_deserialize_actuator_commands(
+                &ctx->parser, topic_str, strlen(topic_str), (char*)payload, (size_t)payload_len, &actuator_command, 1);
+            if (num_deserialized_commands != 0) {
+                _handle_actuator_command(ctx, &actuator_command);
             }
-        }
-
-        reference = actuator_command_get_reference(&actuator_command);
-        value = actuator_command_get_value(&actuator_command);
-        switch(actuator_command_get_type(&actuator_command))
-        {
-        case ACTUATOR_COMMAND_TYPE_SET:
-            if (ctx->actuation_handler != NULL)
-            {
-                ctx->actuation_handler(reference, value);
+        } else if (strstr(topic_str, FIRMWARE_UPDATE_COMMANDS_TOPIC_JSON)) {
+            firmware_update_command_t firmware_update_command;
+            if (parser_deserialize_firmware_update_command(&ctx->parser, (char*)payload, (size_t)payload_len,
+                                                           &firmware_update_command)) {
+                _handle_firmware_update_command(&ctx->firmware_update, &firmware_update_command);
             }
-
-            /* Fallthrough */
-            /* break; */
-
-        case ACTUATOR_COMMAND_TYPE_STATUS:
-            if (ctx->actuator_status_provider != NULL)
-            {
-                actuator_status_t actuator_status = ctx->actuator_status_provider(reference);
-
-                outbound_message_t outbound_message;
-                if (outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference, &outbound_message) > 0)
-                {
-                    _wolk_publish(ctx, &outbound_message);
-                }
-            }
-            break;
-
-        case ACTUATOR_COMMAND_TYPE_UNKNOWN:
-            break;
+        } else if (strstr(topic_str, FIRMWARE_UPDATE_PACKET_TOPIC_JSON)) {
+            _handle_firmware_update_packet(&ctx->firmware_update, (uint8_t*)payload, (size_t)payload_len);
         }
     }
 
     return W_FALSE;
 }
 
-WOLK_ERR_T _wolk_publish (wolk_ctx_t *ctx, outbound_message_t* outbound_message)
+static WOLK_ERR_T _publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message)
 {
     int len;
     unsigned char buf[MQTT_PACKET_SIZE];
-    memset (buf, 0, MQTT_PACKET_SIZE);
+    memset(buf, 0, MQTT_PACKET_SIZE);
 
     MQTTString mqtt_topic = MQTTString_initializer;
     mqtt_topic.cstring = outbound_message_get_topic(outbound_message);
 
-    unsigned char* payload = outbound_message_get_payload(outbound_message);
-    len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 0, 0, 0, mqtt_topic, payload, strlen(payload));
+    unsigned char* payload = (unsigned char*)outbound_message_get_payload(outbound_message);
+    len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 0, 0, 0, mqtt_topic, payload,
+                                (int)strlen((const char*)payload));
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
 
-    do
-    {
+    do {
         switch (transport_sendPacketBuffernb(ctx->sock)) {
         case TRANSPORT_DONE:
             return W_FALSE;
@@ -515,28 +528,23 @@ WOLK_ERR_T _wolk_publish (wolk_ctx_t *ctx, outbound_message_t* outbound_message)
             WOLK_ASSERT(false);
             return W_TRUE;
         }
-    } while(true);
+    } while (true);
 }
 
-WOLK_ERR_T _wolk_subscribe (wolk_ctx_t *ctx, const char *topic)
+static WOLK_ERR_T _subscribe(wolk_ctx_t* ctx, const char* topic)
 {
     unsigned char buf[MQTT_PACKET_SIZE];
-    int msgid = 1;
-    int len=0;
+    memset(buf, 0, MQTT_PACKET_SIZE);
+
     int req_qos = 0;
+
     MQTTString topicString = MQTTString_initializer;
+    topicString.cstring = topic;
 
-    memset (buf, 0, MQTT_PACKET_SIZE);
-
-
-    /* subscribe */
-    topicString.cstring = (char *)topic;
-    len = MQTTSerialize_subscribe(buf, MQTT_PACKET_SIZE, 0, msgid, 1, &topicString, &req_qos);
-
+    const int len = MQTTSerialize_subscribe(buf, MQTT_PACKET_SIZE, 0, 1, 1, &topicString, &req_qos);
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
 
-    do
-    {
+    do {
         switch (transport_sendPacketBuffernb(ctx->sock)) {
         case TRANSPORT_DONE:
             return W_FALSE;
@@ -555,15 +563,14 @@ WOLK_ERR_T _wolk_subscribe (wolk_ctx_t *ctx, const char *topic)
             WOLK_ASSERT(false);
             return W_TRUE;
         }
-    } while(true);
+    } while (true);
 
     return W_FALSE;
 }
 
-void _wolk_parser_init(wolk_ctx_t* ctx, protocol_t protocol)
+static void _parser_init(wolk_ctx_t* ctx, protocol_t protocol)
 {
-    switch(protocol)
-    {
+    switch (protocol) {
     case PROTOCOL_JSON_SINGLE:
         parser_init(&ctx->parser, PARSER_TYPE_JSON);
         break;
@@ -574,7 +581,83 @@ void _wolk_parser_init(wolk_ctx_t* ctx, protocol_t protocol)
     }
 }
 
-bool _wolk_is_initialized(wolk_ctx_t* ctx)
+static bool _is_wolk_initialized(wolk_ctx_t* ctx)
 {
     return ctx->is_initialized && persistence_is_initialized(&ctx->persistence);
+}
+
+static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command)
+{
+    const char* reference = actuator_command_get_reference(actuator_command);
+    const char* value = actuator_command_get_value(actuator_command);
+
+    switch (actuator_command_get_type(actuator_command)) {
+    case ACTUATOR_COMMAND_TYPE_SET:
+        if (ctx->actuation_handler != NULL) {
+            ctx->actuation_handler(reference, value);
+        }
+
+        /* Fallthrough */
+        /* break; */
+
+    case ACTUATOR_COMMAND_TYPE_STATUS:
+        if (ctx->actuator_status_provider != NULL) {
+            actuator_status_t actuator_status = ctx->actuator_status_provider(reference);
+
+            outbound_message_t outbound_message;
+            if (outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference,
+                                                           &outbound_message)) {
+                _publish(ctx, &outbound_message);
+            }
+        }
+        break;
+
+    case ACTUATOR_COMMAND_TYPE_UNKNOWN:
+        break;
+    }
+}
+
+static void _handle_firmware_update_command(firmware_update_t* firmware_update,
+                                            firmware_update_command_t* firmware_update_command)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(firmware_update_command);
+
+    firmware_update_handle_command(firmware_update, firmware_update_command);
+}
+
+static void _handle_firmware_update_packet(firmware_update_t* firmware_update, uint8_t* packet, size_t packet_size)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(packet);
+
+    firmware_update_handle_packet(firmware_update, packet, packet_size);
+}
+
+static void _listener_on_status(firmware_update_t* firmware_update, firmware_update_status_t status)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+    wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
+
+    outbound_message_t outbound_message;
+    outbound_message_make_from_firmware_update_status(&wolk_ctx->parser, wolk_ctx->device_key, &status,
+                                                      &outbound_message);
+
+    _publish(wolk_ctx, &outbound_message);
+}
+
+static void _listener_on_packet_request(firmware_update_t* firmware_update, firmware_update_packet_request_t request)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+    wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
+
+    outbound_message_t outbound_message;
+    outbound_message_make_from_firmware_update_packet_request(&wolk_ctx->parser, wolk_ctx->device_key, &request,
+                                                              &outbound_message);
+
+    _publish(wolk_ctx, &outbound_message);
 }

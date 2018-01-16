@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@
 extern "C" {
 #endif
 
-typedef struct
-{
+typedef struct {
     uint32_t head;
     uint32_t tail;
 
@@ -42,7 +41,7 @@ typedef struct
 void circular_buffer_init(circular_buffer_t* circular_buffer, void* storage, uint32_t storage_size,
                           uint32_t element_size, bool wrap, bool clear);
 
-bool circular_buffer_add(circular_buffer_t* buffer, void* element);
+bool circular_buffer_add(circular_buffer_t* buffer, const void* element);
 
 bool circular_buffer_add_array(circular_buffer_t* buffer, const void* elements_array, uint32_t length);
 

@@ -14,25 +14,31 @@
  * limitations under the License.
  */
 
-#ifndef OUTBOUND_MESSAGE_H
-#define OUTBOUND_MESSAGE_H
+#ifndef FIRMWARE_UPDATE_PACKET_REQUEST_H
+#define FIRMWARE_UPDATE_PACKET_REQUEST_H
 
 #include "size_definitions.h"
+
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct {
-    char topic[TOPIC_SIZE];
-    char payload[PAYLOAD_SIZE];
-} outbound_message_t;
+    char file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
+    size_t chunk_index;
+    size_t chunk_size;
+} firmware_update_packet_request_t;
 
-void outbound_message_init(outbound_message_t* outbound_message, const char* topic, const char* payload);
+void firmware_update_packet_request_init(firmware_update_packet_request_t* request, const char* file_name,
+                                         size_t chunk_index, size_t chunk_size);
 
-char* outbound_message_get_topic(outbound_message_t* outbound_message);
+const char* firmware_update_packet_request_get_file_name(firmware_update_packet_request_t* request);
 
-char* outbound_message_get_payload(outbound_message_t* outbound_message);
+size_t firmware_update_packet_request_get_chunk_index(firmware_update_packet_request_t* request);
+
+size_t firmware_update_packet_request_get_chunk_size(firmware_update_packet_request_t* request);
 
 #ifdef __cplusplus
 }

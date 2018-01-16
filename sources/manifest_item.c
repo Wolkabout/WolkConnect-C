@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@
 #include <stdio.h>
 #include <string.h>
 
-void manifest_item_init(manifest_item_t* item, char* reference, reading_type_t reading_type, data_type_t data_type)
+void manifest_item_init(manifest_item_t* item, const char* reference, reading_type_t reading_type,
+                        data_type_t data_type)
 {
     /* Sanity check*/
     WOLK_ASSERT(strlen(reference) <= MANIFEST_ITEM_REFERENCE_SIZE);
@@ -39,7 +40,7 @@ void manifest_item_init(manifest_item_t* item, char* reference, reading_type_t r
     memset(item->data_delimiter, '\0', MANIFEST_ITEM_DATA_DELIMITER_SIZE);
 }
 
-void manifest_item_set_reading_dimensions_and_delimiter(manifest_item_t* item, size_t data_size, char* delimiter)
+void manifest_item_set_reading_dimensions_and_delimiter(manifest_item_t* item, size_t data_size, const char* delimiter)
 {
     /* Sanity check */
     WOLK_ASSERT(data_size > 1);

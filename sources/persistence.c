@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,22 @@
  */
 
 #include "persistence.h"
+#include "outbound_message.h"
+#include "wolk_utils.h"
 
 #include <stdbool.h>
 #include <stddef.h>
 
-void persistence_init(persistence_t* persistence, persistence_push_t push, persistence_peek_t peek, persistence_pop_t pop,
-                      persistence_is_empty_t is_empty)
+void persistence_init(persistence_t* persistence, persistence_push_t push, persistence_peek_t peek,
+                      persistence_pop_t pop, persistence_is_empty_t is_empty)
 {
+    /* Sanity check */
+    WOLK_ASSERT(persistence);
+    WOLK_ASSERT(push);
+    WOLK_ASSERT(peek);
+    WOLK_ASSERT(pop);
+    WOLK_ASSERT(is_empty);
+
     persistence->push = push;
     persistence->peek = peek;
     persistence->pop = pop;
@@ -41,7 +50,7 @@ bool persistence_push(persistence_t* persistence, outbound_message_t* item)
 
 bool persistence_peek(persistence_t* persistence, outbound_message_t* item)
 {
-    return persistence->peek;
+    return persistence->peek(item);
 }
 
 bool persistence_pop(persistence_t* persistence, outbound_message_t* item)

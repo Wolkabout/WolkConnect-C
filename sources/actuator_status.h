@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,7 @@
 extern "C" {
 #endif
 
-typedef enum {
-    ACTUATOR_STATE_READY = 0,
-    ACTUATOR_STATE_BUSY,
-    ACTUATOR_STATE_ERROR
-} actuator_state_t;
+typedef enum { ACTUATOR_STATE_READY = 0, ACTUATOR_STATE_BUSY, ACTUATOR_STATE_ERROR } actuator_state_t;
 
 typedef struct {
     char value[READING_SIZE];

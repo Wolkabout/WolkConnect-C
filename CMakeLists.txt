@@ -1,5 +1,5 @@
 #
-# Copyright 2017 WolkAbout Technology s.r.o.
+# Copyright 2017-2018 WolkAbout Technology s.r.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,41 @@
 #
 
 cmake_minimum_required(VERSION 2.8)
-project(WolkAboutConnector)
+project(WolkAboutConnector C)
 set(CMAKE_C_STANDARD 99)
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -Wall -Wextra -Wstrict-prototypes -Wpointer-arith -Wmissing-prototypes   \
-                                    -Wmissing-declarations -Wno-switch-enum -Wcast-align -Wno-bad-function-cast        \
-                                    -Wnested-externs -Wunreachable-code -Wfloat-equal  -Winline -Wundef                \
-                                    -Wno-redundant-decls -Wold-style-definition -Wcast-qual -Wno-conversion -Wshadow   \
-                                    -Wparentheses -Wsequence-point -Wno-declaration-after-statement -Wuninitialized    \
-                                    -Wcast-align")
-
-set(LIBRARY_NAME "WolkConnector_c")
 
 include_directories(dependencies/MQTTPacket/src)
 add_subdirectory(dependencies/MQTTPacket/src)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
+                                    -Wall                             \
+                                    -Wextra                           \
+                                    -Wstrict-prototypes               \
+                                    -Wpointer-arith                   \
+                                    -Wmissing-declarations            \
+                                    -Wno-switch-enum                  \
+                                    -Wno-bad-function-cast            \
+                                    -Wnested-externs                  \
+                                    -Wunreachable-code                \
+                                    -Wfloat-equal                     \
+                                    -Winline                          \
+                                    -Wundef                           \
+                                    -Wno-redundant-decls              \
+                                    -Wold-style-definition            \
+                                    -Wno-conversion                   \
+                                    -Wshadow                          \
+                                    -Wparentheses                     \
+                                    -Wsequence-point                  \
+                                    -Wno-declaration-after-statement  \
+                                    -Wuninitialized                   \
+                                    -Wcast-align                      \
+                                    -Wshadow                          \
+                                    -Wcast-qual                       \
+                                    -Wstrict-prototypes               \
+                                    -Wmissing-prototypes              \
+                                    -Wconversion")
+
+set(LIBRARY_NAME "WolkConnector_c")
 
 include_directories("sources")
 file(GLOB_RECURSE HEADER_FILES "sources/*.h")
@@ -39,6 +60,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")
 
 add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c)
+
+# Format code
+add_custom_target(format
+                  COMMAND "/usr/local/bin/clang-format" -i -sort-includes -style=file ${HEADER_FILES} ${SOURCE_FILES}
+                  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+                  COMMENT "[Formatting source code]"
+                  VERBATIM)
 
 # Example
 add_subdirectory(examples)

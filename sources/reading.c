@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@
 
 void reading_init(reading_t* reading, manifest_item_t* item)
 {
-    uint8_t i;
-    uint8_t reading_dimensions = manifest_item_get_data_dimensions(item);
+    uint16_t i;
+    uint8_t reading_dimensions = (uint8_t)manifest_item_get_data_dimensions(item);
 
     memcpy(&reading->manifest_item, item, sizeof(reading->manifest_item));
     reading->actuator_status = ACTUATOR_STATE_READY;
@@ -53,7 +53,7 @@ void reading_clear_array(reading_t* first_reading, size_t readings_count)
     }
 }
 
-void reading_set_data(reading_t* reading, char* data)
+void reading_set_data(reading_t* reading, const char* data)
 {
     reading_set_data_at(reading, data, 0);
 }
@@ -73,13 +73,15 @@ bool reading_get_delimited_data(reading_t* reading, char* buffer, size_t buffer_
     for (i = 0; i < data_dimensions; ++i) {
         if (i != 0) {
             size_t num_bytes_to_write = buffer_size - strlen(buffer);
-            if (snprintf(buffer + strlen(buffer), (int)num_bytes_to_write, "%s", data_delimiter) >= (int)num_bytes_to_write) {
+            if (snprintf(buffer + strlen(buffer), (int)num_bytes_to_write, "%s", data_delimiter)
+                >= (int)num_bytes_to_write) {
                 return false;
             }
         }
 
         size_t num_bytes_to_write = buffer_size - strlen(buffer);
-        if (snprintf(buffer + strlen(buffer), (int)num_bytes_to_write, "%s", reading_get_data_at(reading, i)) >= (int)num_bytes_to_write) {
+        if (snprintf(buffer + strlen(buffer), (int)num_bytes_to_write, "%s", reading_get_data_at(reading, i))
+            >= (int)num_bytes_to_write) {
             return false;
         }
     }
@@ -87,7 +89,7 @@ bool reading_get_delimited_data(reading_t* reading, char* buffer, size_t buffer_
     return true;
 }
 
-void reading_set_data_at(reading_t* reading, char* data, size_t data_position)
+void reading_set_data_at(reading_t* reading, const char* data, size_t data_position)
 {
     /* Sanity check */
     WOLK_ASSERT(strlen(data) < READING_SIZE);

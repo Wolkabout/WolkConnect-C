@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ extern "C" {
 
 #include "size_definitions.h"
 
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef struct {
     char name[CONFIGURATION_ITEM_NAME_SIZE];

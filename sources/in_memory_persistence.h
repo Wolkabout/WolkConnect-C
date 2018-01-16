@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,11 @@ extern "C" {
 #endif
 
 #include "outbound_message.h"
-#include "persistence.h"
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stddef.h>
 
-void in_memory_persistence_init(void* storage, size_t num_elements, bool wrap);
+void in_memory_persistence_init(void* storage, uint32_t num_elements, bool wrap);
 
 bool in_memory_persistence_push(outbound_message_t* outbound_message);
 

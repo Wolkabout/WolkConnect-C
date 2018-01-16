@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 #ifndef OUTBOUND_MESSAGE_FACTORY_H
 #define OUTBOUND_MESSAGE_FACTORY_H
 
+#include "actuator_status.h"
+#include "firmware_update_status.h"
 #include "outbound_message.h"
 #include "parser.h"
 #include "reading.h"
@@ -28,11 +30,23 @@
 extern "C" {
 #endif
 
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_serial, reading_t* first_reading, size_t num_readings,
-                                           outbound_message_t* outbound_message);
+size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* first_reading,
+                                           size_t num_readings, outbound_message_t* outbound_message);
 
-size_t outbound_message_make_from_actuator_status(parser_t* parser, const char* device_serial, actuator_status_t* actuator_status, const char* reference,
-                                                  outbound_message_t* outbound_message);
+bool outbound_message_make_from_actuator_status(parser_t* parser, const char* device_key,
+                                                actuator_status_t* actuator_status, const char* reference,
+                                                outbound_message_t* outbound_message);
+
+bool outbound_message_make_from_firmware_update_status(parser_t* parser, const char* device_key,
+                                                       firmware_update_status_t* firmware_update_status,
+                                                       outbound_message_t* outbound_message);
+
+bool outbound_message_make_from_firmware_update_packet_request(
+    parser_t* parser, const char* device_key, firmware_update_packet_request_t* firmware_update_packet_request,
+    outbound_message_t* outbound_message);
+
+bool outbound_message_make_from_firmware_version(parser_t* parser, const char* device_key, const char* version,
+                                                 outbound_message_t* outbound_message);
 
 #ifdef __cplusplus
 }

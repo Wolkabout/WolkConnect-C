@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 #include "circular_buffer.h"
 
-#include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 static void increase_pointer(uint32_t* pointer, uint32_t storage_size)
 {
-    if ((*pointer) == (storage_size - 1)){
+    if ((*pointer) == (storage_size - 1)) {
         (*pointer) = 0;
     } else {
         (*pointer)++;
@@ -39,7 +39,7 @@ static void decrease_pointer(uint32_t* pointer, uint32_t storage_size)
 }
 
 void circular_buffer_init(circular_buffer_t* circular_buffer, void* storage, uint32_t storage_size,
-        uint32_t element_size, bool wrap, bool clear)
+                          uint32_t element_size, bool wrap, bool clear)
 {
     circular_buffer->storage = storage;
     circular_buffer->storage_size = storage_size;
@@ -50,15 +50,15 @@ void circular_buffer_init(circular_buffer_t* circular_buffer, void* storage, uin
     }
 }
 
-static void copy_bytes(void* destination, uint32_t destination_offset, void* source, uint32_t source_offset,
-        uint32_t data_length)
+static void copy_bytes(void* destination, uint32_t destination_offset, const void* source, uint32_t source_offset,
+                       uint32_t data_length)
 {
-    unsigned char* destination_position = (unsigned char*) destination + destination_offset * data_length;
-    unsigned char* source_position = (unsigned char*) source + source_offset * data_length;
+    unsigned char* destination_position = (unsigned char*)destination + destination_offset * data_length;
+    const unsigned char* source_position = (const unsigned char*)source + source_offset * data_length;
     memcpy(destination_position, source_position, data_length);
 }
 
-bool circular_buffer_add(circular_buffer_t* buffer, void* element)
+bool circular_buffer_add(circular_buffer_t* buffer, const void* element)
 {
     if (!buffer || !element) {
         return false;
@@ -66,8 +66,8 @@ bool circular_buffer_add(circular_buffer_t* buffer, void* element)
 
     if (buffer->full) {
         if (buffer->wrap) {
-            /* if buffer is full the oldest element will be discarded, new one will
-             * come to its place */
+            /* if buffer is full the oldest element will be discarded, new one
+             * will come to its place */
             increase_pointer(&buffer->head, buffer->storage_size);
         } else {
             return false;
@@ -105,7 +105,7 @@ bool circular_buffer_add_array(circular_buffer_t* buffer, const void* elements_a
     }
 
     for (i = 0; i < length; i++) {
-        unsigned char* source_position = (unsigned char*) elements_array + i * buffer->element_size;
+        const unsigned char* source_position = (const unsigned char*)elements_array + i * buffer->element_size;
         circular_buffer_add(buffer, source_position);
     }
 
@@ -127,7 +127,7 @@ uint32_t circular_buffer_add_as_many_as_possible(circular_buffer_t* buffer, cons
     }
 
     for (i = 0; i < to_add; i++) {
-        unsigned char* source_position = (unsigned char*) elements_array + i * buffer->element_size;
+        const unsigned char* source_position = (const unsigned char*)elements_array + i * buffer->element_size;
         circular_buffer_add(buffer, source_position);
     }
 
@@ -167,7 +167,7 @@ uint32_t circular_buffer_pop_array(circular_buffer_t* buffer, uint32_t length, v
     }
 
     read = 0;
-    unsigned char* elements_array_position = elements_array ? (unsigned char*) elements_array : NULL;
+    unsigned char* elements_array_position = elements_array ? (unsigned char*)elements_array : NULL;
     while ((read < length) && circular_buffer_pop(buffer, elements_array_position)) {
         read++;
         if (elements_array_position) {
@@ -213,14 +213,14 @@ bool circular_buffer_peek(circular_buffer_t* buffer, uint32_t element_position, 
         copy_bytes(element, 0, buffer->storage, buffer->head + element_position, buffer->element_size);
     } else {
         copy_bytes(element, 0, buffer->storage, buffer->head + element_position - buffer->storage_size,
-                buffer->element_size);
+                   buffer->element_size);
     }
 
     return true;
 }
 
 uint32_t circular_buffer_peek_array(circular_buffer_t* buffer, uint32_t element_position, uint32_t length,
-        void* elements_array)
+                                    void* elements_array)
 {
     uint32_t read;
 
@@ -229,9 +229,10 @@ uint32_t circular_buffer_peek_array(circular_buffer_t* buffer, uint32_t element_
     }
 
     read = 0;
-    unsigned char* elements_array_position = (unsigned char*) elements_array;
-    while ((read < length) &&
-            circular_buffer_peek(buffer, element_position + read, elements_array_position + read * buffer->element_size)) {
+    unsigned char* elements_array_position = (unsigned char*)elements_array;
+    while ((read < length)
+           && circular_buffer_peek(buffer, element_position + read,
+                                   elements_array_position + read * buffer->element_size)) {
         read++;
     }
 

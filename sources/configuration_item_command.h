@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ typedef struct {
     char value[CONFIGURATION_ITEM_VALUE_SIZE];
 } configuration_item_command_t;
 
-void configuration_item_command_init(configuration_item_command_t* command, configuration_command_type_t type, char* name, char* value);
+void configuration_item_command_init(configuration_item_command_t* command, configuration_command_type_t type,
+                                     char* name, char* value);
 
 configuration_command_type_t configuration_item_command_get_type(configuration_item_command_t* command);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2017-2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
  */
 
 #include "in_memory_persistence.h"
+#include "circular_buffer.h"
 #include "outbound_message.h"
 #include "persistence.h"
-#include "circular_buffer.h"
 
 #include <stdbool.h>
-#include <stddef.h>
+#include <stdint.h>
 
 static circular_buffer_t buffer;
 
-void in_memory_persistence_init(void* storage, size_t size, bool wrap)
+void in_memory_persistence_init(void* storage, uint32_t size, bool wrap)
 {
     uint32_t num_elements = size / sizeof(outbound_message_t);
     circular_buffer_init(&buffer, storage, num_elements, sizeof(outbound_message_t), wrap, true);
