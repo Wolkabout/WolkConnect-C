@@ -72,7 +72,7 @@ uint8_t* firmware_update_packet_get_data(uint8_t* packet, size_t packet_size)
     WOLK_ASSERT(packet);
     WOLK_ASSERT(packet_size > 2 * FIRMWARE_UPDATE_HASH_SIZE);
 
-    return packet + FIRMWARE_UPDATE_HASH_SIZE - 1;
+    return packet + FIRMWARE_UPDATE_HASH_SIZE;
 }
 
 size_t firmware_update_packet_get_data_size(uint8_t* packet, size_t packet_size)

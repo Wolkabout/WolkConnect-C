@@ -36,6 +36,8 @@ typedef enum {
     STATE_INSTALL
 } state_t;
 
+enum { MAX_RETRIES = 3 };
+
 static void _handle_file_upload(firmware_update_t* firmware_update, firmware_update_command_t* command);
 static void _handle_url_download(firmware_update_t* firmware_update, firmware_update_command_t* command);
 static void _handle_install(firmware_update_t* firmware_update);
@@ -84,7 +86,7 @@ void firmware_update_init(firmware_update_t* firmware_update, const char* device
     firmware_update->device_key = device_key;
 
     firmware_update->maximum_firmware_size = maximum_firmware_size;
-    firmware_update->chunk_size = chunk_size + (2 * FIRMWARE_UPDATE_HASH_SIZE);
+    firmware_update->chunk_size = chunk_size;
 
     firmware_update->start = start;
     firmware_update->write_chunk = write_chunk;
@@ -102,6 +104,7 @@ void firmware_update_init(firmware_update_t* firmware_update, const char* device
     memset(firmware_update->last_packet_hash, 0, WOLK_ARRAY_LENGTH(firmware_update->last_packet_hash));
     firmware_update->next_chunk_index = 0;
     firmware_update->expected_number_of_chunks = 0;
+    firmware_update->retry_count = 0;
 
     memset(firmware_update->file_name, '\0', WOLK_ARRAY_LENGTH(firmware_update->file_name));
     memset(firmware_update->file_hash, 0, WOLK_ARRAY_LENGTH(firmware_update->file_hash));
@@ -228,9 +231,20 @@ void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* 
     }
 
     if (!firmware_update_packet_is_valid(packet, packet_size)) {
+        firmware_update->retry_count += 1;
+        if (firmware_update->retry_count >= MAX_RETRIES) {
+            _update_abort(firmware_update);
+            _reset_state(firmware_update);
+
+            _listener_on_status(firmware_update,
+                                firmware_update_status_error(FIRMWARE_UPDATE_ERROR_RETRY_COUNT_EXCEEDED));
+            return;
+        }
+
         firmware_update_packet_request_t packet_request;
         firmware_update_packet_request_init(&packet_request, firmware_update->file_name,
-                                            firmware_update->next_chunk_index, firmware_update->chunk_size);
+                                            firmware_update->next_chunk_index,
+                                            firmware_update->chunk_size + (2 * FIRMWARE_UPDATE_HASH_SIZE));
         _listener_on_packet_request(firmware_update, packet_request);
         return;
     }
@@ -240,7 +254,8 @@ void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* 
         != 0) {
         firmware_update_packet_request_t packet_request;
         firmware_update_packet_request_init(&packet_request, firmware_update->file_name,
-                                            firmware_update->next_chunk_index, firmware_update->chunk_size);
+                                            firmware_update->next_chunk_index,
+                                            firmware_update->chunk_size + (2 * FIRMWARE_UPDATE_HASH_SIZE));
         _listener_on_packet_request(firmware_update, packet_request);
         return;
     }
@@ -261,12 +276,16 @@ void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* 
     if (firmware_update->next_chunk_index < firmware_update->expected_number_of_chunks) {
         firmware_update_packet_request_t packet_request;
         firmware_update_packet_request_init(&packet_request, firmware_update->file_name,
-                                            firmware_update->next_chunk_index, firmware_update->chunk_size);
+                                            firmware_update->next_chunk_index,
+                                            firmware_update->chunk_size + (2 * FIRMWARE_UPDATE_HASH_SIZE));
         _listener_on_packet_request(firmware_update, packet_request);
         return;
     }
 
-    if (_is_firmware_file_valid(firmware_update)) {
+    if (!_is_firmware_file_valid(firmware_update)) {
+        _update_abort(firmware_update);
+        _reset_state(firmware_update);
+
         _listener_on_status(firmware_update, firmware_update_status_error(FIRMWARE_UPDATE_ERROR_FILE_SYSTEM));
         return;
     }
@@ -365,10 +384,12 @@ static void _handle_file_upload(firmware_update_t* firmware_update, firmware_upd
 
         firmware_update->expected_number_of_chunks =
             (size_t)ceil((double)firmware_update_command_get_file_size(command) / firmware_update->chunk_size);
+        firmware_update->retry_count = 0;
 
         firmware_update_packet_request_t packet_request;
         firmware_update_packet_request_init(&packet_request, firmware_update->file_name,
-                                            firmware_update->next_chunk_index, firmware_update->chunk_size);
+                                            firmware_update->next_chunk_index,
+                                            firmware_update->chunk_size + (2 * FIRMWARE_UPDATE_HASH_SIZE));
         _listener_on_packet_request(firmware_update, packet_request);
         break;
 

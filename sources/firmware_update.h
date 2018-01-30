@@ -51,7 +51,7 @@ typedef bool (*firmware_update_write_chunk_t)(uint8_t* data, size_t data_size);
 
 /**
  * @brief firmware_update_read_chunk signature.
- * Reads 'n'-th firmware file chunk of size 'data_size' to destination pointed to by 'data'.
+ * Reads 'n'-th firmware file chunk of size up to 'data_size' to destination pointed to by 'data'.
  *
  * @return number of bytes that are written to destination pointed to by 'data'
  */
@@ -134,6 +134,7 @@ struct firmware_update {
     size_t next_chunk_index;
 
     size_t expected_number_of_chunks;
+    uint32_t retry_count;
 
     /* Firmware update request parameters */
     char file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
