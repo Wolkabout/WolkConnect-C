@@ -31,8 +31,6 @@ typedef unsigned __int32 uint32_t;
 #include <stdint.h>
 #endif
 
-#define SHA256_BYTES 32
-
 #ifdef __cplusplus
 extern "C" {
 #endif

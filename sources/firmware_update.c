@@ -38,6 +38,8 @@ typedef enum {
 
 enum { MAX_RETRIES = 3 };
 
+enum { FIRMWARE_VERIFICATION_CHUNK_SIZE = 1024 };
+
 static void _handle_file_upload(firmware_update_t* firmware_update, firmware_update_command_t* command);
 static void _handle_url_download(firmware_update_t* firmware_update, firmware_update_command_t* command);
 static void _handle_install(firmware_update_t* firmware_update);
@@ -568,14 +570,9 @@ static bool _is_firmware_file_valid(firmware_update_t* firmware_update)
     sha256_context sha256_ctx;
     sha256_init(&sha256_ctx);
 
-    size_t read_data_size = 0;
-    for (size_t i = 0; i < firmware_update->file_size; i += read_data_size) {
-        uint8_t read_data[1024];
-        read_data_size = _read_chunk(firmware_update, i, read_data, WOLK_ARRAY_LENGTH(read_data));
-        if (read_data_size == 0) {
-            break;
-        }
-
+    for (size_t i = 0; i < (size_t)ceil((double)firmware_update->file_size / FIRMWARE_VERIFICATION_CHUNK_SIZE); ++i) {
+        uint8_t read_data[FIRMWARE_VERIFICATION_CHUNK_SIZE];
+        const size_t read_data_size = _read_chunk(firmware_update, i, read_data, WOLK_ARRAY_LENGTH(read_data));
         sha256_hash(&sha256_ctx, read_data, read_data_size);
     }
 
