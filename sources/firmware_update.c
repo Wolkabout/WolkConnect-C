@@ -386,6 +386,8 @@ static void _handle_file_upload(firmware_update_t* firmware_update, firmware_upd
             (size_t)ceil((double)firmware_update_command_get_file_size(command) / firmware_update->chunk_size);
         firmware_update->retry_count = 0;
 
+        _listener_on_status(firmware_update, firmware_update_status_ok(FIRMWARE_UPDATE_STATE_FILE_TRANSFER));
+
         firmware_update_packet_request_t packet_request;
         firmware_update_packet_request_init(&packet_request, firmware_update->file_name,
                                             firmware_update->next_chunk_index,
