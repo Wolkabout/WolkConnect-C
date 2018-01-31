@@ -472,6 +472,9 @@ static void _handle_install(firmware_update_t* firmware_update)
     case STATE_PACKET_FILE_TRANSFER:
     case STATE_URL_DOWNLOAD:
     case STATE_INSTALL:
+        _reset_state(firmware_update);
+        _listener_on_status(firmware_update,
+                            firmware_update_status_error(FIRMWARE_UPDATE_ERROR_UNSPECIFIED));
         break;
 
     default:
@@ -497,6 +500,8 @@ static void _handle_abort(firmware_update_t* firmware_update)
 
         /* Firmware update not in progress - Ignore command */
     case STATE_IDLE:
+        _listener_on_status(firmware_update,
+                            firmware_update_status_error(FIRMWARE_UPDATE_ERROR_UNSPECIFIED));
         break;
     default:
         /* Sanity check */
