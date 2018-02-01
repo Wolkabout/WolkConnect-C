@@ -176,13 +176,14 @@ static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s
     return false;
 }
 
-static bool deserialize_actuator_command(char* topic, char* buffer, actuator_command_t* command)
+static bool deserialize_actuator_command(char* topic, size_t topic_size, char* buffer, size_t buffer_size,
+                                         actuator_command_t* command)
 {
     jsmn_parser parser;
     jsmntok_t tokens[10]; /* No more than 10 JSON token(s) are expected, check
                              jsmn documentation for token definition */
     jsmn_init(&parser);
-    int parser_result = jsmn_parse(&parser, buffer, strlen(buffer), tokens, WOLK_ARRAY_LENGTH(tokens));
+    int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
 
     /* Received JSON must be valid, and top level element must be object */
     if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
@@ -240,7 +241,7 @@ size_t json_deserialize_actuator_commands(char* topic, size_t topic_size, char* 
     WOLK_UNUSED(buffer_size);
     WOLK_UNUSED(commands_buffer_size);
 
-    return deserialize_actuator_command(topic, buffer, commands_buffer) ? 1 : 0;
+    return deserialize_actuator_command(topic, topic_size, buffer, buffer_size, commands_buffer) ? 1 : 0;
 }
 
 bool json_serialize_readings_topic(reading_t* first_Reading, size_t num_readings, const char* device_key, char* buffer,
