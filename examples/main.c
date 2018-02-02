@@ -142,6 +142,7 @@ static int open_socket(void)
 }
 
 static FILE* firmware_file;
+char firmware_file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
 static size_t firmware_file_size = 0;
 static bool firmware_update_start(const char* file_name, size_t file_size)
 {
@@ -154,6 +155,7 @@ static bool firmware_update_start(const char* file_name, size_t file_size)
         return false;
     }
 
+    strcpy(firmware_file_name, file_name);
     return true;
 }
 
@@ -187,6 +189,8 @@ static void firmware_update_abort(void)
     if (firmware_file != NULL) {
         fclose(firmware_file);
     }
+
+    remove(firmware_file_name);
 }
 
 static void firmware_update_finalize(void)
