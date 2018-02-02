@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (wolk_init_firmware_update(&wolk, "1.0.0", 128 * 1024 * 1024, 250,
+    if (wolk_init_firmware_update(&wolk, "1.0.0", 128 * 1024 * 1024, 256,
                                   firmware_update_start,
                                   firmware_chunk_write, firmware_chunk_read,
                                   firmware_update_abort,

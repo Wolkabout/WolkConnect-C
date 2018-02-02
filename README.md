@@ -153,7 +153,7 @@ See code snippet below on how to enable device firmware update.
 wolk_init_firmware_update(&wolk,
                           "1.0.0",                                      // Current firmware version
                           128 * 1024 * 1024,                            // Maximum acceptable size of firmware file, in bytes
-                          1024,                                         // Size of firmware file transfer chunk, in bytes
+                          256,                                          // Size of firmware file transfer chunk, in bytes
                           firmware_update_start,                        // Prepares device for receiving firmware file
                           firmware_chunk_write,                         // Writes received firmware file chunk
                           firmware_chunk_read,                          // Reads requested firmware file chunk
