@@ -188,6 +188,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 
     ctx->connectData.will.topicName = lastwill_topic_string;
     ctx->connectData.will.message = lastwill_message_string;
+    ctx->connectData.willFlag = 1;
 
     int len = MQTTSerialize_connect((unsigned char*)buf, sizeof(buf), &ctx->connectData);
     if (transport_sendPacketBuffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
