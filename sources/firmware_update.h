@@ -83,7 +83,10 @@ typedef bool (*firmware_update_persist_firmware_version_t)(const char* version);
  * @brief firmware_update_read_firmware_version signature.
  * Reads 'version' from persistent storage.
  *
- * @return true if firmware version was succesfully read, false otherwise
+ * Saved 'version' can be unpersisted only once, eg.
+ * after unpersisting 'version' successfile call will return false, until next 'version' is persisted.
+ *
+ * @return true if firmware version was succesfully unpersisted, false otherwise
  */
 typedef bool (*firmware_update_unpersist_firmware_version_t)(char* version, size_t version_size);
 
