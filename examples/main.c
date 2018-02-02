@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (wolk_init_firmware_update(&wolk, "1.0.0", 128 * 1024 * 1024, 1024,
+    if (wolk_init_firmware_update(&wolk, "1.0.0", 128 * 1024 * 1024, 250,
                                   firmware_update_start,
                                   firmware_chunk_write, firmware_chunk_read,
                                   firmware_update_abort,
@@ -308,7 +308,6 @@ int main(int argc, char *argv[])
     wolk_publish(&wolk);
 
     wolk_add_numeric_sensor_reading(&wolk, "T", 25.6, 0);
-    wolk_add_string_sensor_reading(&wolk, "V", "1.0.0", 0);
     wolk_publish(&wolk);
 
     while (keep_running) {

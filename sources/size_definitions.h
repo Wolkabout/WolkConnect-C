@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef SIZEDEFINITIONS_H
+#define SIZEDEFINITIONS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,8 +23,7 @@ extern "C" {
 
 enum {
     /* Maximum size of MQTT packet in bytes */
-    // MQTT_PACKET_SIZE = 256,
-    MQTT_PACKET_SIZE = 1024 * 1024,
+    MQTT_PACKET_SIZE = 320,
 
     /* Maximum number of characters in device key string */
     DEVICE_KEY_SIZE = 32,
