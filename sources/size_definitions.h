@@ -23,7 +23,7 @@ extern "C" {
 
 enum {
     /* Maximum size of MQTT packet in bytes */
-    MQTT_PACKET_SIZE = 320,
+    MQTT_PACKET_SIZE = 512,
 
     /* Maximum number of characters in device key string */
     DEVICE_KEY_SIZE = 32,
@@ -34,7 +34,7 @@ enum {
     /* Maximum number of characters in topic string */
     TOPIC_SIZE = 64,
     /* Maximum number of bytes in payload string */
-    PAYLOAD_SIZE = 256,
+    PAYLOAD_SIZE = 448,
 
     /* Maximum number of characters in reference string */
     MANIFEST_ITEM_REFERENCE_SIZE = 64,
