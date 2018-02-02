@@ -588,10 +588,10 @@ bool json_serialize_firmware_update_packet_request(const char* device_key,
 
     /* Serialize payload */
     if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
-                 "{\"fileName\":\"%s\",\"chunkIndex\":%zu,\"chunkSize\":%zu}",
+                 "{\"fileName\":\"%s\",\"chunkIndex\":%llu,\"chunkSize\":%llu}",
                  firmware_update_packet_request_get_file_name(firmware_update_packet_request),
-                 firmware_update_packet_request_get_chunk_index(firmware_update_packet_request),
-                 firmware_update_packet_request_get_chunk_size(firmware_update_packet_request))
+                 (unsigned long long int)firmware_update_packet_request_get_chunk_index(firmware_update_packet_request),
+                 (unsigned long long int)firmware_update_packet_request_get_chunk_size(firmware_update_packet_request))
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
         return false;
     }
