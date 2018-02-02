@@ -17,6 +17,10 @@
 #ifndef FIRMWARE_UPDATE_STATUS_H
 #define FIRMWARE_UPDATE_STATUS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     FIRMWARE_UPDATE_STATE_FILE_TRANSFER,
     FIRMWARE_UPDATE_STATE_FILE_READY,
@@ -48,5 +52,9 @@ firmware_update_status_t firmware_update_status_error(firmware_update_error_t er
 firmware_update_state_t firmware_update_status_get_state(firmware_update_status_t* status);
 
 firmware_update_error_t firmware_update_status_get_error(firmware_update_status_t* status);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
