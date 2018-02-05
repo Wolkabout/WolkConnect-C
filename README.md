@@ -140,4 +140,29 @@ wolk_init_custom_persistence(&wolk,
                              persistence_is_empty_impl);
 ```
 
-For more info on persistence mechanism see persistence.h and in_memory_persistence.h files
+For more info on persistence mechanism see persistence.h and in_memory_persistence.h files.
+
+**Firmware Update:**
+
+WolkAbout C Connector provides mechanism for updating device firmware.
+
+By default this feature is disabled.
+See code snippet below on how to enable device firmware update.
+
+```c
+wolk_init_firmware_update(&wolk,
+                          "1.0.0",                                      // Current firmware version
+                          128 * 1024 * 1024,                            // Maximum acceptable size of firmware file, in bytes
+                          256,                                          // Size of firmware file transfer chunk, in bytes
+                          firmware_update_start,                        // Prepares device for receiving firmware file
+                          firmware_chunk_write,                         // Writes received firmware file chunk
+                          firmware_chunk_read,                          // Reads requested firmware file chunk
+                          firmware_update_abort,                        // Aborts firmware update sequence
+                          firmware_update_finalize,                     // Reboots device
+                          firmware_update_persist_firmware_version,     // Places given firmware version to persistent storage
+                          firmware_update_unpersist_firmware_version,   // Reads persisted firmware version from persistent storage
+                          NULL,                                         // Optional custom download handler that obtains file from URL
+                          NULL)                                         // Reports URL download state (in progress | done), and it's result (success | failure)
+```
+
+For more info on device firmware update mechanism see firmware_update.h file.

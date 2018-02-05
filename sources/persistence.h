@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ typedef bool (*persistence_push_t)(outbound_message_t*);
  * @brief persistence_peek signature.
  * Peeks item from persistence
  *
- * @return true if item was successfully peeked from persistence, false otherwise
+ * @return true if item was successfully peeked from persistence, false
+ * otherwise
  */
 typedef bool (*persistence_peek_t)(outbound_message_t*);
 
@@ -46,7 +47,8 @@ typedef bool (*persistence_peek_t)(outbound_message_t*);
  * @brief persistence_pop signature.
  * Pops item from persistence
  *
- * @return true if item was successfully popped from persistence, false otherwise
+ * @return true if item was successfully popped from persistence, false
+ * otherwise
  */
 typedef bool (*persistence_pop_t)(outbound_message_t*);
 
@@ -67,10 +69,8 @@ typedef struct {
     bool is_initialized;
 } persistence_t;
 
-void persistence_init(persistence_t* persistence,
-                      persistence_push_t push,
-                      persistence_peek_t peek, persistence_pop_t pop,
-                      persistence_is_empty_t is_empty);
+void persistence_init(persistence_t* persistence, persistence_push_t push, persistence_peek_t peek,
+                      persistence_pop_t pop, persistence_is_empty_t is_empty);
 
 bool persistence_is_initialized(const persistence_t* persistence);
 

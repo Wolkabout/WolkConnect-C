@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,18 @@
 #define JSON_PARSER_H
 
 #include "actuator_command.h"
+
 #include "configuration_item.h"
 #include "configuration_item_command.h"
+#include "firmware_update_command.h"
+#include "firmware_update_packet_request.h"
+#include "firmware_update_status.h"
+#include "outbound_message.h"
 #include "reading.h"
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,13 +37,29 @@ extern "C" {
 
 size_t json_serialize_readings(reading_t* first_reading, size_t num_readings, char* buffer, size_t buffer_size);
 
-size_t json_deserialize_commands(char* buffer, size_t buffer_size, actuator_command_t* commands_buffer, size_t commands_buffer_size);
+size_t json_deserialize_actuator_commands(char* topic, size_t topic_size, char* buffer, size_t buffer_size,
+                                          actuator_command_t* commands_buffer, size_t commands_buffer_size);
 
-bool json_serialize_topic(reading_t* first_Reading, size_t num_readings, char* device_serial, char* buffer, size_t buffer_size);
+bool json_serialize_readings_topic(reading_t* first_Reading, size_t num_readings, const char* device_key, char* buffer,
+                                   size_t buffer_size);
 
-size_t json_serialize_configuration_items(configuration_item_t* first_config_item, size_t num_config_items, char* buffer, size_t buffer_size);
+size_t json_serialize_configuration_items(configuration_item_t* first_config_item, size_t num_config_items,
+                                          char* buffer, size_t buffer_size);
 
-size_t json_deserialize_configuration_items(char* buffer, size_t buffer_size, configuration_item_command_t* commands_buffer, size_t commands_buffer_size);
+size_t json_deserialize_configuration_items(char* buffer, size_t buffer_size,
+                                            configuration_item_command_t* commands_buffer, size_t commands_buffer_size);
+
+bool json_serialize_firmware_update_status(const char* device_key, firmware_update_status_t* status,
+                                           outbound_message_t* outbound_message);
+
+bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, firmware_update_command_t* command);
+
+bool json_serialize_firmware_update_packet_request(const char* device_key,
+                                                   firmware_update_packet_request_t* firmware_update_packet_request,
+                                                   outbound_message_t* outbound_message);
+
+bool json_serialize_firmware_update_version(const char* device_key, const char* version,
+                                            outbound_message_t* outbound_message);
 
 #ifdef __cplusplus
 }

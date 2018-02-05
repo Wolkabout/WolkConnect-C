@@ -14,29 +14,27 @@
  * limitations under the License.
  */
 
-#ifndef CONFIGURATION_ITEM_H
-#define CONFIGURATION_ITEM_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef FIRMWARE_UPDATE_PACKET_H
+#define FIRMWARE_UPDATE_PACKET_H
 
 #include "size_definitions.h"
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
-typedef struct {
-    char name[CONFIGURATION_ITEM_NAME_SIZE];
-    char value[CONFIGURATION_ITEM_VALUE_SIZE];
-} configuration_item_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void configuration_item_init(configuration_item_t* configuration_item, char* name, char* value);
+bool firmware_update_packet_is_valid(uint8_t* packet, size_t packet_size);
 
-char* configuration_item_get_name(configuration_item_t* configuration_item);
+uint8_t* firmware_update_packet_get_hash(uint8_t* packet, size_t packet_size);
 
-char* configuration_item_get_value(configuration_item_t* configuration_item);
-void configuration_item_set_value(configuration_item_t* configuration_item, char* buffer);
+uint8_t* firmware_update_packet_get_previous_packet_hash(uint8_t* packet, size_t packet_size);
+
+uint8_t* firmware_update_packet_get_data(uint8_t* packet, size_t packet_size);
+size_t firmware_update_packet_get_data_size(uint8_t* packet, size_t packet_size);
 
 #ifdef __cplusplus
 }

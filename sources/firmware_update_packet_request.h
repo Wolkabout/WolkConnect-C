@@ -14,27 +14,31 @@
  * limitations under the License.
  */
 
-#ifndef ACTUATOR_STATUS_H
-#define ACTUATOR_STATUS_H
+#ifndef FIRMWARE_UPDATE_PACKET_REQUEST_H
+#define FIRMWARE_UPDATE_PACKET_REQUEST_H
 
 #include "size_definitions.h"
+
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum { ACTUATOR_STATE_READY = 0, ACTUATOR_STATE_BUSY, ACTUATOR_STATE_ERROR } actuator_state_t;
-
 typedef struct {
-    char value[READING_SIZE];
-    actuator_state_t state;
-} actuator_status_t;
+    char file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
+    size_t chunk_index;
+    size_t chunk_size;
+} firmware_update_packet_request_t;
 
-void actuator_status_init(actuator_status_t* actuator_status, char* value, actuator_state_t state);
+void firmware_update_packet_request_init(firmware_update_packet_request_t* request, const char* file_name,
+                                         size_t chunk_index, size_t chunk_size);
 
-char* actuator_status_get_value(actuator_status_t* actuator_status);
+const char* firmware_update_packet_request_get_file_name(firmware_update_packet_request_t* request);
 
-actuator_state_t actuator_status_get_state(actuator_status_t* actuator_status);
+size_t firmware_update_packet_request_get_chunk_index(firmware_update_packet_request_t* request);
+
+size_t firmware_update_packet_request_get_chunk_size(firmware_update_packet_request_t* request);
 
 #ifdef __cplusplus
 }

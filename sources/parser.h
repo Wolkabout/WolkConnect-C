@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 WolkAbout Technology s.r.o.
+ * Copyright 2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,10 @@
 #include "actuator_command.h"
 #include "configuration_item.h"
 #include "configuration_item_command.h"
+#include "firmware_update_command.h"
+#include "firmware_update_packet_request.h"
+#include "firmware_update_status.h"
+#include "outbound_message.h"
 #include "reading.h"
 
 #include <stdbool.h>
@@ -30,32 +34,73 @@
 extern "C" {
 #endif
 
-typedef enum {
-    PARSER_TYPE_JSON = 0
-} parser_type_t;
+typedef enum { PARSER_TYPE_JSON = 0 } parser_type_t;
 
 typedef struct {
     parser_type_t type;
     bool is_initialized;
 
     size_t (*serialize_readings)(reading_t* first_reading, size_t num_readings, char* buffer, size_t buffer_size);
-    size_t (*deserialize_commands)(char* buffer, size_t buffer_size, actuator_command_t* commands_buffer, size_t commands_buffer_size);
+    size_t (*deserialize_actuator_commands)(char* topic, size_t topic_size, char* buffer, size_t buffer_size,
+                                            actuator_command_t* commands_buffer, size_t commands_buffer_size);
 
-    bool (*serialize_topic)(reading_t* first_Reading, size_t num_readings, char* device_serial,  char* buffer, size_t buffer_size);
+    bool (*serialize_readings_topic)(reading_t* first_reading, size_t num_readings, const char* device_key,
+                                     char* buffer, size_t buffer_size);
 
-    size_t (*serialize_configuration_items)(configuration_item_t* first_config_item, size_t num_config_items, char* buffer, size_t buffer_size);
-    size_t (*deserialize_configuration_items)(char* buffer, size_t buffer_size, configuration_item_command_t* first_config_item, size_t num_config_items);
+    size_t (*serialize_configuration_items)(configuration_item_t* first_config_item, size_t num_config_items,
+                                            char* buffer, size_t buffer_size);
+    size_t (*deserialize_configuration_items)(char* buffer, size_t buffer_size,
+                                              configuration_item_command_t* first_config_item, size_t num_config_items);
+
+    bool (*serialize_firmware_update_status)(const char* device_key, firmware_update_status_t* status,
+                                             outbound_message_t* outbound_message);
+    bool (*deserialize_firmware_update_command)(char* buffer, size_t buffer_size, firmware_update_command_t* command);
+    bool (*serialize_firmware_update_packet_request)(const char* device_key,
+                                                     firmware_update_packet_request_t* firmware_update_packet_request,
+                                                     outbound_message_t* outbound_message);
+    bool (*serialize_firmware_update_version)(const char* device_key, const char* version,
+                                              outbound_message_t* outbound_message);
 } parser_t;
 
 void parser_init(parser_t* parser, parser_type_t parser_type);
 
-size_t parser_serialize_readings(parser_t* parser, reading_t* first_reading, size_t num_readings, char* buffer, size_t buffer_size);
-size_t parser_deserialize_commands(parser_t* parser, char* buffer, size_t buffer_size, actuator_command_t* commands_buffer, size_t commands_buffer_size);
+/**** Actuator command ****/
+size_t parser_deserialize_actuator_commands(parser_t* parser, char* topic, size_t topic_size, char* buffer,
+                                            size_t buffer_size, actuator_command_t* commands_buffer,
+                                            size_t commands_buffer_size);
+/**** Actuator command ****/
 
-bool parser_serialize_topic(parser_t* parser, char* device_serial, reading_t* first_reading, size_t num_readings,  char* buffer, size_t buffer_size);
+/**** Reading ****/
+/* Note: Actuator status is considered reading, henece it's serialization is tied to funcions in this section */
+size_t parser_serialize_readings(parser_t* parser, reading_t* first_reading, size_t num_readings, char* buffer,
+                                 size_t buffer_size);
 
-size_t parser_serialize_configuration_items(parser_t* parser, configuration_item_t* first_config_item, size_t num_config_items, char* buffer, size_t buffer_size);
-size_t parser_deserialize_configuration_items(parser_t* parser, char* buffer, size_t buffer_size, configuration_item_command_t* first_config_item, size_t num_config_items);
+bool parser_serialize_readings_topic(parser_t* parser, const char* device_key, reading_t* first_reading,
+                                     size_t num_readings, char* buffer, size_t buffer_size);
+/**** Reading ****/
+
+/**** Configuration ****/
+size_t parser_serialize_configuration_items(parser_t* parser, configuration_item_t* first_config_item,
+                                            size_t num_config_items, char* buffer, size_t buffer_size);
+
+size_t parser_deserialize_configuration_items(parser_t* parser, char* buffer, size_t buffer_size,
+                                              configuration_item_command_t* first_config_item, size_t num_config_items);
+/**** Configuration ****/
+
+/**** Firmware update ****/
+bool parser_serialize_firmware_update_status(parser_t* parser, const char* device_key, firmware_update_status_t* status,
+                                             outbound_message_t* outbound_message);
+
+bool parser_deserialize_firmware_update_command(parser_t* parser, char* buffer, size_t buffer_size,
+                                                firmware_update_command_t* command);
+
+bool parser_serialize_firmware_update_packet_request(parser_t* parser, const char* device_key,
+                                                     firmware_update_packet_request_t* firmware_update_packet_request,
+                                                     outbound_message_t* outbound_message);
+
+bool parser_serialize_firmware_update_version(parser_t* parser, const char* device_key, const char* version,
+                                              outbound_message_t* outbound_message);
+/**** Firmware update ****/
 
 parser_type_t parser_get_type(parser_t* parser);
 bool parser_is_initialized(parser_t* parser);
