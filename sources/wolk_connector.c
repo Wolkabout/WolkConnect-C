@@ -27,7 +27,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <unistd.h>
 
 #define TIMEOUT_STEP 100000
 
