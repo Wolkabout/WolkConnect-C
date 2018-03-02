@@ -143,8 +143,6 @@ static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_si
         WOLK_ASSERT(false);
         return false;
     }
-
-    return false;
 }
 
 static size_t serialize_readings(reading_t* first_reading, size_t num_readings, char* buffer, size_t buffer_size)
