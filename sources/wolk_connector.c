@@ -513,15 +513,12 @@ static WOLK_ERR_T _publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message
         switch (transport_sendPacketBuffernb(ctx->sock)) {
         case TRANSPORT_DONE:
             return W_FALSE;
-            break;
 
         case TRANSPORT_ERROR:
             return W_TRUE;
-            break;
 
         case TRANSPORT_AGAIN:
             continue;
-            break;
 
         default:
             /* Sanity check */
@@ -548,15 +545,12 @@ static WOLK_ERR_T _subscribe(wolk_ctx_t* ctx, const char* topic)
         switch (transport_sendPacketBuffernb(ctx->sock)) {
         case TRANSPORT_DONE:
             return W_FALSE;
-            break;
 
         case TRANSPORT_ERROR:
             return W_TRUE;
-            break;
 
         case TRANSPORT_AGAIN:
             continue;
-            break;
 
         default:
             /* Sanity check */
@@ -564,8 +558,6 @@ static WOLK_ERR_T _subscribe(wolk_ctx_t* ctx, const char* topic)
             return W_TRUE;
         }
     } while (true);
-
-    return W_FALSE;
 }
 
 static void _parser_init(wolk_ctx_t* ctx, protocol_t protocol)
