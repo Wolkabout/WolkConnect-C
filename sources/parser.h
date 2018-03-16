@@ -18,8 +18,8 @@
 #define PARSER_H
 
 #include "actuator_command.h"
+#include "configuration_command.h"
 #include "configuration_item.h"
-#include "configuration_item_command.h"
 #include "firmware_update_command.h"
 #include "firmware_update_packet_request.h"
 #include "firmware_update_status.h"
@@ -47,10 +47,12 @@ typedef struct {
     bool (*serialize_readings_topic)(reading_t* first_reading, size_t num_readings, const char* device_key,
                                      char* buffer, size_t buffer_size);
 
-    size_t (*serialize_configuration_items)(configuration_item_t* first_config_item, size_t num_config_items,
-                                            char* buffer, size_t buffer_size);
-    size_t (*deserialize_configuration_items)(char* buffer, size_t buffer_size,
-                                              configuration_item_command_t* first_config_item, size_t num_config_items);
+    size_t (*serialize_configuration)(const char* device_key, char (*reference)[CONFIGURATION_REFERENCE_SIZE],
+                                      char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items,
+                                      outbound_message_t* outbound_message);
+    size_t (*deserialize_configuration_commands)(char* buffer, size_t buffer_size,
+                                                 configuration_command_t* first_configuration_command,
+                                                 size_t num_config_items);
 
     bool (*serialize_firmware_update_status)(const char* device_key, firmware_update_status_t* status,
                                              outbound_message_t* outbound_message);
@@ -80,11 +82,14 @@ bool parser_serialize_readings_topic(parser_t* parser, const char* device_key, r
 /**** Reading ****/
 
 /**** Configuration ****/
-size_t parser_serialize_configuration_items(parser_t* parser, configuration_item_t* first_config_item,
-                                            size_t num_config_items, char* buffer, size_t buffer_size);
+bool parser_serialize_configuration(parser_t* parser, const char* device_key,
+                                    char (*reference)[CONFIGURATION_REFERENCE_SIZE],
+                                    char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items,
+                                    outbound_message_t* outbound_message);
 
-size_t parser_deserialize_configuration_items(parser_t* parser, char* buffer, size_t buffer_size,
-                                              configuration_item_command_t* first_config_item, size_t num_config_items);
+size_t parser_deserialize_configuration_commands(parser_t* parser, char* buffer, size_t buffer_size,
+                                                 configuration_command_t* first_configuration_command,
+                                                 size_t num_configuration_commands);
 /**** Configuration ****/
 
 /**** Firmware update ****/

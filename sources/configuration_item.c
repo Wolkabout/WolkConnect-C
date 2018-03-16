@@ -40,7 +40,7 @@ char* configuration_item_get_value(configuration_item_t* configuration_item)
 void configuration_item_set_value(configuration_item_t* configuration_item, char* buffer)
 {
     /* Sanity check */
-    WOLK_ASSERT(strlen(buffer) < CONFIGURATION_ITEM_VALUE_SIZE);
+    WOLK_ASSERT(strlen(buffer) < CONFIGURATION_VALUE_SIZE);
 
     strcpy(configuration_item->value, buffer);
 }

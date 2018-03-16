@@ -38,7 +38,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 2, WOLK_VERSION_PATCH = 0 };
+enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 3, WOLK_VERSION_PATCH = 0 };
 
 typedef enum { PROTOCOL_JSON_SINGLE = 0 } protocol_t;
 
@@ -66,6 +66,12 @@ typedef int (*recv_func_t)(unsigned char* bytes, unsigned int num_bytes);
 typedef void (*actuation_handler_t)(const char* reference, const char* value);
 typedef actuator_status_t (*actuator_status_provider_t)(const char* reference);
 
+typedef void (*configuration_handler_t)(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
+                                        char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items);
+
+typedef size_t (*configuration_provider_t)(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
+                                           char (*value)[CONFIGURATION_VALUE_SIZE], size_t max_num_configuration_items);
+
 typedef struct wolk_ctx {
     int sock;
     MQTTPacket_connectData connectData;
@@ -74,6 +80,9 @@ typedef struct wolk_ctx {
 
     actuation_handler_t actuation_handler;
     actuator_status_provider_t actuator_status_provider;
+
+    configuration_handler_t configuration_handler;
+    configuration_provider_t configuration_provider;
 
     char device_key[DEVICE_KEY_SIZE];
     char device_password[DEVICE_PASSWORD_SIZE];
@@ -99,6 +108,12 @@ typedef struct wolk_ctx {
  * @param snd_func Callback function that handles outgoing traffic
  * @param rcv_func Callback function that handles incoming traffic
  *
+ * @param actuation_handler function pointer to 'actuation_handler_t' implementation
+ * @param actuator_status_provider function pointer to 'actuator_status_provider_t' implementation
+ *
+ * @param configuration_handler function pointer to 'configuration_handler_t' implementation
+ * @param configuration_provider function pointer to 'configuration_provider_t' implementation
+ *
  * @param device_key Device key provided by WolkAbout IoT Platform upon device
  * creation
  * @param password Device password provided by WolkAbout IoT platform device
@@ -113,7 +128,8 @@ typedef struct wolk_ctx {
  * @return Error code
  */
 WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler,
-                     actuator_status_provider_t actuator_status_provider, const char* device_key,
+                     actuator_status_provider_t actuator_status_provider, configuration_handler_t configuration_handler,
+                     configuration_provider_t configuration_provider, const char* device_key,
                      const char* device_password, protocol_t protocol, const char** actuator_references,
                      uint32_t num_actuator_references);
 
