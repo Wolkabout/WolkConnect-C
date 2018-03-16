@@ -101,6 +101,36 @@ static actuator_status_t actuator_status_provider(const char* reference)
     return actuator_status;
 }
 
+static char device_configuration_references[3][CONFIGURATION_REFERENCE_SIZE] = {"refOne", "refTwo", "refThree"};
+static char device_configuration_values[3][CONFIGURATION_VALUE_SIZE] = {"valueOne", "valueTwo", "valueThree"};
+
+static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
+                                  char (*value)[CONFIGURATION_VALUE_SIZE],
+                                  size_t num_configuration_items)
+{
+    for (size_t i = 0; i < num_configuration_items; ++i) {
+        printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
+        
+        strcpy(device_configuration_references[i], reference[i]);
+        strcpy(device_configuration_values[i], value[i]);
+    }
+}
+
+static size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
+                                     char (*value)[CONFIGURATION_VALUE_SIZE],
+                                     size_t max_num_configuration_items)
+{
+    WOLK_UNUSED(max_num_configuration_items);
+    WOLK_ASSERT(max_num_configuration_items >= 3);
+    
+    for (size_t i = 0; i < 3; ++i) {
+        strcpy(reference[i], device_configuration_references[i]);
+        strcpy(value[i], device_configuration_values[i]);
+    }
+    
+    return 3;
+}
+
 static int open_socket(void)
 {
     struct sockaddr_in serveraddr;
@@ -276,6 +306,7 @@ int main(int argc, char *argv[])
     if (wolk_init(&wolk,
                   send_buffer, receive_buffer,
                   actuation_handler, actuator_status_provider,
+                  configuration_handler, configuration_provider,
                   device_key, device_password,
                   PROTOCOL_JSON_SINGLE,
                   actuator_references, num_actuator_references) != W_FALSE) {

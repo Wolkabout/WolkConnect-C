@@ -43,6 +43,8 @@ static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "actuators/commands/";
 static const char* FIRMWARE_UPDATE_COMMANDS_TOPIC_JSON = "service/commands/firmware/";
 static const char* FIRMWARE_UPDATE_PACKET_TOPIC_JSON = "service/binary/";
 
+static const char* CONFIGURATION_COMMANDS = "configurations/commands/";
+
 static const char* LASTWILL_TOPIC = "lastwill/";
 static const char* LASTWILL_MESSAGE = "Gone offline";
 
@@ -60,6 +62,7 @@ static void _parser_init(wolk_ctx_t* ctx, protocol_t protocol);
 static bool _is_wolk_initialized(wolk_ctx_t* ctx);
 
 static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command);
+static void _handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command);
 static void _handle_firmware_update_command(firmware_update_t* firmware_update,
                                             firmware_update_command_t* firmware_update_command);
 static void _handle_firmware_update_packet(firmware_update_t* firmware_update, uint8_t* packet, size_t packet_size);
@@ -68,7 +71,8 @@ static void _listener_on_status(firmware_update_t* firmware_update, firmware_upd
 static void _listener_on_packet_request(firmware_update_t* firmware_update, firmware_update_packet_request_t request);
 
 WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler,
-                     actuator_status_provider_t actuator_status_provider, const char* device_key,
+                     actuator_status_provider_t actuator_status_provider, configuration_handler_t configuration_handler,
+                     configuration_provider_t configuration_provider, const char* device_key,
                      const char* device_password, protocol_t protocol, const char** actuator_references,
                      uint32_t num_actuator_references)
 {
@@ -85,6 +89,12 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     WOLK_ASSERT(protocol == PROTOCOL_JSON_SINGLE);
 
     if (num_actuator_references > 0 && (actuation_handler == NULL || actuator_status_provider == NULL)) {
+        WOLK_ASSERT(false);
+        return W_TRUE;
+    }
+
+    if ((configuration_handler != NULL && configuration_provider == NULL)
+        || (configuration_handler == NULL && configuration_provider != NULL)) {
         WOLK_ASSERT(false);
         return W_TRUE;
     }
@@ -116,6 +126,9 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
 
     ctx->actuation_handler = actuation_handler;
     ctx->actuator_status_provider = actuator_status_provider;
+
+    ctx->configuration_handler = configuration_handler;
+    ctx->configuration_provider = configuration_provider;
 
     ctx->protocol = protocol;
     _parser_init(ctx, protocol);
@@ -213,6 +226,15 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     }
 
     // TODO: Extract this
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], CONFIGURATION_COMMANDS);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    // TODO: Extract this
     for (i = 0; i < ctx->num_actuator_references; ++i) {
         const char* reference = ctx->actuator_references[i];
         memset(topic_buf, '\0', sizeof(topic_buf));
@@ -243,6 +265,11 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         }
     }
 
+    // TODO: Extract this
+    configuration_command_t configuration_command;
+    configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_CURRENT);
+    _handle_configuration_command(ctx, &configuration_command);
+    
     // TODO: Extract this
     outbound_message_t firmware_version_message;
     if (outbound_message_make_from_firmware_version(&ctx->parser, ctx->device_key,
@@ -570,6 +597,13 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             }
         } else if (strstr(topic_str, FIRMWARE_UPDATE_PACKET_TOPIC_JSON)) {
             _handle_firmware_update_packet(&ctx->firmware_update, (uint8_t*)payload, (size_t)payload_len);
+        } else if (strstr(topic_str, CONFIGURATION_COMMANDS)) {
+            configuration_command_t configuration_command;
+            const size_t num_deserialized_commands = parser_deserialize_configuration_commands(
+                &ctx->parser, (char*)payload, (size_t)payload_len, &configuration_command, 1);
+            if (num_deserialized_commands != 0) {
+                _handle_configuration_command(ctx, &configuration_command);
+            }
         }
     }
 
@@ -678,14 +712,59 @@ static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuat
             actuator_status_t actuator_status = ctx->actuator_status_provider(reference);
 
             outbound_message_t outbound_message;
-            if (outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference,
-                                                           &outbound_message)) {
-                _publish(ctx, &outbound_message);
+            if (!outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference,
+                                                            &outbound_message)) {
+                return;
+            }
+
+            if (_publish(ctx, &outbound_message) != W_FALSE) {
+                persistence_push(&ctx->persistence, &outbound_message);
             }
         }
         break;
 
     case ACTUATOR_COMMAND_TYPE_UNKNOWN:
+        break;
+    }
+}
+
+static void _handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command)
+{
+    switch (configuration_command_get_type(configuration_command)) {
+    case CONFIGURATION_COMMAND_TYPE_SET:
+        if (ctx->configuration_handler != NULL) {
+            ctx->configuration_handler(configuration_command_get_references(configuration_command),
+                                       configuration_command_get_values(configuration_command),
+                                       configuration_command_get_number_of_items(configuration_command));
+        }
+
+        /* Fallthrough */
+        /* break; */
+
+    case CONFIGURATION_COMMAND_TYPE_CURRENT:
+        if (ctx->configuration_provider != NULL) {
+            char references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE];
+            char values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE];
+
+            const size_t num_configuration_items =
+                ctx->configuration_provider(&references[0], &values[0], CONFIGURATION_ITEMS_SIZE);
+            if (num_configuration_items == 0) {
+                return;
+            }
+
+            outbound_message_t outbound_message;
+            if (!outbound_message_make_from_configuration(&ctx->parser, ctx->device_key, references, values,
+                                                          num_configuration_items, &outbound_message)) {
+                return;
+            }
+
+            if (_publish(ctx, &outbound_message) != W_FALSE) {
+                persistence_push(&ctx->persistence, &outbound_message);
+            }
+        }
+        break;
+
+    case CONFIGURATION_COMMAND_TYPE_UNKNOWN:
         break;
     }
 }

@@ -52,9 +52,11 @@ enum {
     COMMAND_ARGUMENT_SIZE = READING_SIZE,
 
     /* Maximum number of characters in configuration item name string */
-    CONFIGURATION_ITEM_NAME_SIZE = MANIFEST_ITEM_REFERENCE_SIZE,
+    CONFIGURATION_REFERENCE_SIZE = MANIFEST_ITEM_REFERENCE_SIZE,
     /* Maximum number of characters in configuration item value string */
-    CONFIGURATION_ITEM_VALUE_SIZE = READING_SIZE,
+    CONFIGURATION_VALUE_SIZE = READING_SIZE,
+    /* Maximum number of configuration items for device */
+    CONFIGURATION_ITEMS_SIZE = 5,
 
     /* Parser internal buffer size, should be at least READING_SIZE  big */
     PARSER_INTERNAL_BUFFER_SIZE = READING_SIZE,

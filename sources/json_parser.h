@@ -19,8 +19,8 @@
 
 #include "actuator_command.h"
 
+#include "configuration_command.h"
 #include "configuration_item.h"
-#include "configuration_item_command.h"
 #include "firmware_update_command.h"
 #include "firmware_update_packet_request.h"
 #include "firmware_update_status.h"
@@ -43,11 +43,12 @@ size_t json_deserialize_actuator_commands(char* topic, size_t topic_size, char* 
 bool json_serialize_readings_topic(reading_t* first_Reading, size_t num_readings, const char* device_key, char* buffer,
                                    size_t buffer_size);
 
-size_t json_serialize_configuration_items(configuration_item_t* first_config_item, size_t num_config_items,
-                                          char* buffer, size_t buffer_size);
+bool json_serialize_configuration(const char* device_key, char (*reference)[CONFIGURATION_REFERENCE_SIZE],
+                                  char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items,
+                                  outbound_message_t* outbound_message);
 
-size_t json_deserialize_configuration_items(char* buffer, size_t buffer_size,
-                                            configuration_item_command_t* commands_buffer, size_t commands_buffer_size);
+size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
+                                              configuration_command_t* commands_buffer, size_t commands_buffer_size);
 
 bool json_serialize_firmware_update_status(const char* device_key, firmware_update_status_t* status,
                                            outbound_message_t* outbound_message);
