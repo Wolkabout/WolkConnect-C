@@ -221,6 +221,21 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx);
  */
 WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference, const char* value, uint32_t utc_time);
 
+/** @brief Add multi-value string reading
+ *
+ *  @param ctx Context
+ *  @param reference Sensor reference
+ *  @param values Sensor values
+ *  @param values_size Number of sensor dimensions
+ *  @param delimiter Sensor reading delimiter as defined in sensor manifest
+ *  @param utc_time UTC time of sensor value acquisition [seconds]
+ *
+ *  @return Error code
+ */
+WOLK_ERR_T wolk_add_multi_value_string_sensor_reading(wolk_ctx_t* ctx, const char* reference,
+                                                      const char (*values)[READING_SIZE], uint16_t values_size,
+                                                      const char* delimiter, uint32_t utc_time);
+
 /**
  * @brief Add numeric reading
  *
@@ -234,6 +249,21 @@ WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference
 WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double value, uint32_t utc_time);
 
 /**
+ * @brief Add multi-value numeric reading
+ *
+ * @param ctx Context
+ * @param reference Sensor reference
+ * @param values Sensor values
+ * @param values_size Number of sensor dimensions
+ * @param delimiter Sensor reading delimiter as defined in sensor manifest
+ * @param utc_time UTC time of sensor value acquisition [seconds]
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double* values,
+                                                       uint16_t values_size, const char* delimiter, uint32_t utc_time);
+
+/**
  * @brief Add bool reading
  *
  * @param ctx Context
@@ -244,6 +274,21 @@ WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* referenc
  * @return Error code
  */
 WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool value, uint32_t utc_time);
+
+/**
+ * @brief Add multi-value bool reading
+ *
+ * @param ctx Context
+ * @param reference Sensor reference
+ * @param values Sensor values
+ * @param values_size Number of sensor dimensions
+ * @param delimiter Sensor reading delimiter as defined in sensor manifest
+ * @param utc_time UTC time of sensor value acquisition [seconds]
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool* values,
+                                                    uint16_t values_size, const char* delimiter, uint32_t utc_time);
 
 /**
  * @brief Add alarm
