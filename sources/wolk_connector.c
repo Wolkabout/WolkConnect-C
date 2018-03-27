@@ -308,6 +308,33 @@ WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
+WOLK_ERR_T wolk_add_multi_value_string_sensor_reading(wolk_ctx_t* ctx, const char* reference,
+                                                      const char (*values)[READING_SIZE], uint16_t values_size,
+                                                      const char* delimiter, uint32_t utc_time)
+{
+    /* Sanity check */
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(READING_DIMENSIONS > 1);
+    WOLK_ASSERT(strlen(delimiter) <= MANIFEST_ITEM_DATA_DELIMITER_SIZE);
+
+    manifest_item_t string_sensor;
+    manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
+    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, values_size, delimiter);
+
+    reading_t reading;
+    reading_init(&reading, &string_sensor);
+    reading_set_rtc(&reading, utc_time);
+
+    for (uint32_t i = 0; i < values_size; ++i) {
+        reading_set_data_at(&reading, values[i], i);
+    }
+
+    outbound_message_t outbound_message;
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
 WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double value, uint32_t utc_time)
 {
     /* Sanity check */
@@ -324,6 +351,35 @@ WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* referenc
     reading_init(&reading, &numeric_sensor);
     reading_set_data(&reading, value_str);
     reading_set_rtc(&reading, utc_time);
+
+    outbound_message_t outbound_message;
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double* values,
+                                                       uint16_t values_size, const char* delimiter, uint32_t utc_time)
+{
+    /* Sanity check */
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(READING_DIMENSIONS > 1);
+
+    manifest_item_t numeric_sensor;
+    manifest_item_init(&numeric_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
+    manifest_item_set_reading_dimensions_and_delimiter(&numeric_sensor, values_size, delimiter);
+
+    reading_t reading;
+    reading_init(&reading, &numeric_sensor);
+    reading_set_rtc(&reading, utc_time);
+
+    for (uint32_t i = 0; i < values_size; ++i) {
+        char value_str[READING_SIZE];
+        memset(value_str, 0, sizeof(value_str));
+        sprintf(value_str, "%f", values[i]);
+
+        reading_set_data_at(&reading, value_str, i);
+    }
 
     outbound_message_t outbound_message;
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
@@ -350,6 +406,31 @@ WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
+WOLK_ERR_T wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool* values,
+                                                    uint16_t values_size, const char* delimiter, uint32_t utc_time)
+{
+    /* Sanity check */
+    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(READING_DIMENSIONS > 1);
+    WOLK_ASSERT(strlen(delimiter) <= MANIFEST_ITEM_DATA_DELIMITER_SIZE);
+
+    manifest_item_t string_sensor;
+    manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
+    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, values_size, delimiter);
+
+    reading_t reading;
+    reading_init(&reading, &string_sensor);
+    reading_set_rtc(&reading, utc_time);
+
+    for (uint32_t i = 0; i < values_size; ++i) {
+        reading_set_data_at(&reading, BOOL_TO_STR(values[i]), i);
+    }
+
+    outbound_message_t outbound_message;
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
 
 WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, char* message, uint32_t utc_time)
 {
