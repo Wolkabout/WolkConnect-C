@@ -38,7 +38,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 3, WOLK_VERSION_PATCH = 0 };
+enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 4, WOLK_VERSION_PATCH = 0 };
 
 typedef enum { PROTOCOL_JSON_SINGLE = 0 } protocol_t;
 
@@ -96,6 +96,8 @@ typedef struct wolk_ctx {
 
     const char** actuator_references;
     uint32_t num_actuator_references;
+
+    uint32_t milliseconds_since_last_ping_keep_alive;
 
     bool is_initialized;
 } wolk_ctx_t;
@@ -221,10 +223,11 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx);
  * platform, obtain and perform actuation requests
  *
  * @param ctx Context
+ * @param tick Perid at which wolk_process is called
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_process(wolk_ctx_t* ctx);
+WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint32_t tick);
 
 /** @brief Add string reading
  *

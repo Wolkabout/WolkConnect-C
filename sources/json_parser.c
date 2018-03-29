@@ -618,3 +618,16 @@ bool json_serialize_firmware_update_version(const char* device_key, const char* 
 
     return true;
 }
+
+bool json_serialize_keep_alive_message(const char* device_key, outbound_message_t* outbound_message)
+{
+    outbound_message_init(outbound_message, "", "");
+
+    /* Serialize topic */
+    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "ping/%s", device_key)
+        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
+        return false;
+    }
+
+    return true;
+}

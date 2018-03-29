@@ -62,6 +62,8 @@ typedef struct {
                                                      outbound_message_t* outbound_message);
     bool (*serialize_firmware_update_version)(const char* device_key, const char* version,
                                               outbound_message_t* outbound_message);
+
+    bool (*serialize_keep_alive_message)(const char* device_key, outbound_message_t* outbound_message);
 } parser_t;
 
 void parser_init(parser_t* parser, parser_type_t parser_type);
@@ -106,6 +108,9 @@ bool parser_serialize_firmware_update_packet_request(parser_t* parser, const cha
 bool parser_serialize_firmware_update_version(parser_t* parser, const char* device_key, const char* version,
                                               outbound_message_t* outbound_message);
 /**** Firmware update ****/
+
+bool parser_serialize_keep_alive_message(parser_t* parser, const char* device_key,
+                                         outbound_message_t* outbound_message);
 
 parser_type_t parser_get_type(parser_t* parser);
 bool parser_is_initialized(parser_t* parser);

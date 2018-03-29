@@ -32,11 +32,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#define TIMEOUT_STEP 100000
-
 #define NON_EXISTING "N/A"
 
-#define KEEPALIVE_INTERVAL 60
+#define MQTT_KEEP_ALIVE_INTERVAL 60
+
+#define PING_KEEP_ALIVE_INTERVAL (60 * 1000)
 
 static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "actuators/commands/";
 
@@ -48,10 +48,9 @@ static const char* CONFIGURATION_COMMANDS = "configurations/commands/";
 static const char* LASTWILL_TOPIC = "lastwill/";
 static const char* LASTWILL_MESSAGE = "Gone offline";
 
-#define COMMAND_SET "SET"
-#define COMMAND_STATUS "STATUS"
+static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx);
+static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint32_t tick);
 
-static WOLK_ERR_T _keep_alive(wolk_ctx_t* ctx);
 static WOLK_ERR_T _receive(wolk_ctx_t* ctx);
 
 static WOLK_ERR_T _publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message);
@@ -119,7 +118,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     ctx->mqtt_transport.getfn = transport_getdatanb;
     ctx->mqtt_transport.state = 0;
     ctx->connectData.clientID.cstring = &ctx->device_key[0];
-    ctx->connectData.keepAliveInterval = KEEPALIVE_INTERVAL;
+    ctx->connectData.keepAliveInterval = MQTT_KEEP_ALIVE_INTERVAL;
     ctx->connectData.cleansession = 1;
     ctx->connectData.username.cstring = &ctx->device_key[0];
     ctx->connectData.password.cstring = &ctx->device_password[0];
@@ -135,6 +134,8 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
 
     ctx->actuator_references = actuator_references;
     ctx->num_actuator_references = num_actuator_references;
+
+    ctx->milliseconds_since_last_ping_keep_alive = PING_KEEP_ALIVE_INTERVAL;
 
     ctx->is_initialized = true;
 
@@ -269,7 +270,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     configuration_command_t configuration_command;
     configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_CURRENT);
     _handle_configuration_command(ctx, &configuration_command);
-    
+
     // TODO: Extract this
     outbound_message_t firmware_version_message;
     if (outbound_message_make_from_firmware_version(&ctx->parser, ctx->device_key,
@@ -298,12 +299,16 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_process(wolk_ctx_t* ctx)
+WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint32_t tick)
 {
     /* Sanity check */
     WOLK_ASSERT(_is_wolk_initialized(ctx));
 
-    if (_keep_alive(ctx) != W_FALSE) {
+    if (_mqtt_keep_alive(ctx) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    if (_ping_keep_alive(ctx, tick) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -528,7 +533,7 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
     return W_FALSE;
 }
 
-static WOLK_ERR_T _keep_alive(wolk_ctx_t* ctx)
+static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx)
 {
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
@@ -553,6 +558,24 @@ static WOLK_ERR_T _keep_alive(wolk_ctx_t* ctx)
             return W_TRUE;
         }
     } while (true);
+}
+
+static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
+{
+    outbound_message_t outbound_message;
+    outbound_message_make_from_keep_alive_message(&ctx->parser, ctx->device_key, &outbound_message);
+
+    if (ctx->milliseconds_since_last_ping_keep_alive < PING_KEEP_ALIVE_INTERVAL) {
+        ctx->milliseconds_since_last_ping_keep_alive += tick;
+        return W_FALSE;
+    }
+
+    if (_publish(ctx, &outbound_message) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    ctx->milliseconds_since_last_ping_keep_alive = 0;
+    return W_FALSE;
 }
 
 static WOLK_ERR_T _receive(wolk_ctx_t* ctx)

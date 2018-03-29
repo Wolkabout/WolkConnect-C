@@ -54,6 +54,9 @@ bool outbound_message_make_from_firmware_update_packet_request(
 bool outbound_message_make_from_firmware_version(parser_t* parser, const char* device_key, const char* version,
                                                  outbound_message_t* outbound_message);
 
+bool outbound_message_make_from_keep_alive_message(parser_t* parser, const char* device_key,
+                                                   outbound_message_t* outbound_message);
+
 #ifdef __cplusplus
 }
 #endif

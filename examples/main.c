@@ -349,8 +349,9 @@ int main(int argc, char *argv[])
     wolk_publish(&wolk);
 
     while (keep_running) {
-        wolk_process(&wolk);
-        usleep(1000);
+        usleep(5000);
+        
+        wolk_process(&wolk, 5);
     }
 
     printf("Wolk client - Diconnecting\n");
