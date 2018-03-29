@@ -50,6 +50,8 @@ void parser_init(parser_t* parser, parser_type_t parser_type)
         parser->deserialize_firmware_update_command = json_deserialize_firmware_update_command;
         parser->serialize_firmware_update_packet_request = json_serialize_firmware_update_packet_request;
         parser->serialize_firmware_update_version = json_serialize_firmware_update_version;
+
+        parser->serialize_keep_alive_message = json_serialize_keep_alive_message;
         break;
 
     default:
@@ -165,6 +167,14 @@ bool parser_serialize_firmware_update_version(parser_t* parser, const char* devi
     WOLK_ASSERT(version);
 
     return parser->serialize_firmware_update_version(device_key, version, outbound_message);
+}
+
+bool parser_serialize_keep_alive_message(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
+{
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+
+    return parser->serialize_keep_alive_message(device_key, outbound_message);
 }
 
 parser_type_t parser_get_type(parser_t* parser)

@@ -62,6 +62,8 @@ bool json_serialize_firmware_update_packet_request(const char* device_key,
 bool json_serialize_firmware_update_version(const char* device_key, const char* version,
                                             outbound_message_t* outbound_message);
 
+bool json_serialize_keep_alive_message(const char* device_key, outbound_message_t* outbound_message);
+
 #ifdef __cplusplus
 }
 #endif
