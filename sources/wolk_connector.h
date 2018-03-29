@@ -38,7 +38,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 1, WOLK_VERSION_PATCH = 0 };
+enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 2, WOLK_VERSION_PATCH = 0 };
 
 typedef enum { PROTOCOL_JSON_SINGLE = 0 } protocol_t;
 
