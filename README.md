@@ -166,3 +166,37 @@ wolk_init_firmware_update(&wolk,
 ```
 
 For more info on device firmware update mechanism see firmware_update.h file.
+
+**Keep Alive Mechanism:**
+
+WolkAbout C Connector by default uses Keep Alive mechanism to notify WolkAbout IoT Platform that device is still connected.
+Keep alive message is sent to WolkAbout IoT Platform every 10 minutes.
+
+To reduce network usage Keep Alive mechanism can be disabled in following manner:
+
+```c
+const char *device_key = "device_key";
+const char *device_password = "some_password";
+
+const char* actuator_references[] = {"SW", "SL"};
+const uint32_t num_actuator_references = 2;
+
+/* Sample in-memory persistence storage - size 1MB */
+uint8_t persistence_storage[1024*1024];
+
+/* WolkConnect-C Connector context */
+wolk_ctx_t wolk;
+
+wolk_init(&wolk,                                             /* Context */
+          send_buffer,                                       /* See send_func_t */
+          receive_buffer,                                    /* See recv_func_t */
+          actuation_handler,                                 /* Actuation handler        - see actuation_handler_t */
+          actuator_status_provider,                          /* Actuator status provider - see actuator_status_provider_t */
+          device_key, device_password,                       /* Device key and password provided by WolkAbout IoT Platform upon device creation */
+          PROTOCOL_JSON_SINGLE,                              /* Protocol specified for device */
+          actuator_references,                               /* Array of actuator references */
+          num_actuator_references);                          /* Number of actuator references */
+
+wolk_disable_keep_alive(&wolk);
+
+```

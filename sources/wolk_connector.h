@@ -38,7 +38,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 4, WOLK_VERSION_PATCH = 0 };
+enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 4, WOLK_VERSION_PATCH = 1 };
 
 typedef enum { PROTOCOL_JSON_SINGLE = 0 } protocol_t;
 
@@ -97,6 +97,7 @@ typedef struct wolk_ctx {
     const char** actuator_references;
     uint32_t num_actuator_references;
 
+    bool is_keep_alive_enabled;
     uint32_t milliseconds_since_last_ping_keep_alive;
 
     bool is_initialized;
@@ -165,7 +166,7 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
                                         persistence_pop_t pop, persistence_is_empty_t is_empty);
 
 /**
- * @brief wolk_init_firmware_update
+ * @brief Initializes firmware update
  *
  * @param ctx Context
  * @param version Current firmware version
@@ -188,6 +189,15 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_
                                      firmware_update_start_url_download_t start_url_download,
                                      firmware_update_is_url_download_done_t is_url_download_done);
 
+/**
+ * @brief Disables internal keep alive mechanism
+ *
+ * @param ctx Context
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_disable_keep_alive(wolk_ctx_t* ctx);
+    
 /**
  * @brief Connect to WolkAbout IoT Platform
  *
