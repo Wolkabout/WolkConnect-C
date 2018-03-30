@@ -135,6 +135,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     ctx->actuator_references = actuator_references;
     ctx->num_actuator_references = num_actuator_references;
 
+    ctx->is_keep_alive_enabled = true;
     ctx->milliseconds_since_last_ping_keep_alive = PING_KEEP_ALIVE_INTERVAL;
 
     ctx->is_initialized = true;
@@ -175,6 +176,15 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_
 
     firmware_update_set_on_status_listener(&ctx->firmware_update, _listener_on_status);
     firmware_update_set_on_packet_request_listener(&ctx->firmware_update, _listener_on_packet_request);
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_disable_keep_alive(wolk_ctx_t* ctx)
+{
+    /* Sanity check */
+    WOLK_ASSERT(ctx)
+    
+    ctx->is_keep_alive_enabled = false;
     return W_FALSE;
 }
 
@@ -562,6 +572,10 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx)
 
 static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
 {
+    if (!ctx->is_keep_alive_enabled) {
+        return W_FALSE;
+    }
+    
     outbound_message_t outbound_message;
     outbound_message_make_from_keep_alive_message(&ctx->parser, ctx->device_key, &outbound_message);
 
