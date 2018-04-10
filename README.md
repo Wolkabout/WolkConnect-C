@@ -37,6 +37,9 @@ step
 
 See `send_func_t` and `send_func_t` in `wolk_connector.h`
 
+Create a device manifest on the platform by importing `example-manifest.json`.
+This manifest fits example and demonstrates all the functionality of WolkConnect C
+
 ```c
 const char *device_key = "device_key";
 const char *device_password = "some_password";
