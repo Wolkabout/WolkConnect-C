@@ -16,16 +16,19 @@
 
 # MQTTPacket Library
 file(GLOB SOURCES "*.c")
-add_library(paho-embed-mqtt3c ${SOURCES})
+add_library(paho-embed-mqtt3c STATIC ${SOURCES})
 
 target_compile_definitions(paho-embed-mqtt3c PRIVATE MQTT_SERVER MQTT_CLIENT)
+set_property(TARGET paho-embed-mqtt3c PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 add_library(MQTTPacketClient STATIC MQTTFormat MQTTPacket
             MQTTSerializePublish MQTTDeserializePublish
             MQTTConnectClient MQTTSubscribeClient MQTTUnsubscribeClient transport)
 target_compile_definitions(MQTTPacketClient PRIVATE MQTT_CLIENT)
+set_property(TARGET MQTTPacketClient PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 add_library(MQTTPacketServer STATIC MQTTFormat MQTTPacket
             MQTTSerializePublish MQTTDeserializePublish
             MQTTConnectServer MQTTSubscribeServer MQTTUnsubscribeServer)
 target_compile_definitions(MQTTPacketServer PRIVATE MQTT_SERVER)
+set_property(TARGET MQTTPacketServer PROPERTY POSITION_INDEPENDENT_CODE ON)
