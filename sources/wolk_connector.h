@@ -197,7 +197,7 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_
  * @return Error code
  */
 WOLK_ERR_T wolk_disable_keep_alive(wolk_ctx_t* ctx);
-    
+
 /**
  * @brief Connect to WolkAbout IoT Platform
  *
