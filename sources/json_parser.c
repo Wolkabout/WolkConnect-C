@@ -283,7 +283,7 @@ bool json_serialize_readings_topic(reading_t* first_Reading, size_t num_readings
     return true;
 }
 
-char* replace_str(char* str, char* orig, char* rep, int start)
+static char* replace_str(char* str, char* orig, char* rep, int start)
 {
     static char temp[PARSER_INTERNAL_BUFFER_SIZE];
     static char buffer[PARSER_INTERNAL_BUFFER_SIZE];
