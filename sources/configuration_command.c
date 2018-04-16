@@ -23,8 +23,7 @@
 void configuration_command_init(configuration_command_t* command, configuration_command_type_t type)
 {
     /* Sanity check */
-    WOLK_ASSERT(strlen(reference) <= CONFIGURATION_REFERENCE_SIZE);
-    WOLK_ASSERT(strlen(value) <= CONFIGURATION_VALUE_SIZE);
+    WOLK_ASSERT(command);
 
     command->type = type;
 

@@ -182,7 +182,7 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_
 WOLK_ERR_T wolk_disable_keep_alive(wolk_ctx_t* ctx)
 {
     /* Sanity check */
-    WOLK_ASSERT(ctx)
+    WOLK_ASSERT(ctx);
 
     ctx->is_keep_alive_enabled = false;
     return W_FALSE;

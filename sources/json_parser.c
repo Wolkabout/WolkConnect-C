@@ -288,6 +288,7 @@ static char* replace_str(char* str, char* orig, char* rep, int start)
     static char temp[PARSER_INTERNAL_BUFFER_SIZE];
     static char buffer[PARSER_INTERNAL_BUFFER_SIZE];
 
+    WOLK_ASSERT(sizeof(temp) > strlen(str) - start);
     strcpy(temp, str + start);
 
     char* p;
@@ -295,6 +296,7 @@ static char* replace_str(char* str, char* orig, char* rep, int start)
         return temp;
     }
 
+    WOLK_ASSERT(sizeof(buffer) > p - temp);
     strncpy(buffer, temp, p - temp);
     buffer[p - temp] = '\0';
 

@@ -103,7 +103,6 @@ bool parser_serialize_configuration(parser_t* parser, const char* device_key,
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(num_configuration_items > 0);
-    WOLK_ASSERT(buffer_size >= PAYLOAD_SIZE);
 
     return parser->serialize_configuration(device_key, reference, value, num_configuration_items, outbound_message);
 }
@@ -115,7 +114,7 @@ size_t parser_deserialize_configuration_commands(parser_t* parser, char* buffer,
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(buffer_size < PAYLOAD_SIZE);
-    WOLK_ASSERT(num_config_items > 0);
+    WOLK_ASSERT(num_configuration_commands > 0);
 
     return parser->deserialize_configuration_commands(buffer, buffer_size, first_configuration_command,
                                                       num_configuration_commands);

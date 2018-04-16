@@ -144,7 +144,7 @@ bool outbound_message_make_from_keep_alive_message(parser_t* parser, const char*
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
-    WOLK_ASSERT(version);
+    WOLK_ASSERT(outbound_message);
 
     return parser_serialize_keep_alive_message(parser, device_key, outbound_message);
 }

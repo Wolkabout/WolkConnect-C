@@ -29,7 +29,7 @@ void in_memory_persistence_init(void* storage, uint32_t size, bool wrap)
 {
     uint32_t num_elements = size / sizeof(outbound_message_t);
     WOLK_ASSERT(num_elements > 0);
-    
+
     circular_buffer_init(&buffer, storage, num_elements, sizeof(outbound_message_t), wrap, true);
 }
 
