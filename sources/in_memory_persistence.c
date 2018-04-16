@@ -18,6 +18,7 @@
 #include "circular_buffer.h"
 #include "outbound_message.h"
 #include "persistence.h"
+#include "wolk_utils.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -27,6 +28,8 @@ static circular_buffer_t buffer;
 void in_memory_persistence_init(void* storage, uint32_t size, bool wrap)
 {
     uint32_t num_elements = size / sizeof(outbound_message_t);
+    WOLK_ASSERT(num_elements > 0);
+    
     circular_buffer_init(&buffer, storage, num_elements, sizeof(outbound_message_t), wrap, true);
 }
 
