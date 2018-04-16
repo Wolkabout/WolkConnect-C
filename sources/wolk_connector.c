@@ -576,14 +576,13 @@ static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
         return W_FALSE;
     }
 
-    outbound_message_t outbound_message;
-    outbound_message_make_from_keep_alive_message(&ctx->parser, ctx->device_key, &outbound_message);
-
     if (ctx->milliseconds_since_last_ping_keep_alive < PING_KEEP_ALIVE_INTERVAL) {
         ctx->milliseconds_since_last_ping_keep_alive += tick;
         return W_FALSE;
     }
 
+    outbound_message_t outbound_message;
+    outbound_message_make_from_keep_alive_message(&ctx->parser, ctx->device_key, &outbound_message);
     if (_publish(ctx, &outbound_message) != W_FALSE) {
         return W_TRUE;
     }
