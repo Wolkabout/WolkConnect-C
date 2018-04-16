@@ -38,7 +38,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 4, WOLK_VERSION_PATCH = 2 };
+enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 4, WOLK_VERSION_PATCH = 3 };
 
 typedef enum { PROTOCOL_JSON_SINGLE = 0 } protocol_t;
 
@@ -197,7 +197,7 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_
  * @return Error code
  */
 WOLK_ERR_T wolk_disable_keep_alive(wolk_ctx_t* ctx);
-    
+
 /**
  * @brief Connect to WolkAbout IoT Platform
  *

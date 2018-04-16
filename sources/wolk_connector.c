@@ -183,7 +183,7 @@ WOLK_ERR_T wolk_disable_keep_alive(wolk_ctx_t* ctx)
 {
     /* Sanity check */
     WOLK_ASSERT(ctx)
-    
+
     ctx->is_keep_alive_enabled = false;
     return W_FALSE;
 }
@@ -575,7 +575,7 @@ static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
     if (!ctx->is_keep_alive_enabled) {
         return W_FALSE;
     }
-    
+
     outbound_message_t outbound_message;
     outbound_message_make_from_keep_alive_message(&ctx->parser, ctx->device_key, &outbound_message);
 
