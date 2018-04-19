@@ -43,9 +43,9 @@ size_t json_deserialize_actuator_commands(char* topic, size_t topic_size, char* 
 bool json_serialize_readings_topic(reading_t* first_Reading, size_t num_readings, const char* device_key, char* buffer,
                                    size_t buffer_size);
 
-bool json_serialize_configuration(const char* device_key, char (*reference)[CONFIGURATION_REFERENCE_SIZE],
-                                  char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items,
-                                  outbound_message_t* outbound_message);
+size_t json_serialize_configuration(const char* device_key, char (*reference)[CONFIGURATION_REFERENCE_SIZE],
+                                    char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items,
+                                    outbound_message_t* outbound_message);
 
 size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
                                               configuration_command_t* commands_buffer, size_t commands_buffer_size);
