@@ -59,7 +59,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")
 
 add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c m)
+target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c)
 
 # Format code
 add_custom_target(format

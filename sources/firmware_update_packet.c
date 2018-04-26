@@ -63,6 +63,8 @@ uint8_t* firmware_update_packet_get_previous_packet_hash(uint8_t* packet, size_t
     WOLK_ASSERT(packet);
     WOLK_ASSERT(packet_size > 2 * FIRMWARE_UPDATE_HASH_SIZE);
 
+    WOLK_UNUSED(packet_size);
+
     return packet;
 }
 
@@ -72,6 +74,8 @@ uint8_t* firmware_update_packet_get_data(uint8_t* packet, size_t packet_size)
     WOLK_ASSERT(packet);
     WOLK_ASSERT(packet_size > 2 * FIRMWARE_UPDATE_HASH_SIZE);
 
+    WOLK_UNUSED(packet_size);
+
     return packet + FIRMWARE_UPDATE_HASH_SIZE;
 }
 
@@ -80,6 +84,8 @@ size_t firmware_update_packet_get_data_size(uint8_t* packet, size_t packet_size)
     /* Sanity check */
     WOLK_ASSERT(packet);
     WOLK_ASSERT(packet_size > 2 * FIRMWARE_UPDATE_HASH_SIZE);
+
+    WOLK_UNUSED(packet);
 
     return packet_size - (2 * FIRMWARE_UPDATE_HASH_SIZE);
 }

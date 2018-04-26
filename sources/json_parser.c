@@ -177,6 +177,8 @@ static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s
 static bool deserialize_actuator_command(char* topic, size_t topic_size, char* buffer, size_t buffer_size,
                                          actuator_command_t* command)
 {
+    WOLK_UNUSED(topic_size);
+
     jsmn_parser parser;
     jsmntok_t tokens[10]; /* No more than 10 JSON token(s) are expected, check
                              jsmn documentation for token definition */
@@ -306,9 +308,9 @@ static char* replace_str(char* str, char* orig, char* rep, int start)
     return replace_str(str, orig, rep, start + p - temp + 2);
 }
 
-bool json_serialize_configuration(const char* device_key, char (*reference)[CONFIGURATION_REFERENCE_SIZE],
-                                  char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items,
-                                  outbound_message_t* outbound_message)
+size_t json_serialize_configuration(const char* device_key, char (*reference)[CONFIGURATION_REFERENCE_SIZE],
+                                    char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items,
+                                    outbound_message_t* outbound_message)
 {
     outbound_message_init(outbound_message, "", "");
 
@@ -316,7 +318,7 @@ bool json_serialize_configuration(const char* device_key, char (*reference)[CONF
     if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "configurations/current/%s",
                  device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
-        return false;
+        return 0;
     }
 
     /* Serialize payload */
@@ -325,7 +327,7 @@ bool json_serialize_configuration(const char* device_key, char (*reference)[CONF
     memset(payload, '\0', payload_size);
 
     if (snprintf(payload, payload_size, "{\"values\":{") >= (int)payload_size) {
-        return false;
+        return 0;
     }
 
     for (size_t i = 0; i < num_configuration_items; ++i) {
@@ -364,9 +366,9 @@ bool json_serialize_configuration(const char* device_key, char (*reference)[CONF
 
     const size_t num_bytes_to_write = payload_size - strlen(payload);
     if (snprintf(payload + strlen(payload), payload_size - strlen(payload), "}}") >= (int)num_bytes_to_write) {
-        return false;
+        return 0;
     }
-    return true;
+    return 1;
 }
 
 size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,

@@ -22,7 +22,6 @@
 #include "wolk_connector.h"
 #include "wolk_utils.h"
 
-#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -385,7 +384,7 @@ static void _handle_file_upload(firmware_update_t* firmware_update, firmware_upd
         firmware_update->next_chunk_index = 0;
 
         firmware_update->expected_number_of_chunks =
-            (size_t)ceil((double)firmware_update_command_get_file_size(command) / firmware_update->chunk_size);
+            (size_t)WOLK_CEIL((double)firmware_update_command_get_file_size(command) / firmware_update->chunk_size);
         firmware_update->retry_count = 0;
 
         _listener_on_status(firmware_update, firmware_update_status_ok(FIRMWARE_UPDATE_STATE_FILE_TRANSFER));
@@ -577,7 +576,8 @@ static bool _is_firmware_file_valid(firmware_update_t* firmware_update)
     sha256_context sha256_ctx;
     sha256_init(&sha256_ctx);
 
-    for (size_t i = 0; i < (size_t)ceil((double)firmware_update->file_size / FIRMWARE_VERIFICATION_CHUNK_SIZE); ++i) {
+    for (size_t i = 0; i < (size_t)WOLK_CEIL((double)firmware_update->file_size / FIRMWARE_VERIFICATION_CHUNK_SIZE);
+         ++i) {
         uint8_t read_data[FIRMWARE_VERIFICATION_CHUNK_SIZE];
         const size_t read_data_size = _read_chunk(firmware_update, i, read_data, WOLK_ARRAY_LENGTH(read_data));
         sha256_hash(&sha256_ctx, read_data, read_data_size);
