@@ -474,7 +474,7 @@ WOLK_ERR_T wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t* ctx, const char*
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, char* message, uint32_t utc_time)
+WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, bool state, uint32_t utc_time)
 {
     /* Sanity check */
     WOLK_ASSERT(_is_wolk_initialized(ctx));
@@ -485,7 +485,7 @@ WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, char* message,
     reading_t alarm_reading;
     reading_init(&alarm_reading, &alarm);
     reading_set_rtc(&alarm_reading, utc_time);
-    reading_set_data(&alarm_reading, message);
+    reading_set_data(&alarm_reading, (state==true ? "ON" : "OFF"));
 
     outbound_message_t outbound_message;
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &alarm_reading, 1, &outbound_message);
