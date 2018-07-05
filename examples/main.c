@@ -339,7 +339,7 @@ int main(int argc, char *argv[])
     }
     printf ("Wolk client - Connected to server\n");
 
-    wolk_add_alarm(&wolk, "MA", "High humidity", 0);
+    wolk_add_alarm(&wolk, "HH", true, 0);
     wolk_publish(&wolk);
 
     wolk_add_numeric_sensor_reading(&wolk, "T", 25.6, 0);
