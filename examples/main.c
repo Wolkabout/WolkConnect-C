@@ -79,9 +79,13 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     return n;
 }
 
+static char actuator_value[READING_SIZE];
+
 static void actuation_handler(const char* reference, const char* value)
 {
     printf("Actuation handler - Reference: %s Value: %s\n", reference, value);
+
+    strcpy(actuator_value, value);
 }
 
 static actuator_status_t actuator_status_provider(const char* reference)
@@ -92,10 +96,10 @@ static actuator_status_t actuator_status_provider(const char* reference)
     actuator_status_init(&actuator_status, "", ACTUATOR_STATE_ERROR);
 
     if (strcmp(reference, "SW") == 0) {
-        actuator_status_init(&actuator_status, "true", ACTUATOR_STATE_READY);
+        actuator_status_init(&actuator_status, actuator_value, ACTUATOR_STATE_READY);
     }
     else if (strcmp(reference, "SL") == 0) {
-        actuator_status_init(&actuator_status, "88", ACTUATOR_STATE_READY);
+        actuator_status_init(&actuator_status, actuator_value, ACTUATOR_STATE_READY);
     }
 
     return actuator_status;
