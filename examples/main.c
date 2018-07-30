@@ -105,8 +105,8 @@ static actuator_status_t actuator_status_provider(const char* reference)
     return actuator_status;
 }
 
-static char device_configuration_references[3][CONFIGURATION_REFERENCE_SIZE] = {"refOne", "refTwo", "refThree"};
-static char device_configuration_values[3][CONFIGURATION_VALUE_SIZE] = {"valueOne", "valueTwo", "valueThree"};
+static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"config_1", "config_2", "config_3", "config_4"};
+static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"0", "False", "config_3", "configuration_4a,configuration_4b,configuration_4c"};
 
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                   char (*value)[CONFIGURATION_VALUE_SIZE],
@@ -125,14 +125,14 @@ static size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_S
                                      size_t max_num_configuration_items)
 {
     WOLK_UNUSED(max_num_configuration_items);
-    WOLK_ASSERT(max_num_configuration_items >= 3);
+    WOLK_ASSERT(max_num_configuration_items >= NUMBER_OF_CONFIGURATION);
     
-    for (size_t i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < CONFIGURATION_ITEMS_SIZE; ++i) {
         strcpy(reference[i], device_configuration_references[i]);
         strcpy(value[i], device_configuration_values[i]);
     }
     
-    return 3;
+    return CONFIGURATION_ITEMS_SIZE;
 }
 
 static int open_socket(void)
