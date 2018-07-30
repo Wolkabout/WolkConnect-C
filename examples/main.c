@@ -33,8 +33,8 @@
 #include <signal.h>
 
 static int sockfd;
-static const char *device_key = "device_key";
-static const char *device_password = "some_password";
+static const char *device_key = "6cazebqs0mbnv57u";
+static const char *device_password = "cdaab6c5-e35d-4fd2-b742-d8ce5466ecbd";
 static const char *hostname = "api-demo.wolkabout.com";
 static int portno = 1883;
 
@@ -105,8 +105,9 @@ static actuator_status_t actuator_status_provider(const char* reference)
     return actuator_status;
 }
 
-static char device_configuration_references[3][CONFIGURATION_REFERENCE_SIZE] = {"refOne", "refTwo", "refThree"};
-static char device_configuration_values[3][CONFIGURATION_VALUE_SIZE] = {"valueOne", "valueTwo", "valueThree"};
+#define NUMBER_OF_CONFIGURATION_ITEMS 4
+static char device_configuration_references[NUMBER_OF_CONFIGURATION_ITEMS][CONFIGURATION_REFERENCE_SIZE] = {"config_1", "config_2", "config_3", "config_4"};
+static char device_configuration_values[NUMBER_OF_CONFIGURATION_ITEMS][CONFIGURATION_VALUE_SIZE] = {"0", "False", "config_3", "configuration_4a,configuration_4b,configuration_4c"};
 
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                   char (*value)[CONFIGURATION_VALUE_SIZE],
@@ -125,14 +126,14 @@ static size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_S
                                      size_t max_num_configuration_items)
 {
     WOLK_UNUSED(max_num_configuration_items);
-    WOLK_ASSERT(max_num_configuration_items >= 3);
+    WOLK_ASSERT(max_num_configuration_items >= NUMBER_OF_CONFIGURATION);
     
-    for (size_t i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < NUMBER_OF_CONFIGURATION_ITEMS; ++i) {
         strcpy(reference[i], device_configuration_references[i]);
         strcpy(value[i], device_configuration_values[i]);
     }
     
-    return 3;
+    return NUMBER_OF_CONFIGURATION_ITEMS;
 }
 
 static int open_socket(void)
