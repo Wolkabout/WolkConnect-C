@@ -42,7 +42,7 @@ enum {
     MANIFEST_ITEM_DATA_DELIMITER_SIZE = 5,
 
     /* Maximum number of characters in reading value string */
-    READING_SIZE = 96,
+    READING_SIZE = 128,
     /* Maximum number of reading dimensions (Data size on DV-Tool) */
     READING_DIMENSIONS = 3,
 
