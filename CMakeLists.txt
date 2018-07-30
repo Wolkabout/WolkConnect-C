@@ -69,4 +69,5 @@ add_custom_target(format
                   VERBATIM)
 
 # Example
-add_subdirectory(examples)
+add_subdirectory(examples/simple)
+add_subdirectory(examples/full_feature_set)

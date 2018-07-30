@@ -33,9 +33,9 @@
 #include <signal.h>
 
 static int sockfd;
-static const char *device_key = "device_key";
-static const char *device_password = "some_password";
-static const char *hostname = "api-demo.wolkabout.com";
+static const char *device_key = "zthsey2v91e8y6gn";
+static const char *device_password = "9d0f6e78-fc00-4841-866b-8e7c9cc9e944";
+static const char *hostname = "api-verification2.wolksense.com";
 static int portno = 1883;
 
 static const char* actuator_references[] = {"SW", "SL"};
