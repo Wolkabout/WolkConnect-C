@@ -56,7 +56,7 @@ enum {
     /* Maximum number of characters in configuration item value string */
     CONFIGURATION_VALUE_SIZE = READING_SIZE,
     /* Maximum number of configuration items for device */
-    CONFIGURATION_ITEMS_SIZE = 5,
+    CONFIGURATION_ITEMS_SIZE = 4,
 
     /* Parser internal buffer size, should be at least READING_SIZE  big */
     PARSER_INTERNAL_BUFFER_SIZE = READING_SIZE,
