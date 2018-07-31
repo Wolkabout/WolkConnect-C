@@ -38,9 +38,6 @@ static const char *device_password = "cfff7321-25a1-441d-ade6-2f649085cba3";
 static const char *hostname = "api-verification2.wolksense.com";
 static int portno = 1883;
 
-static const char* actuator_references[] = {"SW", "SL"};
-static const uint32_t num_actuator_references = 2;
-
 
 static uint8_t persistence_storage[1024*1024];
 
@@ -78,32 +75,6 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     }
 
     return n;
-}
-
-static char actuator_value[READING_SIZE];
-
-static void actuation_handler(const char* reference, const char* value)
-{
-    printf("Actuation handler - Reference: %s Value: %s\n", reference, value);
-
-    strcpy(actuator_value, value);
-}
-
-static actuator_status_t actuator_status_provider(const char* reference)
-{
-    printf("Actuator status provider - Reference: %s\n", reference);
-
-    actuator_status_t actuator_status;
-    actuator_status_init(&actuator_status, "", ACTUATOR_STATE_ERROR);
-
-    if (strcmp(reference, "SW") == 0) {
-        actuator_status_init(&actuator_status, actuator_value, ACTUATOR_STATE_READY);
-    }
-    else if (strcmp(reference, "SL") == 0) {
-        actuator_status_init(&actuator_status, actuator_value, ACTUATOR_STATE_READY);
-    }
-
-    return actuator_status;
 }
 
 static int open_socket(void)
@@ -172,11 +143,11 @@ int main(int argc, char *argv[])
 
     if (wolk_init(&wolk,
                   send_buffer, receive_buffer,
-                  actuation_handler, actuator_status_provider,
+                  NULL, ACTUATOR_STATE_READY,
                   NULL,NULL,
                   device_key, device_password,
                   PROTOCOL_JSON_SINGLE,
-                  actuator_references, num_actuator_references) != W_FALSE) {
+                  NULL, NULL) != W_FALSE) {
         printf("Error initializing WolkConnect-C\n");
         return 1;
     }
