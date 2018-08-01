@@ -351,7 +351,8 @@ int main(int argc, char *argv[])
     wolk_add_numeric_sensor_reading(&wolk, "H", 52, 0);
     
     double accl_readings[3] = {1, 0, 0};
-    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, ",", 0);
+    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings, 3, 0);
+
     wolk_publish(&wolk);
 
     while (keep_running) {

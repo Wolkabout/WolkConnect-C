@@ -352,16 +352,15 @@ WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference
 
 WOLK_ERR_T wolk_add_multi_value_string_sensor_reading(wolk_ctx_t* ctx, const char* reference,
                                                       const char (*values)[READING_SIZE], uint16_t values_size,
-                                                      const char* delimiter, uint32_t utc_time)
+                                                      uint32_t utc_time)
 {
     /* Sanity check */
     WOLK_ASSERT(_is_wolk_initialized(ctx));
     WOLK_ASSERT(READING_DIMENSIONS > 1);
-    WOLK_ASSERT(strlen(delimiter) <= MANIFEST_ITEM_DATA_DELIMITER_SIZE);
 
     manifest_item_t string_sensor;
     manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
-    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, values_size, delimiter);
+    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, values_size, DATA_DELIMITER);
 
     reading_t reading;
     reading_init(&reading, &string_sensor);
@@ -401,7 +400,7 @@ WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* referenc
 }
 
 WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double* values,
-                                                       uint16_t values_size, const char* delimiter, uint32_t utc_time)
+                                                       uint16_t values_size, uint32_t utc_time)
 {
     /* Sanity check */
     WOLK_ASSERT(_is_wolk_initialized(ctx));
@@ -409,7 +408,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const ch
 
     manifest_item_t numeric_sensor;
     manifest_item_init(&numeric_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
-    manifest_item_set_reading_dimensions_and_delimiter(&numeric_sensor, values_size, delimiter);
+    manifest_item_set_reading_dimensions_and_delimiter(&numeric_sensor, values_size, DATA_DELIMITER);
 
     reading_t reading;
     reading_init(&reading, &numeric_sensor);
@@ -449,16 +448,15 @@ WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, 
 }
 
 WOLK_ERR_T wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool* values,
-                                                    uint16_t values_size, const char* delimiter, uint32_t utc_time)
+                                                    uint16_t values_size, uint32_t utc_time)
 {
     /* Sanity check */
     WOLK_ASSERT(_is_wolk_initialized(ctx));
     WOLK_ASSERT(READING_DIMENSIONS > 1);
-    WOLK_ASSERT(strlen(delimiter) <= MANIFEST_ITEM_DATA_DELIMITER_SIZE);
 
     manifest_item_t string_sensor;
     manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
-    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, values_size, delimiter);
+    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, values_size, DATA_DELIMITER);
 
     reading_t reading;
     reading_init(&reading, &string_sensor);
