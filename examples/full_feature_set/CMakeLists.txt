@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-add_executable(MQTTexample main.c)
+add_executable(full-seature-set main.c)
 
-target_link_libraries(MQTTexample WolkConnector_c pthread)
+target_link_libraries(full-seature-set WolkConnector_c pthread)

@@ -79,7 +79,7 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     return n;
 }
 
-static char actuator_value[READING_SIZE];
+static char actuator_value[READING_SIZE] = {"0"};
 
 static void actuation_handler(const char* reference, const char* value)
 {
@@ -346,14 +346,16 @@ int main(int argc, char *argv[])
     wolk_add_alarm(&wolk, "HH", true, 0);
     wolk_publish(&wolk);
 
+    wolk_add_numeric_sensor_reading(&wolk, "P", 1024, 0);
     wolk_add_numeric_sensor_reading(&wolk, "T", 25.6, 0);
+    wolk_add_numeric_sensor_reading(&wolk, "H", 52, 0);
     
     double accl_readings[3] = {1, 0, 0};
-    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, "_", 0);
+    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, ",", 0);
     wolk_publish(&wolk);
 
     while (keep_running) {
-        usleep(5000);
+        usleep(200000);
         
         wolk_process(&wolk, 5);
     }
