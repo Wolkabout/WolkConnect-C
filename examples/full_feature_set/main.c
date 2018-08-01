@@ -34,7 +34,7 @@
 
 static int sockfd;
 static const char *device_key = "zthsey2v91e8y6gn";
-static const char *device_password = "9d0f6e78-fc00-4841-866b-8e7c9cc9e944";
+static const char *device_password = "a2db7399-4687-41c2-96d7-b4f51ff1b10c";
 static const char *hostname = "api-verification2.wolksense.com";
 static int portno = 1883;
 
@@ -346,14 +346,16 @@ int main(int argc, char *argv[])
     wolk_add_alarm(&wolk, "HH", true, 0);
     wolk_publish(&wolk);
 
+    wolk_add_numeric_sensor_reading(&wolk, "P", 1024, 0);
     wolk_add_numeric_sensor_reading(&wolk, "T", 25.6, 0);
+    wolk_add_numeric_sensor_reading(&wolk, "H", 52, 0);
     
     double accl_readings[3] = {1, 0, 0};
-    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, "_", 0);
+    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, ",", 0);
     wolk_publish(&wolk);
 
     while (keep_running) {
-        usleep(5000);
+        usleep(200000);
         
         wolk_process(&wolk, 5);
     }
