@@ -33,8 +33,8 @@
 #include <signal.h>
 
 static int sockfd;
-static const char *device_key = "ukhj9i8lzkotqrru";
-static const char *device_password = "cfff7321-25a1-441d-ade6-2f649085cba3";
+static const char *device_key = "device_key";
+static const char *device_password = "some_password";
 static const char *hostname = "api-verification2.wolksense.com";
 static int portno = 1883;
 
