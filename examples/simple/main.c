@@ -38,12 +38,12 @@ static const char *device_password = "cfff7321-25a1-441d-ade6-2f649085cba3";
 static const char *hostname = "api-verification2.wolksense.com";
 static int portno = 1883;
 
-
 static uint8_t persistence_storage[1024*1024];
 
 static wolk_ctx_t wolk;
 
 static volatile bool keep_running = true;
+
 
 static void int_handler(int dummy)
 {
@@ -164,12 +164,15 @@ int main(int argc, char *argv[])
     }
     printf ("Wolk client - Connected to server\n");
 
+
     while (keep_running) {
-        wolk_add_numeric_sensor_reading(&wolk, "T", rand() % 40, 0);
+        wolk_add_numeric_sensor_reading(&wolk, "T", rand()%100-20, 0);
+
         wolk_publish(&wolk);
+
         wolk_process(&wolk, 5);
 
-        sleep(15);
+        sleep(5);
     }
 
     printf("Wolk client - Diconnecting\n");
