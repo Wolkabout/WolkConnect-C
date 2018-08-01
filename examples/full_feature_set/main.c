@@ -35,7 +35,7 @@
 static int sockfd;
 static const char *device_key = "device_key";
 static const char *device_password = "some_password";
-static const char *hostname = "api-verification2.wolksense.com";
+static const char *hostname = "api-demo.wolkabout.com";
 static int portno = 1883;
 
 static const char* actuator_references[] = {"SW", "SL"};
