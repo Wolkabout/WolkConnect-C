@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+static const char* DATA_DELIMITER = ",";
+
 typedef enum { READING_TYPE_SENSOR = 0, READING_TYPE_ACTUATOR, READING_TYPE_ALARM } reading_type_t;
 
 typedef enum { DATA_TYPE_NUMERIC = 0, DATA_TYPE_BOOLEAN, DATA_TYPE_STRING } data_type_t;

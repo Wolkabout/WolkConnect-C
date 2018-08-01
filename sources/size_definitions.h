@@ -39,7 +39,7 @@ enum {
     /* Maximum number of characters in reference string */
     MANIFEST_ITEM_REFERENCE_SIZE = 64,
     /* Maximum number of characters in delimiter string */
-    MANIFEST_ITEM_DATA_DELIMITER_SIZE = 5,
+    MANIFEST_ITEM_DATA_DELIMITER_SIZE = 3,
 
     /* Maximum number of characters in reading value string */
     READING_SIZE = 128,
