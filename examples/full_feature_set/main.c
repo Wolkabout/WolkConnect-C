@@ -79,7 +79,7 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     return n;
 }
 
-static char actuator_value[READING_SIZE];
+static char actuator_value[READING_SIZE] = {"0"};
 
 static void actuation_handler(const char* reference, const char* value)
 {
