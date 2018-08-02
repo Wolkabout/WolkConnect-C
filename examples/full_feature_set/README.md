@@ -87,9 +87,9 @@ wolk_publish_actuator_status(&wolk, "SLIDER_REF");
 ```
 This will invoke the `actuator_status_provider` to read the actuator status, and publish actuator status.
 
-**Publish device configuration to platform:**
+**Publish device configuration to platform: *UNDER CONSTRUCTION***
 ```c
-publish()
+wolk_publish_configuration_status(&wolk, "CONFIGURATION_REF");
 ```
 
 **Publishing events:**
