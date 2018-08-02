@@ -33,17 +33,20 @@
 #include <signal.h>
 
 static int sockfd;
+
 static const char *device_key = "device_key";
 static const char *device_password = "some_password";
 static const char *hostname = "api-demo.wolkabout.com";
 static int portno = 1883;
 
-static const char* actuator_references[] = {"SW", "SL"};
-static const uint32_t num_actuator_references = 2;
-
+/* Sample in-memory persistence storage - size 1MB */
 static uint8_t persistence_storage[1024*1024];
 
+/* WolkConnect-C Connector context */
 static wolk_ctx_t wolk;
+
+static const char* actuator_references[] = {"SW", "SL"};
+static const uint32_t num_actuator_references = 2;
 
 static volatile bool keep_running = true;
 

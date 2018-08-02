@@ -33,6 +33,8 @@ Example Usage
 
 Create a device on WolkAbout IoT platform by importing manifest file `full-example-manifest.json` located in `examples/full_feature_set/` This manifest fits `full_feature_set` example and demonstrates all the functionality of WolkConnect-C.
 
+**Establishing connection with WolkAbout IoT platform:**
+
 ```c
 static const char *device_key = "device_key";
 static const char *device_password = "some_password";
@@ -63,6 +65,8 @@ wolk_init_in_memory_persistence(&wolk,                       /* Context */
                                 persistence_storage,         /* Address to start of the memory which will be used by persistence mechanism */
                                 sizeof(persistence_storage), /* Size of memory in bytes */
                                 true);                       /* If storage is full overwrite oldest item when pushing */
+
+wolk_connect(&wolk);
 ```
 Considering that WolkConnect C Connector is transportation layer agnostic, it is up to the user of it to open connection to
 WolkAbout IoT Platform, optionally setup TLS, and forward read/write callbacks WolkConnect-C Connector in initialization
@@ -70,19 +74,39 @@ step.
 
 See `send_func_t` and `send_func_t` in `sources/wolk_connector.h`
 
-**Establishing connection with WolkAbout IoT platform:**
-```c
-wolk_connect(&wolk);
-```
 **Adding sensor readings:**
 ```c
-wolk_add_string_sensor_reading(&wolk, "STRING_SENSOR_REFERENCE", "Str value", 0);
+wolk_add_numeric_sensor_reading(&wolk, "NUMERIC_SENSOR_REFERENCE", 3.14, 0);
+
+wolk_add_bool_sensor_reading(&wolk, "BOOL_SENSOR_REFERENCE", false, 0);
 ```
+
+**Publishing actuator statuses:**
+```c
+wolk_publish_actuator_status(&wolk, "SLIDER_REF");
+```
+This will invoke the `actuator_status_provider` to read the actuator status, and publish actuator status.
+
+**Publish device configuration to platform:**
+```c
+publish()
+```
+
+**Publishing events:**
+```c
+wolk_add_alarm(&wolk, "ALARM_REF", "ALARM MESSAGE", 0);
+```
+
 **Data publish strategy:**
 
-Sensor reading is pushed to WolkAbout IoT platform on demand by calling
+Sensor readings, and alarms are pushed to WolkAbout IoT platform on demand by calling
 ```c
 wolk_publish(&wolk);
+```
+
+Whereas actuator statuses are published automatically by calling:
+```c
+wolk_publish_actuator_status(&wolk, "SLIDER_REF");
 ```
 
 **Disconnecting from the platform:**
@@ -96,7 +120,16 @@ Fuction `wolk_process(wolk_ctx_t *ctx)` is non-blocking in order to comply with 
 and it must to be called periodically.
 
 ```c
-	wolk_process(&wolk, 5);
+while (keep_running)
+{
+    wolk_process(&wolk);
+
+    task_one();
+
+    task_three();
+
+    usleep(500);
+}
 ```
 
 **Data persistence:**
@@ -117,6 +150,38 @@ wolk_init_custom_persistence(&wolk,
 
 For more info on persistence mechanism see `sources/persistence.h` and `sources/in_memory_persistence.h` files.
 
-**Additional functionality**
+**Firmware Update:**
 
-WolkConnect-C library has integrated additional features which can perform full WolkAbout IoT platform potential. Read more about full feature set example [HERE](https://github.com/Wolkabout/WolkConnect-C/tree/master/examples/full_feature_set).
+WolkAbout C Connector provides mechanism for updating device firmware.
+
+By default this feature is disabled.
+See code snippet below on how to enable device firmware update.
+
+```c
+wolk_init_firmware_update(&wolk,
+                          "1.0.0",                                      // Current firmware version
+                          128 * 1024 * 1024,                            // Maximum acceptable size of firmware file, in bytes
+                          256,                                          // Size of firmware file transfer chunk, in bytes
+                          firmware_update_start,                        // Prepares device for receiving firmware file
+                          firmware_chunk_write,                         // Writes received firmware file chunk
+                          firmware_chunk_read,                          // Reads requested firmware file chunk
+                          firmware_update_abort,                        // Aborts firmware update sequence
+                          firmware_update_finalize,                     // Reboots device
+                          firmware_update_persist_firmware_version,     // Places given firmware version to persistent storage
+                          firmware_update_unpersist_firmware_version,   // Reads persisted firmware version from persistent storage
+                          NULL,                                         // Optional custom download handler that obtains file from URL
+                          NULL)                                         // Reports URL download state (in progress | done), and it's result (success | failure)
+```
+
+For more info on device firmware update mechanism see firmware_update.h file.
+
+**Keep Alive Mechanism:**
+
+WolkAbout C Connector by default uses Keep Alive mechanism to notify WolkAbout IoT Platform that device is still connected.
+Keep alive message is sent to WolkAbout IoT Platform every 10 minutes.
+
+To reduce network usage Keep Alive mechanism can be disabled in following manner:
+
+```c
+wolk_disable_keep_alive(&wolk);
+```
