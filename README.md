@@ -31,7 +31,7 @@ Example Usage
 -------------
 **Initialize WolkConnect-C Connector**
 
-Create a device on WolkAbout IoT platform by importing [simple-example-manifest.json](https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/simple/simple-example-manifest.json) located in `examples/simple/`.
+Create a device on WolkAbout IoT platform by importing `simple-example-manifest.json` located in `examples/simple/`.
 This manifest fits `simple` example and demonstrates the sending of a temperature sensor reading.
 
 ```c
@@ -77,7 +77,7 @@ wolk_connect(&wolk);
 ```
 **Adding sensor readings:**
 ```c
-wolk_add_string_sensor_reading(&wolk, "STRING_SENSOR_REFERENCE", "Str value", 0);
+wolk_add_numeric_sensor_reading(&wolk, "T", 23.4, 0);
 ```
 **Data publish strategy:**
 
