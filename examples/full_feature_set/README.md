@@ -31,7 +31,7 @@ Example Usage
 -------------
 **Initialize WolkConnect-C Connector**
 
-Create a device on WolkAbout IoT platform by importing manifest file `full-example-manifest.json` located in `examples/full_feature_set/` This manifest fits `full_feature_set` example and demonstrates all the functionality of WolkConnect-C.
+Create a device on WolkAbout IoT platform by importing manifest file `full-example-manifest.json` located in `examples/full_feature_set/`. This manifest fits `full_feature_set` example and demonstrates all the functionality of WolkConnect-C library.
 
 **Establishing connection with WolkAbout IoT platform:**
 
@@ -76,7 +76,7 @@ See `send_func_t` and `send_func_t` in `sources/wolk_connector.h`
 
 **Adding sensor readings:**
 ```c
-wolk_add_numeric_sensor_reading(&wolk, "NUMERIC_SENSOR_REFERENCE", 3.14, 0);
+wolk_add_numeric_sensor_reading(&wolk, "NUMERIC_SENSOR_REFERENCE", 23.4, 0);
 
 wolk_add_bool_sensor_reading(&wolk, "BOOL_SENSOR_REFERENCE", false, 0);
 ```
@@ -87,7 +87,7 @@ wolk_publish_actuator_status(&wolk, "SLIDER_REF");
 ```
 This will invoke the `actuator_status_provider` to read the actuator status, and publish actuator status.
 
-**Publish device configuration to platform: *UNDER CONSTRUCTION***
+**Publish device configuration to platform:**
 ```c
 wolk_publish_configuration_status(&wolk, "CONFIGURATION_REF");
 ```
@@ -173,7 +173,7 @@ wolk_init_firmware_update(&wolk,
                           NULL)                                         // Reports URL download state (in progress | done), and it's result (success | failure)
 ```
 
-For more info on device firmware update mechanism see firmware_update.h file.
+For more info on device firmware update mechanism see `firmware_update.h` file.
 
 **Keep Alive Mechanism:**
 
