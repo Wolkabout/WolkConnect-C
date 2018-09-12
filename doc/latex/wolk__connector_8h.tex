@@ -1,0 +1,707 @@
+\hypertarget{wolk__connector_8h}{}\section{sources/wolk\+\_\+connector.h File Reference}
+\label{wolk__connector_8h}\index{sources/wolk\+\_\+connector.\+h@{sources/wolk\+\_\+connector.\+h}}
+{\ttfamily \#include \char`\"{}M\+Q\+T\+T\+Packet.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}actuator\+\_\+status.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}firmware\+\_\+update.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}parser.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}persistence.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}size\+\_\+definitions.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}transport.\+h\char`\"{}}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structwolk__ctx}{wolk\+\_\+ctx}
+\begin{DoxyCompactList}\small\item\em Wolk\+About IoT Platform connector context. Most of the parameters are used to initialize Wolk\+Connect library forwarding to \hyperlink{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{wolk\+\_\+init()}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef unsigned char \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}
+\begin{DoxyCompactList}\small\item\em W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T Boolean used for error handling in Wolk\+Connect-\/C library. \end{DoxyCompactList}\item 
+typedef unsigned char \hyperlink{wolk__connector_8h_a8b01c4c1e6c1d8d91197fb49c642c4ef}{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}
+\begin{DoxyCompactList}\small\item\em W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T Boolean used in Wolk\+Connect-\/C library. \end{DoxyCompactList}\item 
+typedef int($\ast$ \hyperlink{wolk__connector_8h_a830662686699e21c1280f63d2ec80faf}{send\+\_\+func\+\_\+t}) (unsigned char $\ast$bytes, unsigned int num\+\_\+bytes)
+\begin{DoxyCompactList}\small\item\em Callback declaration for writting bytes to socket. \end{DoxyCompactList}\item 
+typedef int($\ast$ \hyperlink{wolk__connector_8h_ac6f167182b7b63052d13946a6c4fba06}{recv\+\_\+func\+\_\+t}) (unsigned char $\ast$bytes, unsigned int num\+\_\+bytes)
+\begin{DoxyCompactList}\small\item\em Callback declaration for reading bytes from socket. \end{DoxyCompactList}\item 
+typedef void($\ast$ \hyperlink{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}{actuation\+\_\+handler\+\_\+t}) (const char $\ast$reference, const char $\ast$value)
+\begin{DoxyCompactList}\small\item\em Declaration of actuator handler. Actuator reference and value are the pairs of data on the same place in own arrays. \end{DoxyCompactList}\item 
+typedef actuator\+\_\+status\+\_\+t($\ast$ \hyperlink{wolk__connector_8h_af3e8919a04a293972b64605557287537}{actuator\+\_\+status\+\_\+provider\+\_\+t}) (const char $\ast$reference)
+\begin{DoxyCompactList}\small\item\em Declaration of actuator status. \end{DoxyCompactList}\item 
+typedef void($\ast$ \hyperlink{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}{configuration\+\_\+handler\+\_\+t}) (char($\ast$reference)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+R\+E\+F\+E\+R\+E\+N\+C\+E\+\_\+\+S\+I\+ZE\mbox{]}, char($\ast$value)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+V\+A\+L\+U\+E\+\_\+\+S\+I\+ZE\mbox{]}, size\+\_\+t num\+\_\+configuration\+\_\+items)
+\begin{DoxyCompactList}\small\item\em Declaration of configuration handler. Configuration reference and value are the pairs of data on the same place in own arrays. \end{DoxyCompactList}\item 
+typedef size\+\_\+t($\ast$ \hyperlink{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}{configuration\+\_\+provider\+\_\+t}) (char($\ast$reference)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+R\+E\+F\+E\+R\+E\+N\+C\+E\+\_\+\+S\+I\+ZE\mbox{]}, char($\ast$value)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+V\+A\+L\+U\+E\+\_\+\+S\+I\+ZE\mbox{]}, size\+\_\+t max\+\_\+num\+\_\+configuration\+\_\+items)
+\begin{DoxyCompactList}\small\item\em Declaration of configuration provider. \end{DoxyCompactList}\item 
+typedef struct \hyperlink{structwolk__ctx}{wolk\+\_\+ctx} \hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t}
+\begin{DoxyCompactList}\small\item\em Wolk\+About IoT Platform connector context. Most of the parameters are used to initialize Wolk\+Connect library forwarding to \hyperlink{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{wolk\+\_\+init()}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{wolk\+\_\+init} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, \hyperlink{wolk__connector_8h_a830662686699e21c1280f63d2ec80faf}{send\+\_\+func\+\_\+t} snd\+\_\+func, \hyperlink{wolk__connector_8h_ac6f167182b7b63052d13946a6c4fba06}{recv\+\_\+func\+\_\+t} rcv\+\_\+func, \hyperlink{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}{actuation\+\_\+handler\+\_\+t} actuation\+\_\+handler, \hyperlink{wolk__connector_8h_af3e8919a04a293972b64605557287537}{actuator\+\_\+status\+\_\+provider\+\_\+t} actuator\+\_\+status\+\_\+provider, \hyperlink{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}{configuration\+\_\+handler\+\_\+t} configuration\+\_\+handler, \hyperlink{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}{configuration\+\_\+provider\+\_\+t} configuration\+\_\+provider, const char $\ast$device\+\_\+key, const char $\ast$device\+\_\+password, \hyperlink{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}{protocol\+\_\+t} protocol, const char $\ast$$\ast$actuator\+\_\+references, uint32\+\_\+t num\+\_\+actuator\+\_\+references)
+\begin{DoxyCompactList}\small\item\em Initializes Wolk\+About IoT Platform connector context. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_a0fbb983c6b65072501b078ba6ff8e5ad}{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, void $\ast$storage, uint32\+\_\+t size, bool wrap)
+\begin{DoxyCompactList}\small\item\em Initializes persistence mechanism with in-\/memory implementation. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_a4cb5cc0164b0ab19f9b2bf36d28e9913}{wolk\+\_\+init\+\_\+custom\+\_\+persistence} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, persistence\+\_\+push\+\_\+t push, persistence\+\_\+peek\+\_\+t peek, persistence\+\_\+pop\+\_\+t pop, persistence\+\_\+is\+\_\+empty\+\_\+t is\+\_\+empty)
+\begin{DoxyCompactList}\small\item\em Initializes persistence mechanism with custom implementation. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_a077b59e55a348cd2601bb269a04c77d6}{wolk\+\_\+init\+\_\+firmware\+\_\+update} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, const char $\ast$version, size\+\_\+t maximum\+\_\+firmware\+\_\+size, size\+\_\+t chunk\+\_\+size, firmware\+\_\+update\+\_\+start\+\_\+t start, firmware\+\_\+update\+\_\+write\+\_\+chunk\+\_\+t write\+\_\+chunk, firmware\+\_\+update\+\_\+read\+\_\+chunk\+\_\+t read\+\_\+chunk, firmware\+\_\+update\+\_\+abort\+\_\+t abort, firmware\+\_\+update\+\_\+finalize\+\_\+t finalize, firmware\+\_\+update\+\_\+persist\+\_\+firmware\+\_\+version\+\_\+t persist\+\_\+version, firmware\+\_\+update\+\_\+unpersist\+\_\+firmware\+\_\+version\+\_\+t unpersist\+\_\+version, firmware\+\_\+update\+\_\+start\+\_\+url\+\_\+download\+\_\+t start\+\_\+url\+\_\+download, firmware\+\_\+update\+\_\+is\+\_\+url\+\_\+download\+\_\+done\+\_\+t is\+\_\+url\+\_\+download\+\_\+done)
+\begin{DoxyCompactList}\small\item\em Initializes firmware update. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_ac04ee6d0e9cac773f77a57b89383c715}{wolk\+\_\+disable\+\_\+keep\+\_\+alive} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx)
+\begin{DoxyCompactList}\small\item\em Disables internal keep alive mechanism. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_ab246fad03ad57f3efe89f4ec2c93a288}{wolk\+\_\+connect} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx)
+\begin{DoxyCompactList}\small\item\em Connect to Wolk\+About IoT Platform. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_af174943365b8cddc1e6e9351996805c3}{wolk\+\_\+disconnect} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx)
+\begin{DoxyCompactList}\small\item\em Disconnect from Wolk\+About IoT Platform. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_a57a05d76cc96bc5de0ee0e9a23ca5a8e}{wolk\+\_\+process} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, uint32\+\_\+t tick)
+\begin{DoxyCompactList}\small\item\em Must be called periodically to keep alive connection to Wolk\+About IoT platform, obtain and perform actuation requests. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_a5588d57c8ff9d6138f418803bbe064fb}{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, const char $\ast$reference, const char $\ast$value, uint32\+\_\+t utc\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Add string reading. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_a4a7c8f7b4ead8006d8330e4bba64f6ec}{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, const char $\ast$reference, const char($\ast$values)\mbox{[}R\+E\+A\+D\+I\+N\+G\+\_\+\+S\+I\+ZE\mbox{]}, uint16\+\_\+t values\+\_\+size, uint32\+\_\+t utc\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Add multi-\/value string reading. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_ab7bcc53c7c06a6cc2b8db5190b1af70f}{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, const char $\ast$reference, double value, uint32\+\_\+t utc\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Add numeric reading. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_a27582cf8777d4a8c5f4e8a7aae4c71e0}{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, const char $\ast$reference, double $\ast$values, uint16\+\_\+t values\+\_\+size, uint32\+\_\+t utc\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Add multi-\/value numeric reading. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_ad1bb3cf88c78d7aa9669c4118e654849}{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, const char $\ast$reference, bool value, uint32\+\_\+t utc\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Add bool reading. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_a8d365d03f444eb3284615a138f30f1fa}{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, const char $\ast$reference, bool $\ast$values, uint16\+\_\+t values\+\_\+size, uint32\+\_\+t utc\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Add multi-\/value bool reading. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_aec965973c23d360dc158d8ef6d037e54}{wolk\+\_\+add\+\_\+alarm} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, const char $\ast$reference, bool state, uint32\+\_\+t utc\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Add alarm. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_aa510c9f8df1d095d4e1aef9b7fdaf600}{wolk\+\_\+publish\+\_\+actuator\+\_\+status} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx, const char $\ast$reference)
+\begin{DoxyCompactList}\small\item\em Obtains actuator status via actuator\+\_\+status\+\_\+provider\+\_\+t and publishes it. If actuator status can not be published, it is persisted. \end{DoxyCompactList}\item 
+\hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} \hyperlink{wolk__connector_8h_ac5e7ddb346ea4b9a7cc4511d3728be09}{wolk\+\_\+publish} (\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$ctx)
+\begin{DoxyCompactList}\small\item\em Publish accumulated sensor readings, and alarms. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Typedef Documentation}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!actuation\+\_\+handler\+\_\+t@{actuation\+\_\+handler\+\_\+t}}
+\index{actuation\+\_\+handler\+\_\+t@{actuation\+\_\+handler\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{actuation\+\_\+handler\+\_\+t}{actuation_handler_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef void($\ast$ actuation\+\_\+handler\+\_\+t) (const char $\ast$reference, const char $\ast$value)}\hypertarget{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}{}\label{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}
+
+
+Declaration of actuator handler. Actuator reference and value are the pairs of data on the same place in own arrays. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em reference} & actuator references defined in manifest on Wolk\+About IoT Platform. \\
+\hline
+{\em value} & value received from Wolk\+About IoT Platform. \\
+\hline
+\end{DoxyParams}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!actuator\+\_\+status\+\_\+provider\+\_\+t@{actuator\+\_\+status\+\_\+provider\+\_\+t}}
+\index{actuator\+\_\+status\+\_\+provider\+\_\+t@{actuator\+\_\+status\+\_\+provider\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{actuator\+\_\+status\+\_\+provider\+\_\+t}{actuator_status_provider_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef actuator\+\_\+status\+\_\+t($\ast$ actuator\+\_\+status\+\_\+provider\+\_\+t) (const char $\ast$reference)}\hypertarget{wolk__connector_8h_af3e8919a04a293972b64605557287537}{}\label{wolk__connector_8h_af3e8919a04a293972b64605557287537}
+
+
+Declaration of actuator status. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em reference} & actuator references define in manifest on Wolk\+About IoT Platform \\
+\hline
+\end{DoxyParams}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!configuration\+\_\+handler\+\_\+t@{configuration\+\_\+handler\+\_\+t}}
+\index{configuration\+\_\+handler\+\_\+t@{configuration\+\_\+handler\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{configuration\+\_\+handler\+\_\+t}{configuration_handler_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef void($\ast$ configuration\+\_\+handler\+\_\+t) (char($\ast$reference)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+R\+E\+F\+E\+R\+E\+N\+C\+E\+\_\+\+S\+I\+ZE\mbox{]}, char($\ast$value)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+V\+A\+L\+U\+E\+\_\+\+S\+I\+ZE\mbox{]}, size\+\_\+t num\+\_\+configuration\+\_\+items)}\hypertarget{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}{}\label{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}
+
+
+Declaration of configuration handler. Configuration reference and value are the pairs of data on the same place in own arrays. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em reference} & actuator references define in manifest on Wolk\+About IoT Platform \\
+\hline
+{\em value} & actuator values received from Wolk\+About IoT Platform. \\
+\hline
+{\em num\+\_\+configuration\+\_\+items} & number of used configuration parameters \\
+\hline
+\end{DoxyParams}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!configuration\+\_\+provider\+\_\+t@{configuration\+\_\+provider\+\_\+t}}
+\index{configuration\+\_\+provider\+\_\+t@{configuration\+\_\+provider\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{configuration\+\_\+provider\+\_\+t}{configuration_provider_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef size\+\_\+t($\ast$ configuration\+\_\+provider\+\_\+t) (char($\ast$reference)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+R\+E\+F\+E\+R\+E\+N\+C\+E\+\_\+\+S\+I\+ZE\mbox{]}, char($\ast$value)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+V\+A\+L\+U\+E\+\_\+\+S\+I\+ZE\mbox{]}, size\+\_\+t max\+\_\+num\+\_\+configuration\+\_\+items)}\hypertarget{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}{}\label{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}
+
+
+Declaration of configuration provider. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em reference} & configuration references define in manifest on Wolk\+About IoT Platform \\
+\hline
+{\em value} & configuration values received from Wolk\+About IoT Platform \\
+\hline
+{\em num\+\_\+configuration\+\_\+items} & number of used configuration parameters \\
+\hline
+\end{DoxyParams}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!recv\+\_\+func\+\_\+t@{recv\+\_\+func\+\_\+t}}
+\index{recv\+\_\+func\+\_\+t@{recv\+\_\+func\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{recv\+\_\+func\+\_\+t}{recv_func_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef int($\ast$ recv\+\_\+func\+\_\+t) (unsigned char $\ast$bytes, unsigned int num\+\_\+bytes)}\hypertarget{wolk__connector_8h_ac6f167182b7b63052d13946a6c4fba06}{}\label{wolk__connector_8h_ac6f167182b7b63052d13946a6c4fba06}
+
+
+Callback declaration for reading bytes from socket. 
+
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!send\+\_\+func\+\_\+t@{send\+\_\+func\+\_\+t}}
+\index{send\+\_\+func\+\_\+t@{send\+\_\+func\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{send\+\_\+func\+\_\+t}{send_func_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef int($\ast$ send\+\_\+func\+\_\+t) (unsigned char $\ast$bytes, unsigned int num\+\_\+bytes)}\hypertarget{wolk__connector_8h_a830662686699e21c1280f63d2ec80faf}{}\label{wolk__connector_8h_a830662686699e21c1280f63d2ec80faf}
+
+
+Callback declaration for writting bytes to socket. 
+
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T@{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}}
+\index{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T@{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}{WOLK_BOOL_T}}]{\setlength{\rightskip}{0pt plus 5cm}typedef unsigned char {\bf W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}}\hypertarget{wolk__connector_8h_a8b01c4c1e6c1d8d91197fb49c642c4ef}{}\label{wolk__connector_8h_a8b01c4c1e6c1d8d91197fb49c642c4ef}
+
+
+W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T Boolean used in Wolk\+Connect-\/C library. 
+
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+ctx\+\_\+t@{wolk\+\_\+ctx\+\_\+t}}
+\index{wolk\+\_\+ctx\+\_\+t@{wolk\+\_\+ctx\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+ctx\+\_\+t}{wolk_ctx_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf wolk\+\_\+ctx}  {\bf wolk\+\_\+ctx\+\_\+t}}\hypertarget{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{}\label{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}
+
+
+Wolk\+About IoT Platform connector context. Most of the parameters are used to initialize Wolk\+Connect library forwarding to \hyperlink{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{wolk\+\_\+init()}. 
+
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T@{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}}
+\index{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T@{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}{WOLK_ERR_T}}]{\setlength{\rightskip}{0pt plus 5cm}typedef unsigned char {\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}}\hypertarget{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{}\label{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}
+
+
+W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T Boolean used for error handling in Wolk\+Connect-\/C library. 
+
+
+
+\subsection{Enumeration Type Documentation}
+\subsubsection[{\texorpdfstring{anonymous enum}{anonymous enum}}]{\setlength{\rightskip}{0pt plus 5cm}anonymous enum}\hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55b}{}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55b}
+
+
+Library versioning. 
+
+\begin{Desc}
+\item[Enumerator]\par
+\begin{description}
+\index{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR}}\item[{\em 
+W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR\hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba447aa6141eb0f03228f39d152985b062}{}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba447aa6141eb0f03228f39d152985b062}
+}]\index{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR}}\item[{\em 
+W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR\hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba969b4fa8b86e732fd734fad63a85c3da}{}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba969b4fa8b86e732fd734fad63a85c3da}
+}]\index{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH}}\item[{\em 
+W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH\hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba747cdd3ba3df6a7a9813b05b06c698e0}{}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba747cdd3ba3df6a7a9813b05b06c698e0}
+}]\end{description}
+\end{Desc}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!protocol\+\_\+t@{protocol\+\_\+t}}
+\index{protocol\+\_\+t@{protocol\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{protocol\+\_\+t}{protocol_t}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf protocol\+\_\+t}}\hypertarget{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}{}\label{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}
+
+
+Supported protocols, Wolk\+Connect libararies currently support only P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE. 
+
+\begin{Desc}
+\item[Enumerator]\par
+\begin{description}
+\index{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE@{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE@{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE}}\item[{\em 
+P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE\hypertarget{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5fa9574b7cae2523f47c59e082e473223bd}{}\label{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5fa9574b7cae2523f47c59e082e473223bd}
+}]\end{description}
+\end{Desc}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values@{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}}
+\index{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values@{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}{WOLK_BOOL_T_values}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}}\hypertarget{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546af}{}\label{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546af}
+\begin{Desc}
+\item[Enumerator]\par
+\begin{description}
+\index{W\+\_\+\+F\+A\+L\+SE@{W\+\_\+\+F\+A\+L\+SE}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+\_\+\+F\+A\+L\+SE@{W\+\_\+\+F\+A\+L\+SE}}\item[{\em 
+W\+\_\+\+F\+A\+L\+SE\hypertarget{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa0abf1977616eb22dc9af960a3a664376}{}\label{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa0abf1977616eb22dc9af960a3a664376}
+}]\index{W\+\_\+\+T\+R\+UE@{W\+\_\+\+T\+R\+UE}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+\_\+\+T\+R\+UE@{W\+\_\+\+T\+R\+UE}}\item[{\em 
+W\+\_\+\+T\+R\+UE\hypertarget{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa93fad5ad6fdb521eabff2efa8934f722}{}\label{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa93fad5ad6fdb521eabff2efa8934f722}
+}]\end{description}
+\end{Desc}
+
+
+\subsection{Function Documentation}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+alarm@{wolk\+\_\+add\+\_\+alarm}}
+\index{wolk\+\_\+add\+\_\+alarm@{wolk\+\_\+add\+\_\+alarm}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+alarm(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, bool state, uint32\+\_\+t utc\+\_\+time)}{wolk_add_alarm(wolk_ctx_t *ctx, const char *reference, bool state, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+alarm (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{const char $\ast$}]{reference, }
+\item[{bool}]{state, }
+\item[{uint32\+\_\+t}]{utc\+\_\+time}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_aec965973c23d360dc158d8ef6d037e54}{}\label{wolk__connector_8h_aec965973c23d360dc158d8ef6d037e54}
+
+
+Add alarm. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em reference} & Alarm reference \\
+\hline
+{\em message} & Alarm message \\
+\hline
+{\em utc\+\_\+time} & U\+TC time when alarm was risen \mbox{[}seconds\mbox{]}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading}}
+\index{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, bool value, uint32\+\_\+t utc\+\_\+time)}{wolk_add_bool_sensor_reading(wolk_ctx_t *ctx, const char *reference, bool value, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{const char $\ast$}]{reference, }
+\item[{bool}]{value, }
+\item[{uint32\+\_\+t}]{utc\+\_\+time}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_ad1bb3cf88c78d7aa9669c4118e654849}{}\label{wolk__connector_8h_ad1bb3cf88c78d7aa9669c4118e654849}
+
+
+Add bool reading. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em reference} & Sensor reference \\
+\hline
+{\em value} & Sensor value \\
+\hline
+{\em utc\+\_\+time} & U\+TC time of sensor value acquisition \mbox{[}seconds\mbox{]}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading}}
+\index{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, bool $\ast$values, uint16\+\_\+t values\+\_\+size, uint32\+\_\+t utc\+\_\+time)}{wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t *ctx, const char *reference, bool *values, uint16_t values_size, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{const char $\ast$}]{reference, }
+\item[{bool $\ast$}]{values, }
+\item[{uint16\+\_\+t}]{values\+\_\+size, }
+\item[{uint32\+\_\+t}]{utc\+\_\+time}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_a8d365d03f444eb3284615a138f30f1fa}{}\label{wolk__connector_8h_a8d365d03f444eb3284615a138f30f1fa}
+
+
+Add multi-\/value bool reading. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em reference} & Sensor reference \\
+\hline
+{\em values} & Sensor values \\
+\hline
+{\em values\+\_\+size} & Number of sensor dimensions \\
+\hline
+{\em utc\+\_\+time} & U\+TC time of sensor value acquisition \mbox{[}seconds\mbox{]}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading}}
+\index{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, double $\ast$values, uint16\+\_\+t values\+\_\+size, uint32\+\_\+t utc\+\_\+time)}{wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t *ctx, const char *reference, double *values, uint16_t values_size, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{const char $\ast$}]{reference, }
+\item[{double $\ast$}]{values, }
+\item[{uint16\+\_\+t}]{values\+\_\+size, }
+\item[{uint32\+\_\+t}]{utc\+\_\+time}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_a27582cf8777d4a8c5f4e8a7aae4c71e0}{}\label{wolk__connector_8h_a27582cf8777d4a8c5f4e8a7aae4c71e0}
+
+
+Add multi-\/value numeric reading. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em reference} & Sensor reference \\
+\hline
+{\em values} & Sensor values \\
+\hline
+{\em values\+\_\+size} & Number of sensor dimensions \\
+\hline
+{\em utc\+\_\+time} & U\+TC time of sensor value acquisition \mbox{[}seconds\mbox{]}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading}}
+\index{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, const char($\ast$values)[R\+E\+A\+D\+I\+N\+G\+\_\+\+S\+I\+ZE], uint16\+\_\+t values\+\_\+size, uint32\+\_\+t utc\+\_\+time)}{wolk_add_multi_value_string_sensor_reading(wolk_ctx_t *ctx, const char *reference, const char(*values)[READING_SIZE], uint16_t values_size, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{const char $\ast$}]{reference, }
+\item[{const char($\ast$)}]{values\mbox{[}\+R\+E\+A\+D\+I\+N\+G\+\_\+\+S\+I\+Z\+E\mbox{]}, }
+\item[{uint16\+\_\+t}]{values\+\_\+size, }
+\item[{uint32\+\_\+t}]{utc\+\_\+time}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_a4a7c8f7b4ead8006d8330e4bba64f6ec}{}\label{wolk__connector_8h_a4a7c8f7b4ead8006d8330e4bba64f6ec}
+
+
+Add multi-\/value string reading. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em reference} & Sensor reference \\
+\hline
+{\em values} & Sensor values \\
+\hline
+{\em values\+\_\+size} & Number of sensor dimensions \\
+\hline
+{\em utc\+\_\+time} & U\+TC time of sensor value acquisition \mbox{[}seconds\mbox{]}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading}}
+\index{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, double value, uint32\+\_\+t utc\+\_\+time)}{wolk_add_numeric_sensor_reading(wolk_ctx_t *ctx, const char *reference, double value, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{const char $\ast$}]{reference, }
+\item[{double}]{value, }
+\item[{uint32\+\_\+t}]{utc\+\_\+time}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_ab7bcc53c7c06a6cc2b8db5190b1af70f}{}\label{wolk__connector_8h_ab7bcc53c7c06a6cc2b8db5190b1af70f}
+
+
+Add numeric reading. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em reference} & Sensor reference \\
+\hline
+{\em value} & Sensor value \\
+\hline
+{\em utc\+\_\+time} & U\+TC time of sensor value acquisition \mbox{[}seconds\mbox{]}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading}}
+\index{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, const char $\ast$value, uint32\+\_\+t utc\+\_\+time)}{wolk_add_string_sensor_reading(wolk_ctx_t *ctx, const char *reference, const char *value, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{const char $\ast$}]{reference, }
+\item[{const char $\ast$}]{value, }
+\item[{uint32\+\_\+t}]{utc\+\_\+time}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_a5588d57c8ff9d6138f418803bbe064fb}{}\label{wolk__connector_8h_a5588d57c8ff9d6138f418803bbe064fb}
+
+
+Add string reading. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em reference} & Sensor reference \\
+\hline
+{\em value} & Sensor value \\
+\hline
+{\em utc\+\_\+time} & U\+TC time of sensor value acquisition \mbox{[}seconds\mbox{]}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+connect@{wolk\+\_\+connect}}
+\index{wolk\+\_\+connect@{wolk\+\_\+connect}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+connect(wolk\+\_\+ctx\+\_\+t $\ast$ctx)}{wolk_connect(wolk_ctx_t *ctx)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+connect (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_ab246fad03ad57f3efe89f4ec2c93a288}{}\label{wolk__connector_8h_ab246fad03ad57f3efe89f4ec2c93a288}
+
+
+Connect to Wolk\+About IoT Platform. 
+
+Prior to connecting, following must be performed\+:
+\begin{DoxyEnumerate}
+\item Context must be initialized via wolk\+\_\+init(wolk\+\_\+ctx\+\_\+t$\ast$ ctx, send\+\_\+func snd\+\_\+func, recv\+\_\+func rcv\+\_\+func, const char {\itshape device\+\_\+key, const char $\ast$password, protocol\+\_\+t protocol)}
+\item {\itshape Persistence must be initialized using wolk\+\_\+initialize\+\_\+in\+\_\+memory\+\_\+persistence(wolk\+\_\+ctx\+\_\+t $\ast$ctx, void} storage, uint16\+\_\+t num\+\_\+elements, bool wrap) or wolk\+\_\+initialize\+\_\+custom\+\_\+persistence(wolk\+\_\+ctx\+\_\+t $\ast$ctx, persistence\+\_\+push\+\_\+t push, persistence\+\_\+pop\+\_\+t pop, persistence\+\_\+is\+\_\+empty\+\_\+t is\+\_\+empty, persistence\+\_\+size\+\_\+t size)
+\end{DoxyEnumerate}
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+disable\+\_\+keep\+\_\+alive@{wolk\+\_\+disable\+\_\+keep\+\_\+alive}}
+\index{wolk\+\_\+disable\+\_\+keep\+\_\+alive@{wolk\+\_\+disable\+\_\+keep\+\_\+alive}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+disable\+\_\+keep\+\_\+alive(wolk\+\_\+ctx\+\_\+t $\ast$ctx)}{wolk_disable_keep_alive(wolk_ctx_t *ctx)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+disable\+\_\+keep\+\_\+alive (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_ac04ee6d0e9cac773f77a57b89383c715}{}\label{wolk__connector_8h_ac04ee6d0e9cac773f77a57b89383c715}
+
+
+Disables internal keep alive mechanism. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+disconnect@{wolk\+\_\+disconnect}}
+\index{wolk\+\_\+disconnect@{wolk\+\_\+disconnect}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+disconnect(wolk\+\_\+ctx\+\_\+t $\ast$ctx)}{wolk_disconnect(wolk_ctx_t *ctx)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+disconnect (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_af174943365b8cddc1e6e9351996805c3}{}\label{wolk__connector_8h_af174943365b8cddc1e6e9351996805c3}
+
+
+Disconnect from Wolk\+About IoT Platform. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+init@{wolk\+\_\+init}}
+\index{wolk\+\_\+init@{wolk\+\_\+init}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+init(wolk\+\_\+ctx\+\_\+t $\ast$ctx, send\+\_\+func\+\_\+t snd\+\_\+func, recv\+\_\+func\+\_\+t rcv\+\_\+func, actuation\+\_\+handler\+\_\+t actuation\+\_\+handler, actuator\+\_\+status\+\_\+provider\+\_\+t actuator\+\_\+status\+\_\+provider, configuration\+\_\+handler\+\_\+t configuration\+\_\+handler, configuration\+\_\+provider\+\_\+t configuration\+\_\+provider, const char $\ast$device\+\_\+key, const char $\ast$device\+\_\+password, protocol\+\_\+t protocol, const char $\ast$$\ast$actuator\+\_\+references, uint32\+\_\+t num\+\_\+actuator\+\_\+references)}{wolk_init(wolk_ctx_t *ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler, actuator_status_provider_t actuator_status_provider, configuration_handler_t configuration_handler, configuration_provider_t configuration_provider, const char *device_key, const char *device_password, protocol_t protocol, const char **actuator_references, uint32_t num_actuator_references)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{{\bf send\+\_\+func\+\_\+t}}]{snd\+\_\+func, }
+\item[{{\bf recv\+\_\+func\+\_\+t}}]{rcv\+\_\+func, }
+\item[{{\bf actuation\+\_\+handler\+\_\+t}}]{actuation\+\_\+handler, }
+\item[{{\bf actuator\+\_\+status\+\_\+provider\+\_\+t}}]{actuator\+\_\+status\+\_\+provider, }
+\item[{{\bf configuration\+\_\+handler\+\_\+t}}]{configuration\+\_\+handler, }
+\item[{{\bf configuration\+\_\+provider\+\_\+t}}]{configuration\+\_\+provider, }
+\item[{const char $\ast$}]{device\+\_\+key, }
+\item[{const char $\ast$}]{device\+\_\+password, }
+\item[{{\bf protocol\+\_\+t}}]{protocol, }
+\item[{const char $\ast$$\ast$}]{actuator\+\_\+references, }
+\item[{uint32\+\_\+t}]{num\+\_\+actuator\+\_\+references}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{}\label{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}
+
+
+Initializes Wolk\+About IoT Platform connector context. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context\\
+\hline
+{\em snd\+\_\+func} & Callback function that handles outgoing traffic \\
+\hline
+{\em rcv\+\_\+func} & Callback function that handles incoming traffic\\
+\hline
+{\em actuation\+\_\+handler} & function pointer to \textquotesingle{}actuation\+\_\+handler\+\_\+t\textquotesingle{} implementation \\
+\hline
+{\em actuator\+\_\+status\+\_\+provider} & function pointer to \textquotesingle{}actuator\+\_\+status\+\_\+provider\+\_\+t\textquotesingle{} implementation\\
+\hline
+{\em configuration\+\_\+handler} & function pointer to \textquotesingle{}configuration\+\_\+handler\+\_\+t\textquotesingle{} implementation \\
+\hline
+{\em configuration\+\_\+provider} & function pointer to \textquotesingle{}configuration\+\_\+provider\+\_\+t\textquotesingle{} implementation\\
+\hline
+{\em device\+\_\+key} & Device key provided by Wolk\+About IoT Platform upon device creation \\
+\hline
+{\em password} & Device password provided by Wolk\+About IoT Platform device upon device creation \\
+\hline
+{\em protocol} & Protocol specified for device\\
+\hline
+{\em actuator\+\_\+references} & Array of strings containing references of actuators that device possess \\
+\hline
+{\em num\+\_\+actuator\+\_\+references} & Number of actuator references contained in actuator\+\_\+references\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+init\+\_\+custom\+\_\+persistence@{wolk\+\_\+init\+\_\+custom\+\_\+persistence}}
+\index{wolk\+\_\+init\+\_\+custom\+\_\+persistence@{wolk\+\_\+init\+\_\+custom\+\_\+persistence}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+init\+\_\+custom\+\_\+persistence(wolk\+\_\+ctx\+\_\+t $\ast$ctx, persistence\+\_\+push\+\_\+t push, persistence\+\_\+peek\+\_\+t peek, persistence\+\_\+pop\+\_\+t pop, persistence\+\_\+is\+\_\+empty\+\_\+t is\+\_\+empty)}{wolk_init_custom_persistence(wolk_ctx_t *ctx, persistence_push_t push, persistence_peek_t peek, persistence_pop_t pop, persistence_is_empty_t is_empty)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init\+\_\+custom\+\_\+persistence (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{persistence\+\_\+push\+\_\+t}]{push, }
+\item[{persistence\+\_\+peek\+\_\+t}]{peek, }
+\item[{persistence\+\_\+pop\+\_\+t}]{pop, }
+\item[{persistence\+\_\+is\+\_\+empty\+\_\+t}]{is\+\_\+empty}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_a4cb5cc0164b0ab19f9b2bf36d28e9913}{}\label{wolk__connector_8h_a4cb5cc0164b0ab19f9b2bf36d28e9913}
+
+
+Initializes persistence mechanism with custom implementation. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em push} & Function pointer to \textquotesingle{}push\textquotesingle{} implemenation \\
+\hline
+{\em pop} & Function pointer to \textquotesingle{}pop\textquotesingle{} implementation \\
+\hline
+{\em is\+\_\+empty} & Function pointer to \textquotesingle{}is empty\textquotesingle{} implementation\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code
+\end{DoxyReturn}
+\begin{DoxySeeAlso}{See also}
+persistence.\+h for signatures of methods to be implemented, and implementation contract 
+\end{DoxySeeAlso}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+init\+\_\+firmware\+\_\+update@{wolk\+\_\+init\+\_\+firmware\+\_\+update}}
+\index{wolk\+\_\+init\+\_\+firmware\+\_\+update@{wolk\+\_\+init\+\_\+firmware\+\_\+update}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+init\+\_\+firmware\+\_\+update(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$version, size\+\_\+t maximum\+\_\+firmware\+\_\+size, size\+\_\+t chunk\+\_\+size, firmware\+\_\+update\+\_\+start\+\_\+t start, firmware\+\_\+update\+\_\+write\+\_\+chunk\+\_\+t write\+\_\+chunk, firmware\+\_\+update\+\_\+read\+\_\+chunk\+\_\+t read\+\_\+chunk, firmware\+\_\+update\+\_\+abort\+\_\+t abort, firmware\+\_\+update\+\_\+finalize\+\_\+t finalize, firmware\+\_\+update\+\_\+persist\+\_\+firmware\+\_\+version\+\_\+t persist\+\_\+version, firmware\+\_\+update\+\_\+unpersist\+\_\+firmware\+\_\+version\+\_\+t unpersist\+\_\+version, firmware\+\_\+update\+\_\+start\+\_\+url\+\_\+download\+\_\+t start\+\_\+url\+\_\+download, firmware\+\_\+update\+\_\+is\+\_\+url\+\_\+download\+\_\+done\+\_\+t is\+\_\+url\+\_\+download\+\_\+done)}{wolk_init_firmware_update(wolk_ctx_t *ctx, const char *version, size_t maximum_firmware_size, size_t chunk_size, firmware_update_start_t start, firmware_update_write_chunk_t write_chunk, firmware_update_read_chunk_t read_chunk, firmware_update_abort_t abort, firmware_update_finalize_t finalize, firmware_update_persist_firmware_version_t persist_version, firmware_update_unpersist_firmware_version_t unpersist_version, firmware_update_start_url_download_t start_url_download, firmware_update_is_url_download_done_t is_url_download_done)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init\+\_\+firmware\+\_\+update (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{const char $\ast$}]{version, }
+\item[{size\+\_\+t}]{maximum\+\_\+firmware\+\_\+size, }
+\item[{size\+\_\+t}]{chunk\+\_\+size, }
+\item[{firmware\+\_\+update\+\_\+start\+\_\+t}]{start, }
+\item[{firmware\+\_\+update\+\_\+write\+\_\+chunk\+\_\+t}]{write\+\_\+chunk, }
+\item[{firmware\+\_\+update\+\_\+read\+\_\+chunk\+\_\+t}]{read\+\_\+chunk, }
+\item[{firmware\+\_\+update\+\_\+abort\+\_\+t}]{abort, }
+\item[{firmware\+\_\+update\+\_\+finalize\+\_\+t}]{finalize, }
+\item[{firmware\+\_\+update\+\_\+persist\+\_\+firmware\+\_\+version\+\_\+t}]{persist\+\_\+version, }
+\item[{firmware\+\_\+update\+\_\+unpersist\+\_\+firmware\+\_\+version\+\_\+t}]{unpersist\+\_\+version, }
+\item[{firmware\+\_\+update\+\_\+start\+\_\+url\+\_\+download\+\_\+t}]{start\+\_\+url\+\_\+download, }
+\item[{firmware\+\_\+update\+\_\+is\+\_\+url\+\_\+download\+\_\+done\+\_\+t}]{is\+\_\+url\+\_\+download\+\_\+done}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_a077b59e55a348cd2601bb269a04c77d6}{}\label{wolk__connector_8h_a077b59e55a348cd2601bb269a04c77d6}
+
+
+Initializes firmware update. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em version} & Current firmware version \\
+\hline
+{\em maximum\+\_\+firmware\+\_\+size} & Maximum acceptable size of firmware file, in bytes \\
+\hline
+{\em chunk\+\_\+size} & Firmware file is transfered in chunks of size \textquotesingle{}chunk\+\_\+size\textquotesingle{} \\
+\hline
+{\em start} & Function pointer to \textquotesingle{}firmware\+\_\+update\+\_\+start\textquotesingle{} implementation \\
+\hline
+{\em write\+\_\+chunk} & Function pointer to \textquotesingle{}firmware\+\_\+update\+\_\+write\+\_\+chunk\textquotesingle{} implementation \\
+\hline
+{\em read\+\_\+chunk} & Function pointer to \textquotesingle{}firmware\+\_\+update\+\_\+read\+\_\+chunk\textquotesingle{} implementation \\
+\hline
+{\em abort} & Function pointer to \textquotesingle{}firmware\+\_\+update\+\_\+abort\textquotesingle{} implementation \\
+\hline
+{\em finalize} & Function pointer to \textquotesingle{}firmware\+\_\+update\+\_\+finalize\textquotesingle{} implementation\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code. 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence@{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence}}
+\index{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence@{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence(wolk\+\_\+ctx\+\_\+t $\ast$ctx, void $\ast$storage, uint32\+\_\+t size, bool wrap)}{wolk_init_in_memory_persistence(wolk_ctx_t *ctx, void *storage, uint32_t size, bool wrap)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{void $\ast$}]{storage, }
+\item[{uint32\+\_\+t}]{size, }
+\item[{bool}]{wrap}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_a0fbb983c6b65072501b078ba6ff8e5ad}{}\label{wolk__connector_8h_a0fbb983c6b65072501b078ba6ff8e5ad}
+
+
+Initializes persistence mechanism with in-\/memory implementation. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em storage} & Address to start of the memory which will be used by persistence mechanism \\
+\hline
+{\em size} & Size of memory in bytes \\
+\hline
+{\em wrap} & If storage is full overwrite oldest item when pushing new item\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+process@{wolk\+\_\+process}}
+\index{wolk\+\_\+process@{wolk\+\_\+process}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+process(wolk\+\_\+ctx\+\_\+t $\ast$ctx, uint32\+\_\+t tick)}{wolk_process(wolk_ctx_t *ctx, uint32_t tick)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+process (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{uint32\+\_\+t}]{tick}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_a57a05d76cc96bc5de0ee0e9a23ca5a8e}{}\label{wolk__connector_8h_a57a05d76cc96bc5de0ee0e9a23ca5a8e}
+
+
+Must be called periodically to keep alive connection to Wolk\+About IoT platform, obtain and perform actuation requests. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em tick} & Perid at which wolk\+\_\+process is called\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+publish@{wolk\+\_\+publish}}
+\index{wolk\+\_\+publish@{wolk\+\_\+publish}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+publish(wolk\+\_\+ctx\+\_\+t $\ast$ctx)}{wolk_publish(wolk_ctx_t *ctx)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+publish (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_ac5e7ddb346ea4b9a7cc4511d3728be09}{}\label{wolk__connector_8h_ac5e7ddb346ea4b9a7cc4511d3728be09}
+
+
+Publish accumulated sensor readings, and alarms. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
+\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+publish\+\_\+actuator\+\_\+status@{wolk\+\_\+publish\+\_\+actuator\+\_\+status}}
+\index{wolk\+\_\+publish\+\_\+actuator\+\_\+status@{wolk\+\_\+publish\+\_\+actuator\+\_\+status}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
+\subsubsection[{\texorpdfstring{wolk\+\_\+publish\+\_\+actuator\+\_\+status(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference)}{wolk_publish_actuator_status(wolk_ctx_t *ctx, const char *reference)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+publish\+\_\+actuator\+\_\+status (
+\begin{DoxyParamCaption}
+\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
+\item[{const char $\ast$}]{reference}
+\end{DoxyParamCaption}
+)}\hypertarget{wolk__connector_8h_aa510c9f8df1d095d4e1aef9b7fdaf600}{}\label{wolk__connector_8h_aa510c9f8df1d095d4e1aef9b7fdaf600}
+
+
+Obtains actuator status via actuator\+\_\+status\+\_\+provider\+\_\+t and publishes it. If actuator status can not be published, it is persisted. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Context \\
+\hline
+{\em reference} & Actuator reference\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code 
+\end{DoxyReturn}
