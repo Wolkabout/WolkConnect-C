@@ -60,51 +60,69 @@ typedef unsigned char WOLK_BOOL_T;
 enum WOLK_BOOL_T_values { W_FALSE = 0, W_TRUE = 1 };
 
 /**
- * @brief Define Callback for writting bytes to socket
+ * @brief Callback declaration for writting bytes to socket
  */
 typedef int (*send_func_t)(unsigned char* bytes, unsigned int num_bytes);
 
 /**
- * @brief Define Callback for reading bytes from socket
+ * @brief Callback declaration for reading bytes from socket
  */
 typedef int (*recv_func_t)(unsigned char* bytes, unsigned int num_bytes);
 
 /**
- * @brief Callback declaration for received actuators from WolkAbout IoT Platform.
+ * @brief Declaration of actuator handler.
+ * Actuator reference and value are the pairs of data on the same place in own arrays.
+ *
+ * @param reference actuator references defined in manifest on WolkAbout IoT Platform.
+ * @param value value received from WolkAbout IoT Platform.
  */
 typedef void (*actuation_handler_t)(const char* reference, const char* value);
 /**
- * @brief Callback declaration for providing the current actuators status to  WolkAbout IoT Platform.
+ * @brief Declaration of actuator status
+ *
+ * @param reference actuator references define in manifest on WolkAbout IoT Platform
  */
 typedef actuator_status_t (*actuator_status_provider_t)(const char* reference);
 
 /**
- * @brief Callback declaration for received configurations from WolkAbout IoT Platform.
+ * @brief Declaration of configuration handler.
+ * Configuration reference and value are the pairs of data on the same place in own arrays.
+ *
+ * @param reference actuator references define in manifest on WolkAbout IoT Platform
+ * @param value actuator values received from WolkAbout IoT Platform.
+ * @param num_configuration_items number of used configuration parameters
  */
 typedef void (*configuration_handler_t)(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                         char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items);
 /**
- * @brief Callback declaration for providing the current status of configuration parameters to  WolkAbout IoT Platform.
+ * @brief Declaration of configuration provider
+ *
+ * @param reference configuration references define in manifest on WolkAbout IoT Platform
+ * @param value configuration values received from WolkAbout IoT Platform
+ * @param num_configuration_items number of used configuration parameters
  */
 typedef size_t (*configuration_provider_t)(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                            char (*value)[CONFIGURATION_VALUE_SIZE], size_t max_num_configuration_items);
-
+/**
+ * @brief  WolkAbout IoT Platform connector context.
+ * Most of the parameters are used to initialize WolkConnect library forwarding to wolk_init().
+ */
 typedef struct wolk_ctx {
     int sock;
     MQTTPacket_connectData connectData;
     MQTTTransport mqtt_transport;
     transport_iofunctions_t iof;
 
-    actuation_handler_t actuation_handler;
-    actuator_status_provider_t actuator_status_provider;
+    actuation_handler_t actuation_handler;                  /**< Callback for handling received actuation from WolkAbout IoT Platform. @see actuation_handler_t*/
+    actuator_status_provider_t actuator_status_provider;    /**< Callback for providing the current actuator status to WolkAbout IoT Platform. @see actuator_status_provider_t*/
 
-    configuration_handler_t configuration_handler;
-    configuration_provider_t configuration_provider;
+    configuration_handler_t configuration_handler;          /**< Callback for handling received configuration from WolkAbout IoT Platform. @see configuration_handler_t*/
+    configuration_provider_t configuration_provider;        /**< Callback for providing the current configuration status to WolkAbout IoT Platform. @see configuration_provider_t*/
 
-    char device_key[DEVICE_KEY_SIZE];
-    char device_password[DEVICE_PASSWORD_SIZE];
+    char device_key[DEVICE_KEY_SIZE];                       /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as a result of device creation on the platform.*/
+    char device_password[DEVICE_PASSWORD_SIZE];             /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as a result of device creation on the platform.*/
 
-    protocol_t protocol;
+    protocol_t protocol;                                    /**<  Used protocol for communication with WolkAbout IoT Platform. @see protocol_t*/
     parser_t parser;
 
     persistence_t persistence;
@@ -121,7 +139,7 @@ typedef struct wolk_ctx {
 } wolk_ctx_t;
 
 /**
- * @brief Initializes WolkAbout IoT platform connector context
+ * @brief Initializes WolkAbout IoT Platform connector context
  *
  * @param ctx Context
  *
@@ -136,7 +154,7 @@ typedef struct wolk_ctx {
  *
  * @param device_key Device key provided by WolkAbout IoT Platform upon device
  * creation
- * @param password Device password provided by WolkAbout IoT platform device
+ * @param password Device password provided by WolkAbout IoT Platform device
  * upon device creation
  * @param protocol Protocol specified for device
  *
