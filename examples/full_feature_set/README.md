@@ -62,9 +62,9 @@ static uint8_t persistence_storage[1024*1024];
 /* WolkConnect-C Connector context */
 static wolk_ctx_t wolk;
 
-.
-.
-.
+//...
+//...
+//...
 
 wolk_init(&wolk,                                             /* Context */
           send_buffer,                                       /* See send_func_t */
