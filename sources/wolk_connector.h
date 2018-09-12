@@ -38,8 +38,14 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+/**
+ * @brief Library versioning
+ */
 enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 4, WOLK_VERSION_PATCH = 6 };
 
+/**
+ * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_JSON_SINGLE
+ */
 typedef enum { PROTOCOL_JSON_SINGLE = 0 } protocol_t;
 
 /**
@@ -54,21 +60,32 @@ typedef unsigned char WOLK_BOOL_T;
 enum WOLK_BOOL_T_values { W_FALSE = 0, W_TRUE = 1 };
 
 /**
- * @brief Callback for writting bytes to socket
+ * @brief Define Callback for writting bytes to socket
  */
 typedef int (*send_func_t)(unsigned char* bytes, unsigned int num_bytes);
 
 /**
- * @brief Callback for reading bytes from socket
+ * @brief Define Callback for reading bytes from socket
  */
 typedef int (*recv_func_t)(unsigned char* bytes, unsigned int num_bytes);
 
+/**
+ * @brief Callback declaration for received actuators from WolkAbout IoT Platform.
+ */
 typedef void (*actuation_handler_t)(const char* reference, const char* value);
+/**
+ * @brief Callback declaration for providing the current actuators status to  WolkAbout IoT Platform.
+ */
 typedef actuator_status_t (*actuator_status_provider_t)(const char* reference);
 
+/**
+ * @brief Callback declaration for received configurations from WolkAbout IoT Platform.
+ */
 typedef void (*configuration_handler_t)(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                         char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items);
-
+/**
+ * @brief Callback declaration for providing the current status of configuration parameters to  WolkAbout IoT Platform.
+ */
 typedef size_t (*configuration_provider_t)(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                            char (*value)[CONFIGURATION_VALUE_SIZE], size_t max_num_configuration_items);
 
@@ -178,7 +195,7 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
  * @param abort Function pointer to 'firmware_update_abort' implementation
  * @param finalize Function pointer to 'firmware_update_finalize' implementation
  *
- * @return Error code
+ * @return Error code.
  */
 WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_t maximum_firmware_size,
                                      size_t chunk_size, firmware_update_start_t start,
