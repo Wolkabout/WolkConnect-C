@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['wolkconnect_2dc_20library',['WolkConnect-C library',['../index.html',1,'']]],
+  ['wolkconnect_20library',['WolkConnect library',['../index.html',1,'']]],
   ['w_5ffalse',['W_FALSE',['../wolk__connector_8h.html#a19b47d3264771c75e27cf2b2617546afa0abf1977616eb22dc9af960a3a664376',1,'wolk_connector.h']]],
   ['w_5ftrue',['W_TRUE',['../wolk__connector_8h.html#a19b47d3264771c75e27cf2b2617546afa93fad5ad6fdb521eabff2efa8934f722',1,'wolk_connector.h']]],
   ['wolk_5fadd_5falarm',['wolk_add_alarm',['../wolk__connector_8h.html#aec965973c23d360dc158d8ef6d037e54',1,'wolk_connector.h']]],

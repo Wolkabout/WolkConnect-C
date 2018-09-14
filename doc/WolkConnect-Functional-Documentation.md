@@ -1,4 +1,4 @@
-WolkConnect-C library
+WolkConnect library
 ====== 
 WolkConnect libraries are used to enable a device's communication with [WolkAbout IoT Platform](https://demo.wolkabout.com/#/login).
 
