@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['wolkconnect_20c',['WolkConnect C',['../md_examples_full_feature_set_README.html',1,'']]]
+  ['wolkconnect_2dc_20library',['WolkConnect-C library',['../index.html',1,'']]]
 ];
