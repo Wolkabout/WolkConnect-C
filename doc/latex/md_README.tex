@@ -65,11 +65,11 @@ Create a device on Wolk\+About IoT platform by importing {\ttfamily simple-\/exa
 \textcolor{comment}{/* WolkConnect-C Connector context */}
 \textcolor{keyword}{static} \hyperlink{structwolk__ctx}{wolk\_ctx\_t} wolk;
 
-.
-.
-.
+\textcolor{comment}{//...}
+\textcolor{comment}{//...}
+\textcolor{comment}{//...}
 
-wolk\_init(&wolk,                                             \textcolor{comment}{/* Context */}
+\hyperlink{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{wolk\_init}(&wolk,                                             \textcolor{comment}{/* Context */}
           send\_buffer,                                       \textcolor{comment}{/* See send\_func\_t */}
           receive\_buffer,                                    \textcolor{comment}{/* See recv\_func\_t */}
           actuation\_handler,                                 \textcolor{comment}{/* Actuation handler        - see
@@ -143,7 +143,7 @@ In cases when provided persistence implementation is suboptimal, one can use cus
 \end{DoxyCode}
 
 
-For more info on persistence mechanism see {\ttfamily \hyperlink{persistence_8h}{sources/persistence.\+h}} and {\ttfamily sources/in\+\_\+memory\+\_\+persistence.\+h} files.
+For more info on persistence mechanism see {\ttfamily sources/persistence.\+h} and {\ttfamily sources/in\+\_\+memory\+\_\+persistence.\+h} files.
 
 {\bfseries Additional functionality}
 

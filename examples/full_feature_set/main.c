@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "wolk_connector.h"
 #include "wolk_utils.h"
 
@@ -372,5 +371,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
-
