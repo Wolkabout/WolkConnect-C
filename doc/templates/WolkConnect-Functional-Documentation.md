@@ -21,14 +21,14 @@ Using WolkConnect library requires minimal knowledge of WolkAbout IoT Platform, 
 The architecture of software/firmware where WolkConnect library is meant to be used is presented in _Fig.1.1_. The gray section in _Fig.1.1_ represents the developer's software/firmware.
 
 
-![Fig.1.1 WolkConnect library represented in general software/firmware architecture.](/home/srdjanstankovic/git/WolkConnect-C/doc/Fig11.png "Fig.1.1 WolkConnect library represented in general software/firmware architecture.")
+![Fig.1.1 WolkConnect library represented in general software/firmware architecture.](/home/srdjanstankovic/git/WolkConnect-C/doc/templates/Fig11.png "Fig.1.1 WolkConnect library represented in general software/firmware architecture.")
 <center> *Fig.1.1 WolkConnect library represented in general software/firmware architecture.* </center>
 
 The gray section between the User Application Layer and the Hardware Abstraction Layer represents the user’s libraries and drivers that are required for his project. Providing WolkConnect library with IP connectivity from the Hardware Abstraction Layer is expected from the user.
 
 WolkConnect library is separated into layers as shown in _Fig.1.2_
 
-![Fig.1.2 WolkConnect library layer's](/home/srdjanstankovic/git/WolkConnect-C/doc/Fig12.png "Fig.1.2 WolkConnect library layer's")
+![Fig.1.2 WolkConnect library layer's](/home/srdjanstankovic/git/WolkConnect-C/doc/templates/Fig12.png "Fig.1.2 WolkConnect library layer's")
 <center> *Fig.1.2 WolkConnect library layer's* </center>
 
 WolkConnect libraries use IP connectivity provided by the OS, but on devices, where this not available, it is user’s responsibility to provide implementations for opening a socket and send/receive methods to the socket.
@@ -93,7 +93,7 @@ Sensors readings like GPS and accelerometers hold more than one single informati
 <a name="alarms">
 > **Alarms**
 </a>
-Alarms are derived from some data on the device and are used to indicate the state of a condition, eg. high-temperature alarm which is emerged as a result of exceeding a threshold value on the device. Alarm value can either be on or off.
+Alarms are derived from some data on the device and are used to indicate the state of a condition, eg. high-temperature alarm which emerged as a result of exceeding a threshold value on the device. Alarm value can either be on or off.
 
 Like sensor readings, alarm messages are stored on the device before being published to WolkAbout IoT Platform. Alarms can also have a UTC timestamp to denote when the alarm occurred, but if the timestamp is omitted then WolkAbout IoT Platform will assign a timestamp when it receives the alarm message.
 
@@ -108,7 +108,7 @@ Single actuation consists of the command to a device and feedback from the devic
 * **BUSY** - in the process of changing its value
 * **ERROR** - unable to comply
 
-To perform a successful actuation, user needs to know the references he was required to enter in the manifest, on the Platform, to forward them during the actuation initialisation period. The user has to implement an actuation handler that will execute the commands that have been issued from WolkAbout IoT Platform. Then the user has to implement an actuation provider that will update WolkAbout IoT Platform with the current status of the actuator.
+To perform a successful actuation, user needs to know the actuator references he was required to enter in the manifest, on the Platform, to forward them during the actuation initialisation period. The user has to implement an actuation handler that will execute the commands that have been issued from WolkAbout IoT Platform. Then the user has to implement an actuation provider that will update WolkAbout IoT Platform with the current status of the actuator.
 Publishing actuator statuses is performed immediately, but if the actuator takes time to be executed, eg. closing the gate, then the actuator status will update WolkAbout IoT Platform with the current values until it reaches the commanded value.
 If the device is unable to publish the actuator status, then the information will be stored on the device until the next successful publish attempt.
 
@@ -126,7 +126,7 @@ In cases where the device is connected to the Platform but is not publishing any
 </a>
 Configuration is the dynamical modification of the device properties from WolkAbout IoT Platform with the goal to change device behavior, eg. measurement heartbeat, sensors delivery reduction, enabling/disabling device interfaces, increase/decrease device logging level.
 
-Configuration requires the same way of handling messages as actuation. When a configuration command is issued from WolkAbout IoT Platform, it will be passed to the configuration handler that will attempt to execute the command. Then the configuration status provider will report back to WolkAbout IoT Platform with the current values and states of the configuration parameters, with the addition that configuration parameters are always sent as a whole, even when only one value changes.
+Configuration requires the same way of handling messages as actuation. When a configuration command is issued from WolkAbout IoT Platform, it will be passed to the configuration handler that will attempt to execute the command. Then the configuration status provider will report back to WolkAbout IoT Platform with the current values of the configuration parameters, with the addition that configuration parameters are always sent as a whole, even when only one value changes.
 
 <a name="dfu">
 > **Device Software/Firmware Update**
@@ -156,7 +156,7 @@ This firmware handler will specify the following parameters:
 # API examples
 
 ---
-To see how to exploit WolkConnect library APIs, visit one of the following files and look up detailed information in the Example Usage section:
+To see how to utilize WolkConnect library APIs, visit one of the following files and look up detailed information in the Example Usage section:
 
 * <a href="md_README.html">Simple example README.md</a> - demonstrates the sending of a temperature sensor reading
 * <a href="md_examples_full_feature_set_README.html">Full feature set example README.md</a> - demonstrates full WolkAbout IoT Platform potential
