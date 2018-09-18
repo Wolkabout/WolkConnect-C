@@ -703,7 +703,7 @@ FILE_VERSION_FILTER    =
 # DoxygenLayout.xml, doxygen will parse it automatically even if the LAYOUT_FILE
 # tag is left empty.
 
-LAYOUT_FILE            = doc/DoxygenLayout.xml
+LAYOUT_FILE            = doc/templates/DoxygenLayout.xml
 
 # The CITE_BIB_FILES tag can be used to specify one or more bib files containing
 # the reference definitions. This must be a list of .bib files. The .bib
@@ -940,8 +940,8 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = doc/WolkConnect-Functional-Documentation.md
-INPUT +=  doc/WolkConnect-Functional-Documentation.md
+USE_MDFILE_AS_MAINPAGE = doc/templates/WolkConnect-Functional-Documentation.md
+INPUT +=  doc/templates/WolkConnect-Functional-Documentation.md
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
@@ -1097,7 +1097,7 @@ HTML_FILE_EXTENSION    = .html
 # of the possible markers and block names see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_HEADER            = doc/new_header.html
+HTML_HEADER            = doc/templates/new_header.html
 
 # The HTML_FOOTER tag can be used to specify a user-defined HTML footer for each
 # generated HTML page. If the tag is left blank doxygen will generate a standard
@@ -1107,7 +1107,7 @@ HTML_HEADER            = doc/new_header.html
 # that doxygen normally uses.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_FOOTER            = doc/new_footer.html
+HTML_FOOTER            = doc/templates/new_footer.html
 
 # The HTML_STYLESHEET tag can be used to specify a user-defined cascading style
 # sheet that is used by each HTML page. It can be used to fine-tune the look of
@@ -1119,7 +1119,7 @@ HTML_FOOTER            = doc/new_footer.html
 # obsolete.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_STYLESHEET        = doc/new_stylesheet.css
+HTML_STYLESHEET        = doc/templates/new_stylesheet.css
 
 # The HTML_EXTRA_STYLESHEET tag can be used to specify additional user-defined
 # cascading style sheets that are included after the standard style sheets
