@@ -300,8 +300,30 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
     WOLK_ASSERT(_is_wolk_initialized(ctx));
 
     unsigned char buf[MQTT_PACKET_SIZE];
+    memset(buf, 0, MQTT_PACKET_SIZE);
 
-    int len = MQTTSerialize_disconnect(buf, sizeof(buf));
+    //lastwill message
+    MQTTString lastwill_topic_string = MQTTString_initializer;
+
+    char lastwill_topic[TOPIC_SIZE];
+    memset(lastwill_topic, 0, TOPIC_SIZE);
+    strcpy(lastwill_topic, LASTWILL_TOPIC);
+    strcat(lastwill_topic, ctx->device_key);
+
+    lastwill_topic_string.cstring = lastwill_topic;
+
+    unsigned char* lastwill_msg = (unsigned char*)LASTWILL_MESSAGE;
+
+    int len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 2, 0, 0, lastwill_topic_string, lastwill_msg,
+                                              (int)strlen((const char*)lastwill_msg));
+    if (transport_sendPacketBuffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
+        return W_TRUE;
+    }
+
+    memset(buf, 0, MQTT_PACKET_SIZE);
+
+    //disconnect message
+    len = MQTTSerialize_disconnect(buf, sizeof(buf));
     if (transport_sendPacketBuffer(ctx->sock, buf, len) != TRANSPORT_DONE) {
         return W_TRUE;
     }
