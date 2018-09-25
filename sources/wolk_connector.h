@@ -41,7 +41,7 @@ extern "C" {
 /**
  * @brief Library versioning
  */
-enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 4, WOLK_VERSION_PATCH = 6 };
+enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 4, WOLK_VERSION_PATCH = 7 };
 
 /**
  * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_JSON_SINGLE
