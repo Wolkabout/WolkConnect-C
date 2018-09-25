@@ -28,8 +28,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li class="current"><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
+      <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li class="current"><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -50,7 +50,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -65,6 +64,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+</div><!-- top -->
 <div class="header">
   <div class="headertitle">
 <div class="title">WolkConnect library </div>  </div>
@@ -80,15 +80,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Using WolkConnect library requires minimal knowledge of WolkAbout IoT Platform, no knowledge of the internal mechanisms and protocols of WolkAbout IoT Platform is necessary. The user only utilises APIs provided by WolkConnect library in the User Application Layer, thereby reducing time-to-market required.</p>
 <p>The architecture of software/firmware where WolkConnect library is meant to be used is presented in <em>Fig.1.1</em>. The gray section in <em>Fig.1.1</em> represents the developer's software/firmware.</p>
 <center> <div class="image">
-<img src="Fig11.png" alt="Fig11.png"/>
-<div class="caption">
-Fig.1.1 WolkConnect library represented in general software/firmware architecture.</div></div>
-</center><p>The gray section between the User Application Layer and the Hardware Abstraction Layer reDevice DataDevice Datapresents the user’s libraries and drivers that are required for his project. Providing WolkConnect library with IP connectivity from the Hardware Abstraction Layer is expected from the user.</p>
+<img src="Fig11.png"  alt="Fig.1.1 WolkConnect library represented in general software/firmware architecture." title="Fig.1.1 WolkConnect library represented in general software/firmware architecture."/>
+</div>
+ <em>Fig.1.1 WolkConnect library represented in general software/firmware architecture.</em></center><p>The gray section between the User Application Layer and the Hardware Abstraction Layer represents the user’s libraries and drivers that are required for his project. Providing WolkConnect library with IP connectivity from the Hardware Abstraction Layer is expected from the user.</p>
 <p>WolkConnect library is separated into layers as shown in <em>Fig.1.2</em> </p><center> <div class="image">
-<img src="Fig12.png" alt="Fig12.png"/>
-<div class="caption">
-Fig.1.2 WolkConnect library layer's</div></div>
-</center><p>WolkConnect libraries use IP connectivity provided by the OS, but on devices, where this not available, it is user’s responsibility to provide implementations for opening a socket and send/receive methods to the socket.</p>
+<img src="Fig12.png"  alt="Fig.1.2 WolkConnect library layer&apos;s" title="Fig.1.2 WolkConnect library layer&apos;s"/>
+</div>
+ <em>Fig.1.2 WolkConnect library layer's</em> </center><p>WolkConnect libraries use IP connectivity provided by the OS, but on devices, where this not available, it is user’s responsibility to provide implementations for opening a socket and send/receive methods to the socket.</p>
 <p>Communication between WolkConnect library and WolkAbout IoT Platform is achieved through the use of the <a href="http://mqtt.org/">MQTT messaging protocol</a>. WolkConnect libraries have a common dependency, an implementation of an MQTT client that will exchange data with an MQTT server that is part of WolkAbout IoT Platform. The communication between WolkConnect library and WolkAbout IoT Platform is made secure with the use of Secure Sockets Layer (SSL).</p>
 <p>Another common dependency for WolkConnect libraries is JSON library that is used for parsing data that is exchanged with WolkAbout IoT Platform. This data is formatted using a custom JSON based protocol defined by WolkAbout IoT Platform.</p>
 <p>The high-level API represents what is available to the developer that is using WolkConnect library. APIs follow the naming convention of the programming language they were written in. Consult a specific WolkConnect library’s documentation for more information. The API is divided into two parts: data management and device management. Device data is independent of device management on WolkAbout IoT Platform and therefore has a separe API. Device management is responsible for device health and this, in turn, increases the device’s lifespan.</p>
@@ -121,8 +119,7 @@ Fig.1.2 WolkConnect library layer's</div></div>
 <li><b>Periodically connected devices</b> - connect and publish data when needed. It is important to use disconnect here, as this is a valid device state on WolkAbout IoT Platform - controlled offline.</li>
 </ul>
 <p>Disconnecting will gracefully terminate the connection and the device will momentarily appear offline on WolkAbout IoT Platform. In cases of ungraceful disconnections, eg. due to a networking error, WolkAbout IoT Platform will be able to determine if the device is offline based on whether the device has send a message from its keep-alive mechanism. After waiting for the keep-alive mechanism timeout with no message, WolkAbout IoT Platform will declare the device offline.</p>
-<h2>Device Data</h2>
-<hr/>
+<h2>* Device Data *</h2>
 <p>Real world devices can perform a wide variety of operations that result in meaningful data. These operations could be to conduct a measurement, monitor certain condition or execute some form of command. The data resulting from these operations have been modeled into three distinct types of data on WolkAbout IoT Platform: sensors, alarms, and actuators.</p>
 <p>Information needs to be distinguishable, so every piece of data sent from the device needs to have an identifier. This identifier is called a reference, and all the references of a device on WolkAbout IoT Platform must be unique.</p>
 <p><a class="anchor" id="sensor-readings"></a> </p><blockquote class="doxtable">
@@ -148,8 +145,7 @@ Fig.1.2 WolkConnect library layer's</div></div>
 </ul>
 <p>To perform a successful actuation, user needs to know the actuator references he was required to enter in the manifest, on the Platform, to forward them during the actuation initialisation period. The user has to implement an actuation handler that will execute the commands that have been issued from WolkAbout IoT Platform. Then the user has to implement an actuation provider that will update WolkAbout IoT Platform with the current status of the actuator. Publishing actuator statuses is performed immediately, but if the actuator takes time to be executed, eg. closing the gate, then the actuator status will update WolkAbout IoT Platform with the current values until it reaches the commanded value. If the device is unable to publish the actuator status, then the information will be stored on the device until the next successful publish attempt.</p>
 <p>To summarise, when an actuation command is issued from WolkAbout IoT Platform, it will be passed to the actuation handler that will attempt to execute the command, and then the actuator status provider will report back to WolkAbout IoT Platform with the current value and state of the actuator.</p>
-<h2>Device Management</h2>
-<hr/>
+<h2>* Device Management *</h2>
 <p><a class="anchor" id="keep-alive-mechanism"></a> </p><blockquote class="doxtable">
 <p><b>Keep Alive Mechanism</b> </p>
 </blockquote>
