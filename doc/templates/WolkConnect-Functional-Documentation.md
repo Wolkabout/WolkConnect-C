@@ -16,20 +16,20 @@ WolkConnect libraries are open-source and released under the [Apache Licence 2.0
 
 WolkConnect library is intended to be used as a dependency in other firmwares or softwares that have their own existing business logic. WolkConnect library is not, by any means, a single service to control the device, it is a library intended to handle all the specific communication with WolkAbout IoT Platform.
 
-Using WolkConnect library requires minimal knowledge of WolkAbout IoT Platform, no knowledge of the internal mechanisms and protocols of WolkAbout IoT Platform is necessary. The user only utilises APIs provided by WolkConnect library in the User Application Layer, thereby reducing time-to-market required. 
+Using WolkConnect library requires minimal knowledge of WolkAbout IoT Platform, no knowledge of the internal mechanisms and protocols of WolkAbout IoT Platform is necessary. The user only utilises APIs provided by WolkConnect library in the User Application Layer, thereby reducing time-to-market required.
 
 The architecture of software/firmware where WolkConnect library is meant to be used is presented in _Fig.1.1_. The gray section in _Fig.1.1_ represents the developer's software/firmware.
 
+<center>
+![Fig.1.1 WolkConnect library represented in general software/firmware architecture.](Fig11.png)
+</center>
 
-![Fig.1.1 WolkConnect library represented in general software/firmware architecture.](/home/srdjanstankovic/git/WolkConnect-C/doc/templates/Fig11.png "Fig.1.1 WolkConnect library represented in general software/firmware architecture.")
-<center> *Fig.1.1 WolkConnect library represented in general software/firmware architecture.* </center>
-
-The gray section between the User Application Layer and the Hardware Abstraction Layer represents the user’s libraries and drivers that are required for his project. Providing WolkConnect library with IP connectivity from the Hardware Abstraction Layer is expected from the user.
+The gray section between the User Application Layer and the Hardware Abstraction Layer reDevice DataDevice Datapresents the user’s libraries and drivers that are required for his project. Providing WolkConnect library with IP connectivity from the Hardware Abstraction Layer is expected from the user.
 
 WolkConnect library is separated into layers as shown in _Fig.1.2_
-
-![Fig.1.2 WolkConnect library layer's](/home/srdjanstankovic/git/WolkConnect-C/doc/templates/Fig12.png "Fig.1.2 WolkConnect library layer's")
-<center> *Fig.1.2 WolkConnect library layer's* </center>
+<center>
+![Fig.1.2 WolkConnect library layer's](Fig12.png)
+</center>
 
 WolkConnect libraries use IP connectivity provided by the OS, but on devices, where this not available, it is user’s responsibility to provide implementations for opening a socket and send/receive methods to the socket.
 
@@ -76,7 +76,10 @@ A device can be connected to WolkAbout IoT Platform in two ways:
 
 Disconnecting will gracefully terminate the connection and the device will momentarily appear offline on WolkAbout IoT Platform. In cases of ungraceful disconnections, eg. due to a networking error, WolkAbout IoT Platform will be able to determine if the device is offline based on whether the device has send a message from its keep-alive mechanism. After waiting for the keep-alive mechanism timeout with no message, WolkAbout IoT Platform will declare the device offline.
 
-## > Device Data
+## Device Data
+
+---
+
 Real world devices can perform a wide variety of operations that result in meaningful data. These operations could be to conduct a measurement, monitor certain condition or execute some form of command. The data resulting from these operations have been modeled into three distinct types of data on WolkAbout IoT Platform: sensors, alarms, and actuators.
 
 Information needs to be distinguishable, so every piece of data sent from the device needs to have an identifier. This identifier is called a reference, and all the references of a device on WolkAbout IoT Platform must be unique.
@@ -114,7 +117,9 @@ If the device is unable to publish the actuator status, then the information wil
 
 To summarise, when an actuation command is issued from WolkAbout IoT Platform, it will be passed to the actuation handler that will attempt to execute the command, and then the actuator status provider will report back to WolkAbout IoT Platform with the current value and state of the actuator.
 
-## > Device Management
+## Device Management
+
+---
 
 <a name="keep-alive-mechanism">
 > **Keep Alive Mechanism**
