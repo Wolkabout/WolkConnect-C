@@ -1,0 +1,135 @@
+\hypertarget{structwolk__ctx}{}\section{wolk\+\_\+ctx Struct Reference}
+\label{structwolk__ctx}\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+
+
+Wolk\+About IoT Platform connector context. Most of the parameters are used to initialize Wolk\+Connect library forwarding to \hyperlink{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{wolk\+\_\+init()}.  
+
+
+
+
+{\ttfamily \#include $<$wolk\+\_\+connector.\+h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{structwolk__ctx_a7b2318c99408cdafb7ede7f5d472e100}{sock}
+\item 
+M\+Q\+T\+T\+Packet\+\_\+connect\+Data \hyperlink{structwolk__ctx_af63fca32333cbb2d7e2b887eff0b2461}{connect\+Data}
+\item 
+M\+Q\+T\+T\+Transport \hyperlink{structwolk__ctx_a1f8d853e9ce94634dde14f0735207e5c}{mqtt\+\_\+transport}
+\item 
+transport\+\_\+iofunctions\+\_\+t \hyperlink{structwolk__ctx_a4b934429cb22045256b5757901fe2d66}{iof}
+\item 
+\hyperlink{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}{actuation\+\_\+handler\+\_\+t} \hyperlink{structwolk__ctx_a2ab241133283e361c6822409f7ec48ca}{actuation\+\_\+handler}
+\item 
+\hyperlink{wolk__connector_8h_af3e8919a04a293972b64605557287537}{actuator\+\_\+status\+\_\+provider\+\_\+t} \hyperlink{structwolk__ctx_aee7f3ef8dbcfd4f8a3817ef26a1629f6}{actuator\+\_\+status\+\_\+provider}
+\item 
+\hyperlink{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}{configuration\+\_\+handler\+\_\+t} \hyperlink{structwolk__ctx_a6c0926345d1d56f8fbd3cb50d8f4a804}{configuration\+\_\+handler}
+\item 
+\hyperlink{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}{configuration\+\_\+provider\+\_\+t} \hyperlink{structwolk__ctx_a982fc36741a8c8cfb5ad3939363cebf8}{configuration\+\_\+provider}
+\item 
+char \hyperlink{structwolk__ctx_a4b67ae9b0271566e7dae56c03053906b}{device\+\_\+key} \mbox{[}D\+E\+V\+I\+C\+E\+\_\+\+K\+E\+Y\+\_\+\+S\+I\+ZE\mbox{]}
+\item 
+char \hyperlink{structwolk__ctx_af6ea97768cfd0445f8b9535e0e2c354b}{device\+\_\+password} \mbox{[}D\+E\+V\+I\+C\+E\+\_\+\+P\+A\+S\+S\+W\+O\+R\+D\+\_\+\+S\+I\+ZE\mbox{]}
+\item 
+\hyperlink{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}{protocol\+\_\+t} \hyperlink{structwolk__ctx_af93f257ff60dd00f34455d425207e66f}{protocol}
+\item 
+parser\+\_\+t \hyperlink{structwolk__ctx_a823bd0528ef9d148f35d244becc4858a}{parser}
+\item 
+persistence\+\_\+t \hyperlink{structwolk__ctx_a9d7d83e339fcd632b0679db3f86b4293}{persistence}
+\item 
+firmware\+\_\+update\+\_\+t \hyperlink{structwolk__ctx_ade7e18823de46d7973b729ba3cd52405}{firmware\+\_\+update}
+\item 
+const char $\ast$$\ast$ \hyperlink{structwolk__ctx_aa2127e8414d0d9c6214343891f4a322f}{actuator\+\_\+references}
+\item 
+uint32\+\_\+t \hyperlink{structwolk__ctx_a23e98a97649d679e4a85c87f2da1f8e5}{num\+\_\+actuator\+\_\+references}
+\item 
+bool \hyperlink{structwolk__ctx_ab195921b22d85b2e46df09cca001f5e2}{is\+\_\+keep\+\_\+alive\+\_\+enabled}
+\item 
+uint32\+\_\+t \hyperlink{structwolk__ctx_a2d93b135a08863cedae25012a6dc8d46}{milliseconds\+\_\+since\+\_\+last\+\_\+ping\+\_\+keep\+\_\+alive}
+\item 
+bool \hyperlink{structwolk__ctx_ae0a13a533a7c9ffc516eda95cd6ed324}{is\+\_\+initialized}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Wolk\+About IoT Platform connector context. Most of the parameters are used to initialize Wolk\+Connect library forwarding to \hyperlink{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{wolk\+\_\+init()}. 
+
+\subsection{Field Documentation}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!actuation\+\_\+handler@{actuation\+\_\+handler}}
+\index{actuation\+\_\+handler@{actuation\+\_\+handler}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{actuation\+\_\+handler}{actuation_handler}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf actuation\+\_\+handler\+\_\+t} wolk\+\_\+ctx\+::actuation\+\_\+handler}\hypertarget{structwolk__ctx_a2ab241133283e361c6822409f7ec48ca}{}\label{structwolk__ctx_a2ab241133283e361c6822409f7ec48ca}
+Callback for handling received actuation from Wolk\+About IoT Platform. \begin{DoxySeeAlso}{See also}
+\hyperlink{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}{actuation\+\_\+handler\+\_\+t} 
+\end{DoxySeeAlso}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!actuator\+\_\+references@{actuator\+\_\+references}}
+\index{actuator\+\_\+references@{actuator\+\_\+references}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{actuator\+\_\+references}{actuator_references}}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$$\ast$ wolk\+\_\+ctx\+::actuator\+\_\+references}\hypertarget{structwolk__ctx_aa2127e8414d0d9c6214343891f4a322f}{}\label{structwolk__ctx_aa2127e8414d0d9c6214343891f4a322f}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!actuator\+\_\+status\+\_\+provider@{actuator\+\_\+status\+\_\+provider}}
+\index{actuator\+\_\+status\+\_\+provider@{actuator\+\_\+status\+\_\+provider}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{actuator\+\_\+status\+\_\+provider}{actuator_status_provider}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf actuator\+\_\+status\+\_\+provider\+\_\+t} wolk\+\_\+ctx\+::actuator\+\_\+status\+\_\+provider}\hypertarget{structwolk__ctx_aee7f3ef8dbcfd4f8a3817ef26a1629f6}{}\label{structwolk__ctx_aee7f3ef8dbcfd4f8a3817ef26a1629f6}
+Callback for providing the current actuator status to Wolk\+About IoT Platform. \begin{DoxySeeAlso}{See also}
+\hyperlink{wolk__connector_8h_af3e8919a04a293972b64605557287537}{actuator\+\_\+status\+\_\+provider\+\_\+t} 
+\end{DoxySeeAlso}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!configuration\+\_\+handler@{configuration\+\_\+handler}}
+\index{configuration\+\_\+handler@{configuration\+\_\+handler}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{configuration\+\_\+handler}{configuration_handler}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf configuration\+\_\+handler\+\_\+t} wolk\+\_\+ctx\+::configuration\+\_\+handler}\hypertarget{structwolk__ctx_a6c0926345d1d56f8fbd3cb50d8f4a804}{}\label{structwolk__ctx_a6c0926345d1d56f8fbd3cb50d8f4a804}
+Callback for handling received configuration from Wolk\+About IoT Platform. \begin{DoxySeeAlso}{See also}
+\hyperlink{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}{configuration\+\_\+handler\+\_\+t} 
+\end{DoxySeeAlso}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!configuration\+\_\+provider@{configuration\+\_\+provider}}
+\index{configuration\+\_\+provider@{configuration\+\_\+provider}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{configuration\+\_\+provider}{configuration_provider}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf configuration\+\_\+provider\+\_\+t} wolk\+\_\+ctx\+::configuration\+\_\+provider}\hypertarget{structwolk__ctx_a982fc36741a8c8cfb5ad3939363cebf8}{}\label{structwolk__ctx_a982fc36741a8c8cfb5ad3939363cebf8}
+Callback for providing the current configuration status to Wolk\+About IoT Platform. \begin{DoxySeeAlso}{See also}
+\hyperlink{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}{configuration\+\_\+provider\+\_\+t} 
+\end{DoxySeeAlso}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!connect\+Data@{connect\+Data}}
+\index{connect\+Data@{connect\+Data}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{connect\+Data}{connectData}}]{\setlength{\rightskip}{0pt plus 5cm}M\+Q\+T\+T\+Packet\+\_\+connect\+Data wolk\+\_\+ctx\+::connect\+Data}\hypertarget{structwolk__ctx_af63fca32333cbb2d7e2b887eff0b2461}{}\label{structwolk__ctx_af63fca32333cbb2d7e2b887eff0b2461}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!device\+\_\+key@{device\+\_\+key}}
+\index{device\+\_\+key@{device\+\_\+key}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{device\+\_\+key}{device_key}}]{\setlength{\rightskip}{0pt plus 5cm}char wolk\+\_\+ctx\+::device\+\_\+key\mbox{[}D\+E\+V\+I\+C\+E\+\_\+\+K\+E\+Y\+\_\+\+S\+I\+ZE\mbox{]}}\hypertarget{structwolk__ctx_a4b67ae9b0271566e7dae56c03053906b}{}\label{structwolk__ctx_a4b67ae9b0271566e7dae56c03053906b}
+Authentication parameters for Wolk\+About IoT Platform. Obtained as a result of device creation on the platform. \index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!device\+\_\+password@{device\+\_\+password}}
+\index{device\+\_\+password@{device\+\_\+password}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{device\+\_\+password}{device_password}}]{\setlength{\rightskip}{0pt plus 5cm}char wolk\+\_\+ctx\+::device\+\_\+password\mbox{[}D\+E\+V\+I\+C\+E\+\_\+\+P\+A\+S\+S\+W\+O\+R\+D\+\_\+\+S\+I\+ZE\mbox{]}}\hypertarget{structwolk__ctx_af6ea97768cfd0445f8b9535e0e2c354b}{}\label{structwolk__ctx_af6ea97768cfd0445f8b9535e0e2c354b}
+Authentication parameters for Wolk\+About IoT Platform. Obtained as a result of device creation on the platform. \index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!firmware\+\_\+update@{firmware\+\_\+update}}
+\index{firmware\+\_\+update@{firmware\+\_\+update}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{firmware\+\_\+update}{firmware_update}}]{\setlength{\rightskip}{0pt plus 5cm}firmware\+\_\+update\+\_\+t wolk\+\_\+ctx\+::firmware\+\_\+update}\hypertarget{structwolk__ctx_ade7e18823de46d7973b729ba3cd52405}{}\label{structwolk__ctx_ade7e18823de46d7973b729ba3cd52405}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!iof@{iof}}
+\index{iof@{iof}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{iof}{iof}}]{\setlength{\rightskip}{0pt plus 5cm}transport\+\_\+iofunctions\+\_\+t wolk\+\_\+ctx\+::iof}\hypertarget{structwolk__ctx_a4b934429cb22045256b5757901fe2d66}{}\label{structwolk__ctx_a4b934429cb22045256b5757901fe2d66}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!is\+\_\+initialized@{is\+\_\+initialized}}
+\index{is\+\_\+initialized@{is\+\_\+initialized}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{is\+\_\+initialized}{is_initialized}}]{\setlength{\rightskip}{0pt plus 5cm}bool wolk\+\_\+ctx\+::is\+\_\+initialized}\hypertarget{structwolk__ctx_ae0a13a533a7c9ffc516eda95cd6ed324}{}\label{structwolk__ctx_ae0a13a533a7c9ffc516eda95cd6ed324}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!is\+\_\+keep\+\_\+alive\+\_\+enabled@{is\+\_\+keep\+\_\+alive\+\_\+enabled}}
+\index{is\+\_\+keep\+\_\+alive\+\_\+enabled@{is\+\_\+keep\+\_\+alive\+\_\+enabled}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{is\+\_\+keep\+\_\+alive\+\_\+enabled}{is_keep_alive_enabled}}]{\setlength{\rightskip}{0pt plus 5cm}bool wolk\+\_\+ctx\+::is\+\_\+keep\+\_\+alive\+\_\+enabled}\hypertarget{structwolk__ctx_ab195921b22d85b2e46df09cca001f5e2}{}\label{structwolk__ctx_ab195921b22d85b2e46df09cca001f5e2}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!milliseconds\+\_\+since\+\_\+last\+\_\+ping\+\_\+keep\+\_\+alive@{milliseconds\+\_\+since\+\_\+last\+\_\+ping\+\_\+keep\+\_\+alive}}
+\index{milliseconds\+\_\+since\+\_\+last\+\_\+ping\+\_\+keep\+\_\+alive@{milliseconds\+\_\+since\+\_\+last\+\_\+ping\+\_\+keep\+\_\+alive}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{milliseconds\+\_\+since\+\_\+last\+\_\+ping\+\_\+keep\+\_\+alive}{milliseconds_since_last_ping_keep_alive}}]{\setlength{\rightskip}{0pt plus 5cm}uint32\+\_\+t wolk\+\_\+ctx\+::milliseconds\+\_\+since\+\_\+last\+\_\+ping\+\_\+keep\+\_\+alive}\hypertarget{structwolk__ctx_a2d93b135a08863cedae25012a6dc8d46}{}\label{structwolk__ctx_a2d93b135a08863cedae25012a6dc8d46}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!mqtt\+\_\+transport@{mqtt\+\_\+transport}}
+\index{mqtt\+\_\+transport@{mqtt\+\_\+transport}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{mqtt\+\_\+transport}{mqtt_transport}}]{\setlength{\rightskip}{0pt plus 5cm}M\+Q\+T\+T\+Transport wolk\+\_\+ctx\+::mqtt\+\_\+transport}\hypertarget{structwolk__ctx_a1f8d853e9ce94634dde14f0735207e5c}{}\label{structwolk__ctx_a1f8d853e9ce94634dde14f0735207e5c}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!num\+\_\+actuator\+\_\+references@{num\+\_\+actuator\+\_\+references}}
+\index{num\+\_\+actuator\+\_\+references@{num\+\_\+actuator\+\_\+references}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{num\+\_\+actuator\+\_\+references}{num_actuator_references}}]{\setlength{\rightskip}{0pt plus 5cm}uint32\+\_\+t wolk\+\_\+ctx\+::num\+\_\+actuator\+\_\+references}\hypertarget{structwolk__ctx_a23e98a97649d679e4a85c87f2da1f8e5}{}\label{structwolk__ctx_a23e98a97649d679e4a85c87f2da1f8e5}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!parser@{parser}}
+\index{parser@{parser}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{parser}{parser}}]{\setlength{\rightskip}{0pt plus 5cm}parser\+\_\+t wolk\+\_\+ctx\+::parser}\hypertarget{structwolk__ctx_a823bd0528ef9d148f35d244becc4858a}{}\label{structwolk__ctx_a823bd0528ef9d148f35d244becc4858a}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!persistence@{persistence}}
+\index{persistence@{persistence}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{persistence}{persistence}}]{\setlength{\rightskip}{0pt plus 5cm}persistence\+\_\+t wolk\+\_\+ctx\+::persistence}\hypertarget{structwolk__ctx_a9d7d83e339fcd632b0679db3f86b4293}{}\label{structwolk__ctx_a9d7d83e339fcd632b0679db3f86b4293}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!protocol@{protocol}}
+\index{protocol@{protocol}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{protocol}{protocol}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf protocol\+\_\+t} wolk\+\_\+ctx\+::protocol}\hypertarget{structwolk__ctx_af93f257ff60dd00f34455d425207e66f}{}\label{structwolk__ctx_af93f257ff60dd00f34455d425207e66f}
+Used protocol for communication with Wolk\+About IoT Platform. \begin{DoxySeeAlso}{See also}
+\hyperlink{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}{protocol\+\_\+t} 
+\end{DoxySeeAlso}
+\index{wolk\+\_\+ctx@{wolk\+\_\+ctx}!sock@{sock}}
+\index{sock@{sock}!wolk\+\_\+ctx@{wolk\+\_\+ctx}}
+\subsubsection[{\texorpdfstring{sock}{sock}}]{\setlength{\rightskip}{0pt plus 5cm}int wolk\+\_\+ctx\+::sock}\hypertarget{structwolk__ctx_a7b2318c99408cdafb7ede7f5d472e100}{}\label{structwolk__ctx_a7b2318c99408cdafb7ede7f5d472e100}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+sources/\hyperlink{wolk__connector_8h}{wolk\+\_\+connector.\+h}\end{DoxyCompactItemize}

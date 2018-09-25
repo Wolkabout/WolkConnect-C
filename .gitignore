@@ -1,8 +1,7 @@
 # Build directory
 build
+cmake-build-debug
 
 # Out directory
 out
 
-# Doc directory
-doc
