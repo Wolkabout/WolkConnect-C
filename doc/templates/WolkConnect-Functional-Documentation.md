@@ -10,7 +10,7 @@ Features of WolkAbout IoT Platform that have been incorporated into WolkConnect 
 WolkConnect libraries are open-source and released under the [Apache Licence 2.0](https://github.com/Wolkabout/WolkConnect-C/blob/master/LICENSE).
 
 ---
-# Conception
+# Architecture
 
 ---
 
@@ -38,55 +38,71 @@ Communication between WolkConnect library and WolkAbout IoT Platform is achieved
 Another common dependency for WolkConnect libraries is JSON library that is used for parsing data that is exchanged with WolkAbout IoT Platform. This data is formatted using a custom JSON based protocol defined by WolkAbout IoT Platform.
 
 The high-level API represents what is available to the developer that is using WolkConnect library. APIs follow the naming convention of the programming language they were written in. Consult a specific WolkConnect library’s documentation for more information.
-The API is divided into two parts: data management and device management. Device data is independent of device management on WolkAbout IoT Platform and therefore has a separe API. Device management is responsible for device health and this, in turn, increases the device’s lifespan.
-
-The API has the following functionalities that will be explained in the remainder of this document:
-- [Connect &amp; Disconnect](#connect-and-disconnect)
-- [Sensor readings](#sensor-readings)
-- [Alarm states](#alarms)
-- [Actuators](#actuators)
-- [Keep alive mechanism](#keep-alive-mechanism)
-- [Configuration](#configuration)
-- [Device Software/Firmware Update](#dfu)
-
+The API is divided into two parts: data management and device management. Data handling is independent of device management on WolkAbout IoT Platform and therefore has a separe API. Device management is responsible for device health and this, in turn, increases the device’s lifespan.
 
 ---
 # API's functional description
 
 ---
-WolkConnect libraries separate device’s functionality through the API into two distinct parts:
+WolkConnect libraries separate device’s functionality through the API into three distinct parts:
 
-- **Device data** - valuable data to be exchanged with WolkAbout IoT Platform
-- **Device management** - allows monitoring and controlling the connected device in order to maintain data delivery integrity.
-
+ * [Connection Management](#connection-management) - allows controlling the connected device in order to maintain data delivery integrity:
+	* [Connect](#connect)
+	* [Disconnect](#disconnect)
+	* [Keep-Alive Mechanism](#keep-alive-mechanism)
+ * [Data Handling](#data-handling) - valuable data to be exchanged with WolkAbout IoT Platform
+	* [Sensors](#sensor-readings)
+	* [Alarms](#alarms)
+	* [Actuators](#actuators)
+ * [Device management](#device-managment) - allows monitoring and controlling the connected device in order to maintain data delivery integrity.is the dynamical modification of the device properties with the goal to change device behavior:
+	* [Configuration](#configuration)
+	* [Device Software/Firmware Update](#dfu)
 
 ---
 
-<a name="connect-and-disconnect">
-> **Connect and disconnect**
-</a>
-Every connection from WolkConnect library to WolkAbout IoT Platform is authenticated with a device key and a device password. These credentials are created on WolkAbout IoT Platform when a device is created and are unique to that device. Only one active connection is allowed per device.
+<a name="connection-management">
+## Connection Management
 
+---
+</a>
+
+Every connection from WolkConnect library to WolkAbout IoT Platform is authenticated with a device key and a device password. These credentials are created on WolkAbout IoT Platform when a device is created and are unique to that device. Only one active connection is allowed per device.
 Attempting to create an additional connection with the same device credentials will terminate the previous connection. The connection is made secure, by default, in all WolkConnect libraries through the use of Secure Sockets Layer (SSL). Connecting without SSL is possible. For more information, refer to specific WolkConnect library documentation.
 
-A device can be connected to WolkAbout IoT Platform in two ways:
+<a name="connect">
+> **Connect**
+</a>
 
-- **Always connected devices** - connect once and publish data when necessary. Actuations can only be used in this case, as sending actuations from WolkAbout IoT Platform are disabled when the device is offline.
-- **Periodically connected devices** - connect and publish data when needed. It is important to use disconnect here, as this is a valid device state on WolkAbout IoT Platform -  controlled offline.
+A device can be connected to WolkAbout IoT Platform in two ways:
+Always connected devices - connect once and publish data when necessary. Actuations can only be used in this case, as sending actuations from WolkAbout IoT Platform are disabled when the device is offline.
+Periodically connected devices - connect and publish data when needed. It is important to use disconnect here, as this is a valid device state on WolkAbout IoT Platform -  controlled offline.
+
+<a name="disconnect">
+> **Disconnect**
+</a>
 
 Disconnecting will gracefully terminate the connection and the device will momentarily appear offline on WolkAbout IoT Platform. In cases of ungraceful disconnections, eg. due to a networking error, WolkAbout IoT Platform will be able to determine if the device is offline based on whether the device has send a message from its keep-alive mechanism. After waiting for the keep-alive mechanism timeout with no message, WolkAbout IoT Platform will declare the device offline.
 
-## Device Data
+<a name="keep-alive-mechanism">
+> **Keep-Alive Mechanism**
+</a>
+
+In cases where the device is connected to the Platform but is not publishing any data for the period of 30 minutes, the device may be declared offline. This is especially true for devices that only have actuators, for example. To prevent this issue, a keep-alive mechanism will periodically send a message to WolkAbout IoT Platform. This mechanism can also be disabled to reduce bandwidth usage.
+
+<a name="data-handling">
+## Data Handling
 
 ---
+</a>
 
 Real world devices can perform a wide variety of operations that result in meaningful data. These operations could be to conduct a measurement, monitor certain condition or execute some form of command. The data resulting from these operations have been modeled into three distinct types of data on WolkAbout IoT Platform: sensors, alarms, and actuators.
 
 Information needs to be distinguishable, so every piece of data sent from the device needs to have an identifier. This identifier is called a reference, and all the references of a device on WolkAbout IoT Platform must be unique.
 
 <a name="sensor-readings">
-> **Sensor readings**
+> **Sensors**
 </a>
+
 Sensor readings are stored on the device before explicitly being published to WolkAbout IoT Platform. If the exact time when the reading occured is meaningful information, it can be assigned to the reading as a UTC timestamp. If this timestamp is not provided, WolkAbout IoT Platform will assign the reading a timestamp when it has been received, treating the reading like it occured the moment it arrived.
 
 Readings could be of a very high precision, and although this might not be fully displayed on the dashboard, the information is not lost and can be viewed on different parts of WolkAbout IoT Platform.
@@ -96,6 +112,7 @@ Sensors readings like GPS and accelerometers hold more than one single informati
 <a name="alarms">
 > **Alarms**
 </a>
+
 Alarms are derived from some data on the device and are used to indicate the state of a condition, eg. high-temperature alarm which emerged as a result of exceeding a threshold value on the device. Alarm value can either be on or off.
 
 Like sensor readings, alarm messages are stored on the device before being published to WolkAbout IoT Platform. Alarms can also have a UTC timestamp to denote when the alarm occurred, but if the timestamp is omitted then WolkAbout IoT Platform will assign a timestamp when it receives the alarm message.
@@ -103,7 +120,9 @@ Like sensor readings, alarm messages are stored on the device before being publi
 <a name="actuators">
 > **Actuators**
 </a>
-Actuators are used to enable WolkAbout IoT Platform to set the state of some part of the device, eg. flip a switch or change the gear of a motor.
+
+Actuators are used to enable WolkAbout IoT Platform to set the state of some part of the device, eg. flip a switch or 
+change the gear of a motor.
 
 Single actuation consists of the command to a device and feedback from the device. A command is a message that arrived at the device. Feedback is the current status of the actuator on the device which needs to be sent to WolkAbout IoT Platform in order to complete a single actuation process. Current status has two parameters: actuator value and actuator state. Value is current value of the actuator, eg. for a switch, it can be true or false. Possible actuator states are:
 
@@ -117,18 +136,16 @@ If the device is unable to publish the actuator status, then the information wil
 
 To summarise, when an actuation command is issued from WolkAbout IoT Platform, it will be passed to the actuation handler that will attempt to execute the command, and then the actuator status provider will report back to WolkAbout IoT Platform with the current value and state of the actuator.
 
+<a name="device-managment">
 ## Device Management
 
 ---
-
-<a name="keep-alive-mechanism">
-> **Keep Alive Mechanism**
 </a>
-In cases where the device is connected to the Platform but is not publishing any data for the period of 30 minutes, the device may be declared offline. This is especially true for devices that only have actuators, for example. To prevent this issue, a keep-alive mechanism will periodically send a message to WolkAbout IoT Platform. This mechanism can also be disabled to reduce bandwidth usage.
 
 <a name="configuration">
 > **Configuration**
 </a>
+
 Configuration is the dynamical modification of the device properties from WolkAbout IoT Platform with the goal to change device behavior, eg. measurement heartbeat, sensors delivery reduction, enabling/disabling device interfaces, increase/decrease device logging level.
 
 Configuration requires the same way of handling messages as actuation. When a configuration command is issued from WolkAbout IoT Platform, it will be passed to the configuration handler that will attempt to execute the command. Then the configuration status provider will report back to WolkAbout IoT Platform with the current values of the configuration parameters, with the addition that configuration parameters are always sent as a whole, even when only one value changes.
@@ -136,6 +153,7 @@ Configuration requires the same way of handling messages as actuation. When a co
 <a name="dfu">
 > **Device Software/Firmware Update**
 </a>
+
 WolkAbout IoT Platform gives the possibility of updating the device software/firmware. The process is separated into three autonomous stages:
 
 - delivering software/firmware file from the WolkAbout IoT Platform to a device
@@ -165,5 +183,3 @@ To see how to utilize WolkConnect library APIs, visit one of the following files
 
 * <a href="md_README.html">Simple example README.md</a> - demonstrates the sending of a temperature sensor reading
 * <a href="md_examples_full_feature_set_README.html">Full feature set example README.md</a> - demonstrates full WolkAbout IoT Platform potential
-
-
