@@ -324,7 +324,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
 
     //disconnect message
     len = MQTTSerialize_disconnect(buf, sizeof(buf));
-    if (transport_sendPacketBuffer(ctx->sock, buf, len) != TRANSPORT_DONE) {
+    if (transport_sendPacketBuffer(ctx->sock, buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
 
