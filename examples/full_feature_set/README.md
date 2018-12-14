@@ -125,16 +125,7 @@ Fuction `wolk_process(wolk_ctx_t *ctx)` is non-blocking in order to comply with 
 and it must to be called periodically.
 
 ```c
-while (keep_running)
-{
-    wolk_process(&wolk);
-
-    task_one();
-
-    task_three();
-
-    usleep(500);
-}
+wolk_process(&wolk, 5);
 ```
 
 **Disconnecting from the platform:**
