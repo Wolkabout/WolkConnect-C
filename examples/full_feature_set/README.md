@@ -91,25 +91,14 @@ See `send_func_t` and `send_func_t` in `sources/wolk_connector.h`
 
 **Adding sensor readings:**
 ```c
-wolk_add_numeric_sensor_reading(&wolk, "NUMERIC_SENSOR_REFERENCE", 23.4, 0);
+wolk_add_numeric_sensor_reading(&wolk, "T", 25.6, 0);
 
-wolk_add_bool_sensor_reading(&wolk, "BOOL_SENSOR_REFERENCE", false, 0);
+wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings, 3, 0);
 ```
 
-**Publishing actuator statuses:**
+**Adding events:**
 ```c
-wolk_publish_actuator_status(&wolk, "SLIDER_REF");
-```
-This will invoke the `actuator_status_provider` to read the actuator status, and publish actuator status.
-
-**Publish device configuration to platform:**
-```c
-wolk_publish_configuration_status(&wolk, "CONFIGURATION_REF");
-```
-
-**Publishing events:**
-```c
-wolk_add_alarm(&wolk, "ALARM_REF", "ALARM MESSAGE", 0);
+wolk_add_alarm(&wolk, "HH", true, 0);
 ```
 
 **Data publish strategy:**
@@ -119,14 +108,15 @@ Sensor readings, and alarms are pushed to WolkAbout IoT platform on demand by ca
 wolk_publish(&wolk);
 ```
 
-Whereas actuator statuses are published automatically by calling:
+**Publishing actuator statuses:**
 ```c
-wolk_publish_actuator_status(&wolk, "SLIDER_REF");
+wolk_publish_actuator_status(&wolk, "SW");
 ```
+This will invoke the `actuator_status_provider` to read the actuator status, and publish actuator status.
 
-**Disconnecting from the platform:**
+**Publish device configuration to platform:**
 ```c
-wolk_disconnect(&wolk);
+wolk_publish_configuration_status(&wolk, "CONFIGURATION_REF");
 ```
 
 **Cooperative scheduling:**
@@ -145,6 +135,11 @@ while (keep_running)
 
     usleep(500);
 }
+```
+
+**Disconnecting from the platform:**
+```c
+wolk_disconnect(&wolk);
 ```
 
 **Data persistence:**

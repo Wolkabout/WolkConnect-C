@@ -101,11 +101,6 @@ Sensor reading is pushed to WolkAbout IoT platform on demand by calling
 wolk_publish(&wolk);
 ```
 
-**Disconnecting from the platform:**
-```c
-wolk_disconnect(&wolk);
-```
-
 **Cooperative scheduling:**
 
 Fuction `wolk_process(wolk_ctx_t *ctx)` is non-blocking in order to comply with cooperative scheduling,
@@ -113,6 +108,11 @@ and it must to be called periodically.
 
 ```c
 wolk_process(&wolk, 5);
+```
+
+**Disconnecting from the platform:**
+```c
+wolk_disconnect(&wolk);
 ```
 
 **Data persistence:**
