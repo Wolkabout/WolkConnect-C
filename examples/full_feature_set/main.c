@@ -357,6 +357,9 @@ int main(int argc, char *argv[])
 
     wolk_publish(&wolk);
 
+    wolk_publish_actuator_status(&wolk, "SW");
+    wolk_publish_actuator_status(&wolk, "SL");
+
     while (keep_running) {
         usleep(200000);
         
