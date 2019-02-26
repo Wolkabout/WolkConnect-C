@@ -46,7 +46,7 @@ Example Usage
 -------------
 **Initialize WolkConnect-C Connector**
 
-Create a device on WolkAbout IoT platform by importing manifest file `full-example-manifest.json` located in `examples/full_feature_set/`. This manifest fits `full_feature_set` example and demonstrates all the functionality of WolkConnect-C library.
+Create a device on WolkAbout IoT platform by importing template file `Full-example-deviceTemplate.json` located in `examples/full_feature_set/`. This template fits `full_feature_set` example and demonstrates all the functionality of WolkConnect-C library.
 
 **Establishing connection with WolkAbout IoT platform:**
 
