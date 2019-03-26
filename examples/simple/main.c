@@ -164,15 +164,15 @@ int main(int argc, char *argv[])
     }
     printf ("Wolk client - Connected to server\n");
 
+    wolk_add_numeric_sensor_reading(&wolk, "T", rand()%100-20, 0);
+    wolk_publish(&wolk);
+
 
     while (keep_running) {
-        wolk_add_numeric_sensor_reading(&wolk, "T", rand()%100-20, 0);
-
-        wolk_publish(&wolk);
-
+        //sleep(currently 200us) and number of tick(currently 5) when are multiplied needs to give 1ms. This is obligatory.
+        // you can change this parameters, but keep it's multiplication
+        usleep(200);
         wolk_process(&wolk, 5);
-
-        sleep(5);
     }
 
     printf("Wolk client - Diconnecting\n");
