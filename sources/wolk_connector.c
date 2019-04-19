@@ -34,7 +34,7 @@
 
 #define NON_EXISTING "N/A"
 
-#define MQTT_KEEP_ALIVE_INTERVAL 60
+#define MQTT_KEEP_ALIVE_INTERVAL (600 * 1000)
 
 #define PING_KEEP_ALIVE_INTERVAL (300 * 1000)
 
@@ -48,7 +48,7 @@ static const char* CONFIGURATION_COMMANDS = "configurations/commands/";
 static const char* LASTWILL_TOPIC = "lastwill/";
 static const char* LASTWILL_MESSAGE = "Gone offline";
 
-static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx);
+static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint32_t tick);
 static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint32_t tick);
 
 static WOLK_ERR_T _receive(wolk_ctx_t* ctx);
@@ -336,7 +336,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint32_t tick)
     /* Sanity check */
     WOLK_ASSERT(_is_wolk_initialized(ctx));
 
-    if (_mqtt_keep_alive(ctx) != W_FALSE) {
+    if (_mqtt_keep_alive(ctx, tick) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -563,10 +563,15 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
     return W_FALSE;
 }
 
-static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx)
+static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
 {
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
+
+    if (ctx->milliseconds_since_last_ping_keep_alive < MQTT_KEEP_ALIVE_INTERVAL) {
+        ctx->milliseconds_since_last_ping_keep_alive += tick;
+        return W_FALSE;
+    }
 
     int len = MQTTSerialize_pingreq(buf, MQTT_PACKET_SIZE);
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
