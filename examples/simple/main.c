@@ -32,11 +32,16 @@
 #include <netdb.h>
 #include <signal.h>
 
-static int sockfd;
-static const char *device_key = "device_key";
-static const char *device_password = "some_password";
-static const char *hostname = "api-demo.wolkabout.com";
-static int portno = 1883;
+#include <openssl/ssl.h>
+
+
+static SSL_CTX* ctx;
+static BIO* sockfd;
+static const char *device_key = "i2zbjatsyly227k1";
+static const char *device_password = "1fd4e8b8-fe2a-4dd9-828b-e01a45a38a98";
+static const char *hostname = "mqtt-verification2.wolkabout.com";
+static int portno = 8883;
+char certs[] = "../ca.crt";
 
 static uint8_t persistence_storage[1024*1024];
 
@@ -56,7 +61,7 @@ static int send_buffer(unsigned char* buffer, unsigned int len)
 {
     int n;
 
-    n = (int)write(sockfd, buffer, len);
+    n = BIO_write(sockfd, buffer, len);
     if (n < 0) {
         return -1;
     }
@@ -69,7 +74,7 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     bzero(buffer, max_bytes);
     int n;
 
-    n = (int)read(sockfd, buffer, max_bytes);
+    n = (int)BIO_read(sockfd, buffer, max_bytes);
     if (n < 0) {
         return -1;
     }
@@ -77,45 +82,55 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     return n;
 }
 
-static int open_socket(void)
-{
-    struct sockaddr_in serveraddr;
-    struct hostent *server;
 
-    /* socket: create the socket */
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
-        printf("ERROR opening socket\n");
-        return -1;
+/************************************************
+ *          OPENSSL BEGIN
+ * **********************************************/
+
+void open_nb_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, int portno, const char* ca_file, const char* ca_path) {
+    *ssl_ctx = SSL_CTX_new(SSLv23_client_method());
+    SSL* ssl;
+
+    const char port[5];
+    sprintf(&port, "%d", portno);
+
+    /* load certificate */
+    if (!SSL_CTX_load_verify_locations(*ssl_ctx, ca_file, ca_path)) {
+        printf("error: failed to load certificate\n");
+        exit(1);
     }
 
-    /* gethostbyname: get the server's DNS entry */
-    server = gethostbyname(hostname);
-    if (server == NULL) {
-        fprintf(stderr,"ERROR, no such host as %s\n", hostname);
-        return -1;
+    /* open BIO socket */
+    *bio = BIO_new_ssl_connect(*ssl_ctx);
+    BIO_get_ssl(*bio, &ssl);
+    SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+    BIO_set_conn_hostname(*bio, addr);
+    BIO_set_nbio(*bio, 1);
+    BIO_set_conn_port(*bio, port);
+
+    /* wait for connect with 10 second timeout */
+    int start_time = time(NULL);
+    while(BIO_do_connect(*bio) <= 0 && (int)time(NULL) - start_time < 10);
+    if (BIO_do_connect(*bio) <= 0) {
+        printf("error do connect\n");
+        BIO_free_all(*bio);
+        SSL_CTX_free(*ssl_ctx);
+        *bio = NULL;
+        *ssl_ctx=NULL;
+        return;
     }
 
-    struct timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = 100;
-    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
-
-    /* build the server's Internet address */
-    bzero((char *) &serveraddr, sizeof(serveraddr));
-    serveraddr.sin_family = AF_INET;
-    bcopy((char *)server->h_addr,
-          (char *)&serveraddr.sin_addr.s_addr, server->h_length);
-    serveraddr.sin_port = htons(portno);
-
-    /* connect: create a connection with the server */
-    if (connect(sockfd, (const struct sockaddr*)&serveraddr, sizeof(serveraddr)) < 0) {
-        printf("ERROR connecting\n");
-        return -1;
+    /* verify certificate */
+    if (SSL_get_verify_result(ssl) != X509_V_OK) {
+        /* Handle the failed verification */
+        printf("error: x509 certificate verification failed\n");
+        exit(1);
     }
-
-    return 0;
 }
+
+/************************************************
+ *          OPENSSL END
+ * **********************************************/
 
 
 int main(int argc, char *argv[])
@@ -136,9 +151,16 @@ int main(int argc, char *argv[])
     }
 
     printf ("Wolk client - Establishing connection to WolkAbout IoT platform\n");
-    if (open_socket() != 0) {
-        printf ("Wolk client - Error establishing connection to WolkAbout IoT platform\n");
-        return 1;
+
+    /* Load OpenSSL */
+    SSL_load_error_strings();
+    ERR_load_BIO_strings();
+    OpenSSL_add_all_algorithms();
+    SSL_library_init();
+
+    open_nb_socket(&sockfd, &ctx, hostname, portno, certs, NULL);
+    if (sockfd == NULL) {
+        printf ("Open socket - Errorn");
     }
 
     if (wolk_init(&wolk,
