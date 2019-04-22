@@ -568,10 +568,11 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
 
-    if (ctx->milliseconds_since_last_ping_keep_alive < MQTT_KEEP_ALIVE_INTERVAL) {
-        ctx->milliseconds_since_last_ping_keep_alive += tick;
+    if (ctx->connectData.keepAliveInterval < MQTT_KEEP_ALIVE_INTERVAL) {
+        ctx->connectData.keepAliveInterval += tick;
         return W_FALSE;
     }
+    ctx->connectData.keepAliveInterval = 0;
 
     int len = MQTTSerialize_pingreq(buf, MQTT_PACKET_SIZE);
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
