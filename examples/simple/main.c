@@ -44,8 +44,10 @@ static const char *hostname = "api-demo.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
 
+/* Sample in-memory persistence storage - size 1MB */
 static uint8_t persistence_storage[1024*1024];
 
+/* WolkConnect-C Connector context */
 static wolk_ctx_t wolk;
 
 static volatile bool keep_running = true;
