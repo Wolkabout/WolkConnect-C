@@ -32,7 +32,6 @@
 #include <netdb.h>
 #include <signal.h>
 
-#include <openssl/ssl.h>
 
 static int sockfd;
 static const char *device_key = "i2zbjatsyly227k1";
@@ -58,7 +57,7 @@ static int send_buffer(unsigned char* buffer, unsigned int len)
 {
     int n;
 
-    n = write(sockfd, buffer, len);
+    n = (int)write(sockfd, buffer, len);
     if (n < 0) {
         return -1;
     }
