@@ -36,7 +36,7 @@
 
 #define MQTT_KEEP_ALIVE_INTERVAL (60 * 1000)
 
-#define PING_KEEP_ALIVE_INTERVAL (300 * 1000)
+#define PING_KEEP_ALIVE_INTERVAL (30 * 1000)
 
 static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "actuators/commands/";
 
@@ -572,7 +572,6 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
         ctx->connectData.keepAliveInterval += tick;
         return W_FALSE;
     }
-    ctx->connectData.keepAliveInterval = 0;
 
     int len = MQTTSerialize_pingreq(buf, MQTT_PACKET_SIZE);
     transport_sendPacketBuffernb_start(ctx->sock, buf, len);
@@ -580,6 +579,7 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
     do {
         switch (transport_sendPacketBuffernb(ctx->sock)) {
         case TRANSPORT_DONE:
+            ctx->connectData.keepAliveInterval = 0;
             return W_FALSE;
 
         case TRANSPORT_ERROR:
