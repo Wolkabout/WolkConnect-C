@@ -32,6 +32,7 @@
 #include <netdb.h>
 #include <signal.h>
 
+
 static int sockfd;
 static const char *device_key = "device_key";
 static const char *device_password = "some_password";
@@ -169,7 +170,7 @@ int main(int argc, char *argv[])
 
 
     while (keep_running) {
-        //sleep(currently 200us) and number of tick(currently 5) when are multiplied needs to give 1ms. This is obligatory.
+        //MANDATORY: sleep(currently 200us) and number of tick(currently 5) when are multiplied needs to give 1ms.
         // you can change this parameters, but keep it's multiplication
         usleep(200);
         wolk_process(&wolk, 5);
