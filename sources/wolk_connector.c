@@ -34,9 +34,9 @@
 
 #define NON_EXISTING "N/A"
 
-#define MQTT_KEEP_ALIVE_INTERVAL (60 * 1000)
+#define MQTT_KEEP_ALIVE_INTERVAL (600 * 1000)
 
-#define PING_KEEP_ALIVE_INTERVAL (30 * 1000)
+#define PING_KEEP_ALIVE_INTERVAL (600 * 1000)
 
 static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "actuators/commands/";
 
