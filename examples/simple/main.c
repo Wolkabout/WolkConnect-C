@@ -34,9 +34,9 @@
 
 
 static int sockfd;
-static const char *device_key = "i2zbjatsyly227k1";
-static const char *device_password = "1fd4e8b8-fe2a-4dd9-828b-e01a45a38a98";
-static const char *hostname = "mqtt-verification2.wolkabout.com";
+static const char *device_key = "device_key";
+static const char *device_password = "some_password";
+static const char *hostname = "api-demo.wolkabout.com";
 static int portno = 1883;
 
 static uint8_t persistence_storage[1024*1024];
