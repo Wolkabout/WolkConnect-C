@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 2.8)
 project(WolkAboutConnector C)
 set(CMAKE_C_STANDARD 99)
 
-include_directories(dependencies/MQTTPacket/src)
+include_directories(dependencies/MQTTPacket/src dependencies/libssl/include)
 add_subdirectory(dependencies/MQTTPacket/src)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
@@ -58,8 +58,11 @@ file(GLOB_RECURSE SOURCE_FILES "sources/*.c")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")
 
+link_directories(${CMAKE_SOURCE_DIR}/dependencies/libssl)
+
 add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c)
+target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)
+set_target_properties(${LIBRARY_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
 # Format code
 add_custom_target(format

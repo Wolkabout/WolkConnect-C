@@ -14,13 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Obtain, and build dependencies
-cd dependencies
-./download.sh
-./make_install.sh
-cd ..
-
-mkdir -p build
-
-cd build
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+# libssl
+if [ ! -d "libssl" ]; then
+    echo "Downloading libssl"
+    wget -O openssl.tar.gz https://github.com/openssl/openssl/archive/OpenSSL_1_1_0f.tar.gz
+    tar -xvzf openssl.tar.gz
+    mv openssl-OpenSSL_1_1_0f libssl
+    rm openssl.tar.gz
+fi
