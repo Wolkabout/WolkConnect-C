@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 2.8)
 project(WolkAboutConnector C)
 set(CMAKE_C_STANDARD 99)
 
-include_directories(dependencies/MQTTPacket/src dependencies/libssl/include/openssl)
+include_directories(dependencies/MQTTPacket/src dependencies/libssl/include)
 add_subdirectory(dependencies/MQTTPacket/src)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
