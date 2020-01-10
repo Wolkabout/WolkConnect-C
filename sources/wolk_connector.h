@@ -113,16 +113,22 @@ typedef struct wolk_ctx {
     MQTTTransport mqtt_transport;
     transport_iofunctions_t iof;
 
-    actuation_handler_t actuation_handler;                  /**< Callback for handling received actuation from WolkAbout IoT Platform. @see actuation_handler_t*/
-    actuator_status_provider_t actuator_status_provider;    /**< Callback for providing the current actuator status to WolkAbout IoT Platform. @see actuator_status_provider_t*/
+    actuation_handler_t actuation_handler; /**< Callback for handling received actuation from WolkAbout IoT Platform.
+                                              @see actuation_handler_t*/
+    actuator_status_provider_t actuator_status_provider; /**< Callback for providing the current actuator status to
+                                                            WolkAbout IoT Platform. @see actuator_status_provider_t*/
 
-    configuration_handler_t configuration_handler;          /**< Callback for handling received configuration from WolkAbout IoT Platform. @see configuration_handler_t*/
-    configuration_provider_t configuration_provider;        /**< Callback for providing the current configuration status to WolkAbout IoT Platform. @see configuration_provider_t*/
+    configuration_handler_t configuration_handler; /**< Callback for handling received configuration from WolkAbout IoT
+                                                      Platform. @see configuration_handler_t*/
+    configuration_provider_t configuration_provider; /**< Callback for providing the current configuration status to
+                                                        WolkAbout IoT Platform. @see configuration_provider_t*/
 
-    char device_key[DEVICE_KEY_SIZE];                       /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as a result of device creation on the platform.*/
-    char device_password[DEVICE_PASSWORD_SIZE];             /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as a result of device creation on the platform.*/
+    char device_key[DEVICE_KEY_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as a result
+                                         of device creation on the platform.*/
+    char device_password[DEVICE_PASSWORD_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as
+                                                   a result of device creation on the platform.*/
 
-    protocol_t protocol;                                    /**<  Used protocol for communication with WolkAbout IoT Platform. @see protocol_t*/
+    protocol_t protocol; /**<  Used protocol for communication with WolkAbout IoT Platform. @see protocol_t*/
     parser_t parser;
 
     persistence_t persistence;
