@@ -1,12 +1,12 @@
 \hypertarget{wolk__connector_8h}{}\section{sources/wolk\+\_\+connector.h File Reference}
 \label{wolk__connector_8h}\index{sources/wolk\+\_\+connector.\+h@{sources/wolk\+\_\+connector.\+h}}
-{\ttfamily \#include \char`\"{}M\+Q\+T\+T\+Packet.\+h\char`\"{}}\\*
-{\ttfamily \#include \char`\"{}actuator\+\_\+status.\+h\char`\"{}}\\*
-{\ttfamily \#include \char`\"{}firmware\+\_\+update.\+h\char`\"{}}\\*
-{\ttfamily \#include \char`\"{}parser.\+h\char`\"{}}\\*
-{\ttfamily \#include \char`\"{}persistence.\+h\char`\"{}}\\*
-{\ttfamily \#include \char`\"{}size\+\_\+definitions.\+h\char`\"{}}\\*
-{\ttfamily \#include \char`\"{}transport.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}M\+Q\+T\+T\+Packet.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}actuator\+\_\+status.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}firmware\+\_\+update.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}parser.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}persistence.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}size\+\_\+definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}transport.\+h\char`\"{}}\newline
 \subsection*{Data Structures}
 \begin{DoxyCompactItemize}
 \item 
@@ -34,6 +34,20 @@ typedef size\+\_\+t($\ast$ \hyperlink{wolk__connector_8h_a64d56254d09f9e452751f3
 typedef struct \hyperlink{structwolk__ctx}{wolk\+\_\+ctx} \hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t}
 \begin{DoxyCompactList}\small\item\em Wolk\+About IoT Platform connector context. Most of the parameters are used to initialize Wolk\+Connect library forwarding to \hyperlink{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{wolk\+\_\+init()}. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \{ \hyperlink{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba447aa6141eb0f03228f39d152985b062}{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR} = 2, 
+\hyperlink{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba969b4fa8b86e732fd734fad63a85c3da}{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR} = 5, 
+\hyperlink{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba747cdd3ba3df6a7a9813b05b06c698e0}{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH} = 0
+ \}\begin{DoxyCompactList}\small\item\em Library versioning. \end{DoxyCompactList}
+\item 
+enum \hyperlink{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}{protocol\+\_\+t} \{ \hyperlink{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5fa9574b7cae2523f47c59e082e473223bd}{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE} = 0
+ \}\begin{DoxyCompactList}\small\item\em Supported protocols, Wolk\+Connect libararies currently support only P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE. \end{DoxyCompactList}
+\item 
+enum \hyperlink{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546af}{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values} \{ \hyperlink{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa0abf1977616eb22dc9af960a3a664376}{W\+\_\+\+F\+A\+L\+SE} = 0, 
+\hyperlink{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa93fad5ad6fdb521eabff2efa8934f722}{W\+\_\+\+T\+R\+UE} = 1
+ \}
+\end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
@@ -74,9 +88,12 @@ typedef struct \hyperlink{structwolk__ctx}{wolk\+\_\+ctx} \hyperlink{wolk__conne
 
 
 \subsection{Typedef Documentation}
+\mbox{\Hypertarget{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}\label{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!actuation\+\_\+handler\+\_\+t@{actuation\+\_\+handler\+\_\+t}}
 \index{actuation\+\_\+handler\+\_\+t@{actuation\+\_\+handler\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{actuation\+\_\+handler\+\_\+t}{actuation_handler_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef void($\ast$ actuation\+\_\+handler\+\_\+t) (const char $\ast$reference, const char $\ast$value)}\hypertarget{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}{}\label{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}
+\subsubsection{\texorpdfstring{actuation\+\_\+handler\+\_\+t}{actuation\_handler\_t}}
+{\footnotesize\ttfamily typedef void($\ast$ actuation\+\_\+handler\+\_\+t) (const char $\ast$reference, const char $\ast$value)}
+
 
 
 Declaration of actuator handler. Actuator reference and value are the pairs of data on the same place in own arrays. 
@@ -88,9 +105,12 @@ Declaration of actuator handler. Actuator reference and value are the pairs of d
 {\em value} & value received from Wolk\+About IoT Platform. \\
 \hline
 \end{DoxyParams}
+\mbox{\Hypertarget{wolk__connector_8h_af3e8919a04a293972b64605557287537}\label{wolk__connector_8h_af3e8919a04a293972b64605557287537}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!actuator\+\_\+status\+\_\+provider\+\_\+t@{actuator\+\_\+status\+\_\+provider\+\_\+t}}
 \index{actuator\+\_\+status\+\_\+provider\+\_\+t@{actuator\+\_\+status\+\_\+provider\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{actuator\+\_\+status\+\_\+provider\+\_\+t}{actuator_status_provider_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef actuator\+\_\+status\+\_\+t($\ast$ actuator\+\_\+status\+\_\+provider\+\_\+t) (const char $\ast$reference)}\hypertarget{wolk__connector_8h_af3e8919a04a293972b64605557287537}{}\label{wolk__connector_8h_af3e8919a04a293972b64605557287537}
+\subsubsection{\texorpdfstring{actuator\+\_\+status\+\_\+provider\+\_\+t}{actuator\_status\_provider\_t}}
+{\footnotesize\ttfamily typedef actuator\+\_\+status\+\_\+t($\ast$ actuator\+\_\+status\+\_\+provider\+\_\+t) (const char $\ast$reference)}
+
 
 
 Declaration of actuator status. 
@@ -100,9 +120,12 @@ Declaration of actuator status.
 {\em reference} & actuator references define in manifest on Wolk\+About IoT Platform \\
 \hline
 \end{DoxyParams}
+\mbox{\Hypertarget{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}\label{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!configuration\+\_\+handler\+\_\+t@{configuration\+\_\+handler\+\_\+t}}
 \index{configuration\+\_\+handler\+\_\+t@{configuration\+\_\+handler\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{configuration\+\_\+handler\+\_\+t}{configuration_handler_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef void($\ast$ configuration\+\_\+handler\+\_\+t) (char($\ast$reference)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+R\+E\+F\+E\+R\+E\+N\+C\+E\+\_\+\+S\+I\+ZE\mbox{]}, char($\ast$value)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+V\+A\+L\+U\+E\+\_\+\+S\+I\+ZE\mbox{]}, size\+\_\+t num\+\_\+configuration\+\_\+items)}\hypertarget{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}{}\label{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}
+\subsubsection{\texorpdfstring{configuration\+\_\+handler\+\_\+t}{configuration\_handler\_t}}
+{\footnotesize\ttfamily typedef void($\ast$ configuration\+\_\+handler\+\_\+t) (char($\ast$reference)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+R\+E\+F\+E\+R\+E\+N\+C\+E\+\_\+\+S\+I\+ZE\mbox{]}, char($\ast$value)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+V\+A\+L\+U\+E\+\_\+\+S\+I\+ZE\mbox{]}, size\+\_\+t num\+\_\+configuration\+\_\+items)}
+
 
 
 Declaration of configuration handler. Configuration reference and value are the pairs of data on the same place in own arrays. 
@@ -116,9 +139,12 @@ Declaration of configuration handler. Configuration reference and value are the 
 {\em num\+\_\+configuration\+\_\+items} & number of used configuration parameters \\
 \hline
 \end{DoxyParams}
+\mbox{\Hypertarget{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}\label{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!configuration\+\_\+provider\+\_\+t@{configuration\+\_\+provider\+\_\+t}}
 \index{configuration\+\_\+provider\+\_\+t@{configuration\+\_\+provider\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{configuration\+\_\+provider\+\_\+t}{configuration_provider_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef size\+\_\+t($\ast$ configuration\+\_\+provider\+\_\+t) (char($\ast$reference)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+R\+E\+F\+E\+R\+E\+N\+C\+E\+\_\+\+S\+I\+ZE\mbox{]}, char($\ast$value)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+V\+A\+L\+U\+E\+\_\+\+S\+I\+ZE\mbox{]}, size\+\_\+t max\+\_\+num\+\_\+configuration\+\_\+items)}\hypertarget{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}{}\label{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}
+\subsubsection{\texorpdfstring{configuration\+\_\+provider\+\_\+t}{configuration\_provider\_t}}
+{\footnotesize\ttfamily typedef size\+\_\+t($\ast$ configuration\+\_\+provider\+\_\+t) (char($\ast$reference)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+R\+E\+F\+E\+R\+E\+N\+C\+E\+\_\+\+S\+I\+ZE\mbox{]}, char($\ast$value)\mbox{[}C\+O\+N\+F\+I\+G\+U\+R\+A\+T\+I\+O\+N\+\_\+\+V\+A\+L\+U\+E\+\_\+\+S\+I\+ZE\mbox{]}, size\+\_\+t max\+\_\+num\+\_\+configuration\+\_\+items)}
+
 
 
 Declaration of configuration provider. 
@@ -132,37 +158,52 @@ Declaration of configuration provider.
 {\em num\+\_\+configuration\+\_\+items} & number of used configuration parameters \\
 \hline
 \end{DoxyParams}
+\mbox{\Hypertarget{wolk__connector_8h_ac6f167182b7b63052d13946a6c4fba06}\label{wolk__connector_8h_ac6f167182b7b63052d13946a6c4fba06}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!recv\+\_\+func\+\_\+t@{recv\+\_\+func\+\_\+t}}
 \index{recv\+\_\+func\+\_\+t@{recv\+\_\+func\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{recv\+\_\+func\+\_\+t}{recv_func_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef int($\ast$ recv\+\_\+func\+\_\+t) (unsigned char $\ast$bytes, unsigned int num\+\_\+bytes)}\hypertarget{wolk__connector_8h_ac6f167182b7b63052d13946a6c4fba06}{}\label{wolk__connector_8h_ac6f167182b7b63052d13946a6c4fba06}
+\subsubsection{\texorpdfstring{recv\+\_\+func\+\_\+t}{recv\_func\_t}}
+{\footnotesize\ttfamily typedef int($\ast$ recv\+\_\+func\+\_\+t) (unsigned char $\ast$bytes, unsigned int num\+\_\+bytes)}
+
 
 
 Callback declaration for reading bytes from socket. 
 
+\mbox{\Hypertarget{wolk__connector_8h_a830662686699e21c1280f63d2ec80faf}\label{wolk__connector_8h_a830662686699e21c1280f63d2ec80faf}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!send\+\_\+func\+\_\+t@{send\+\_\+func\+\_\+t}}
 \index{send\+\_\+func\+\_\+t@{send\+\_\+func\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{send\+\_\+func\+\_\+t}{send_func_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef int($\ast$ send\+\_\+func\+\_\+t) (unsigned char $\ast$bytes, unsigned int num\+\_\+bytes)}\hypertarget{wolk__connector_8h_a830662686699e21c1280f63d2ec80faf}{}\label{wolk__connector_8h_a830662686699e21c1280f63d2ec80faf}
+\subsubsection{\texorpdfstring{send\+\_\+func\+\_\+t}{send\_func\_t}}
+{\footnotesize\ttfamily typedef int($\ast$ send\+\_\+func\+\_\+t) (unsigned char $\ast$bytes, unsigned int num\+\_\+bytes)}
+
 
 
 Callback declaration for writting bytes to socket. 
 
+\mbox{\Hypertarget{wolk__connector_8h_a8b01c4c1e6c1d8d91197fb49c642c4ef}\label{wolk__connector_8h_a8b01c4c1e6c1d8d91197fb49c642c4ef}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T@{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}}
 \index{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T@{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}{WOLK_BOOL_T}}]{\setlength{\rightskip}{0pt plus 5cm}typedef unsigned char {\bf W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}}\hypertarget{wolk__connector_8h_a8b01c4c1e6c1d8d91197fb49c642c4ef}{}\label{wolk__connector_8h_a8b01c4c1e6c1d8d91197fb49c642c4ef}
+\subsubsection{\texorpdfstring{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}{WOLK\_BOOL\_T}}
+{\footnotesize\ttfamily typedef unsigned char \hyperlink{wolk__connector_8h_a8b01c4c1e6c1d8d91197fb49c642c4ef}{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T}}
+
 
 
 W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+T Boolean used in Wolk\+Connect-\/C library. 
 
+\mbox{\Hypertarget{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}\label{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+ctx\+\_\+t@{wolk\+\_\+ctx\+\_\+t}}
 \index{wolk\+\_\+ctx\+\_\+t@{wolk\+\_\+ctx\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+ctx\+\_\+t}{wolk_ctx_t}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf wolk\+\_\+ctx}  {\bf wolk\+\_\+ctx\+\_\+t}}\hypertarget{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{}\label{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}
+\subsubsection{\texorpdfstring{wolk\+\_\+ctx\+\_\+t}{wolk\_ctx\_t}}
+{\footnotesize\ttfamily typedef struct \hyperlink{structwolk__ctx}{wolk\+\_\+ctx}  \hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t}}
+
 
 
 Wolk\+About IoT Platform connector context. Most of the parameters are used to initialize Wolk\+Connect library forwarding to \hyperlink{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{wolk\+\_\+init()}. 
 
+\mbox{\Hypertarget{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}\label{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T@{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}}
 \index{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T@{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}{WOLK_ERR_T}}]{\setlength{\rightskip}{0pt plus 5cm}typedef unsigned char {\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}}\hypertarget{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{}\label{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}
+\subsubsection{\texorpdfstring{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}{WOLK\_ERR\_T}}
+{\footnotesize\ttfamily typedef unsigned char \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T}}
+
 
 
 W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T Boolean used for error handling in Wolk\+Connect-\/C library. 
@@ -170,61 +211,69 @@ W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T Boolean used for error handling in Wolk\+Connec
 
 
 \subsection{Enumeration Type Documentation}
-\subsubsection[{\texorpdfstring{anonymous enum}{anonymous enum}}]{\setlength{\rightskip}{0pt plus 5cm}anonymous enum}\hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55b}{}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55b}
+\mbox{\Hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55b}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55b}} 
+\subsubsection{\texorpdfstring{anonymous enum}{anonymous enum}}
+{\footnotesize\ttfamily anonymous enum}
+
 
 
 Library versioning. 
 
-\begin{Desc}
-\item[Enumerator]\par
-\begin{description}
-\index{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR}}\item[{\em 
-W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR\hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba447aa6141eb0f03228f39d152985b062}{}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba447aa6141eb0f03228f39d152985b062}
-}]\index{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR}}\item[{\em 
-W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR\hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba969b4fa8b86e732fd734fad63a85c3da}{}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba969b4fa8b86e732fd734fad63a85c3da}
-}]\index{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH}}\item[{\em 
-W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH\hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba747cdd3ba3df6a7a9813b05b06c698e0}{}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba747cdd3ba3df6a7a9813b05b06c698e0}
-}]\end{description}
-\end{Desc}
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR}}}\mbox{\Hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba447aa6141eb0f03228f39d152985b062}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba447aa6141eb0f03228f39d152985b062}} 
+W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR}}}\mbox{\Hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba969b4fa8b86e732fd734fad63a85c3da}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba969b4fa8b86e732fd734fad63a85c3da}} 
+W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH@{W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH}}}\mbox{\Hypertarget{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba747cdd3ba3df6a7a9813b05b06c698e0}\label{wolk__connector_8h_a06fc87d81c62e9abb8790b6e5713c55ba747cdd3ba3df6a7a9813b05b06c698e0}} 
+W\+O\+L\+K\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+P\+A\+T\+CH&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}\label{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!protocol\+\_\+t@{protocol\+\_\+t}}
 \index{protocol\+\_\+t@{protocol\+\_\+t}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{protocol\+\_\+t}{protocol_t}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf protocol\+\_\+t}}\hypertarget{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}{}\label{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}
+\subsubsection{\texorpdfstring{protocol\+\_\+t}{protocol\_t}}
+{\footnotesize\ttfamily enum \hyperlink{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}{protocol\+\_\+t}}
+
 
 
 Supported protocols, Wolk\+Connect libararies currently support only P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE. 
 
-\begin{Desc}
-\item[Enumerator]\par
-\begin{description}
-\index{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE@{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE@{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE}}\item[{\em 
-P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE\hypertarget{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5fa9574b7cae2523f47c59e082e473223bd}{}\label{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5fa9574b7cae2523f47c59e082e473223bd}
-}]\end{description}
-\end{Desc}
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE@{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE@{P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE}}}\mbox{\Hypertarget{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5fa9574b7cae2523f47c59e082e473223bd}\label{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5fa9574b7cae2523f47c59e082e473223bd}} 
+P\+R\+O\+T\+O\+C\+O\+L\+\_\+\+J\+S\+O\+N\+\_\+\+S\+I\+N\+G\+LE&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546af}\label{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546af}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values@{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}}
 \index{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values@{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}{WOLK_BOOL_T_values}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}}\hypertarget{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546af}{}\label{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546af}
-\begin{Desc}
-\item[Enumerator]\par
-\begin{description}
-\index{W\+\_\+\+F\+A\+L\+SE@{W\+\_\+\+F\+A\+L\+SE}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+\_\+\+F\+A\+L\+SE@{W\+\_\+\+F\+A\+L\+SE}}\item[{\em 
-W\+\_\+\+F\+A\+L\+SE\hypertarget{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa0abf1977616eb22dc9af960a3a664376}{}\label{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa0abf1977616eb22dc9af960a3a664376}
-}]\index{W\+\_\+\+T\+R\+UE@{W\+\_\+\+T\+R\+UE}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+\_\+\+T\+R\+UE@{W\+\_\+\+T\+R\+UE}}\item[{\em 
-W\+\_\+\+T\+R\+UE\hypertarget{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa93fad5ad6fdb521eabff2efa8934f722}{}\label{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa93fad5ad6fdb521eabff2efa8934f722}
-}]\end{description}
-\end{Desc}
+\subsubsection{\texorpdfstring{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}{WOLK\_BOOL\_T\_values}}
+{\footnotesize\ttfamily enum \hyperlink{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546af}{W\+O\+L\+K\+\_\+\+B\+O\+O\+L\+\_\+\+T\+\_\+values}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{W\+\_\+\+F\+A\+L\+SE@{W\+\_\+\+F\+A\+L\+SE}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+\_\+\+F\+A\+L\+SE@{W\+\_\+\+F\+A\+L\+SE}}}\mbox{\Hypertarget{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa0abf1977616eb22dc9af960a3a664376}\label{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa0abf1977616eb22dc9af960a3a664376}} 
+W\+\_\+\+F\+A\+L\+SE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{W\+\_\+\+T\+R\+UE@{W\+\_\+\+T\+R\+UE}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}\index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!W\+\_\+\+T\+R\+UE@{W\+\_\+\+T\+R\+UE}}}\mbox{\Hypertarget{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa93fad5ad6fdb521eabff2efa8934f722}\label{wolk__connector_8h_a19b47d3264771c75e27cf2b2617546afa93fad5ad6fdb521eabff2efa8934f722}} 
+W\+\_\+\+T\+R\+UE&\\
+\hline
+
+\end{DoxyEnumFields}
 
 
 \subsection{Function Documentation}
+\mbox{\Hypertarget{wolk__connector_8h_aec965973c23d360dc158d8ef6d037e54}\label{wolk__connector_8h_aec965973c23d360dc158d8ef6d037e54}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+alarm@{wolk\+\_\+add\+\_\+alarm}}
 \index{wolk\+\_\+add\+\_\+alarm@{wolk\+\_\+add\+\_\+alarm}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+alarm(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, bool state, uint32\+\_\+t utc\+\_\+time)}{wolk_add_alarm(wolk_ctx_t *ctx, const char *reference, bool state, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+alarm (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{const char $\ast$}]{reference, }
-\item[{bool}]{state, }
-\item[{uint32\+\_\+t}]{utc\+\_\+time}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_aec965973c23d360dc158d8ef6d037e54}{}\label{wolk__connector_8h_aec965973c23d360dc158d8ef6d037e54}
+\subsubsection{\texorpdfstring{wolk\+\_\+add\+\_\+alarm()}{wolk\_add\_alarm()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+alarm (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{const char $\ast$}]{reference,  }\item[{bool}]{state,  }\item[{uint32\+\_\+t}]{utc\+\_\+time }\end{DoxyParamCaption})}
+
 
 
 Add alarm. 
@@ -243,16 +292,12 @@ Add alarm.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_ad1bb3cf88c78d7aa9669c4118e654849}\label{wolk__connector_8h_ad1bb3cf88c78d7aa9669c4118e654849}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading}}
 \index{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, bool value, uint32\+\_\+t utc\+\_\+time)}{wolk_add_bool_sensor_reading(wolk_ctx_t *ctx, const char *reference, bool value, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{const char $\ast$}]{reference, }
-\item[{bool}]{value, }
-\item[{uint32\+\_\+t}]{utc\+\_\+time}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_ad1bb3cf88c78d7aa9669c4118e654849}{}\label{wolk__connector_8h_ad1bb3cf88c78d7aa9669c4118e654849}
+\subsubsection{\texorpdfstring{wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading()}{wolk\_add\_bool\_sensor\_reading()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+bool\+\_\+sensor\+\_\+reading (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{const char $\ast$}]{reference,  }\item[{bool}]{value,  }\item[{uint32\+\_\+t}]{utc\+\_\+time }\end{DoxyParamCaption})}
+
 
 
 Add bool reading. 
@@ -271,17 +316,12 @@ Add bool reading.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_a8d365d03f444eb3284615a138f30f1fa}\label{wolk__connector_8h_a8d365d03f444eb3284615a138f30f1fa}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading}}
 \index{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, bool $\ast$values, uint16\+\_\+t values\+\_\+size, uint32\+\_\+t utc\+\_\+time)}{wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t *ctx, const char *reference, bool *values, uint16_t values_size, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{const char $\ast$}]{reference, }
-\item[{bool $\ast$}]{values, }
-\item[{uint16\+\_\+t}]{values\+\_\+size, }
-\item[{uint32\+\_\+t}]{utc\+\_\+time}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_a8d365d03f444eb3284615a138f30f1fa}{}\label{wolk__connector_8h_a8d365d03f444eb3284615a138f30f1fa}
+\subsubsection{\texorpdfstring{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading()}{wolk\_add\_multi\_value\_bool\_sensor\_reading()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+bool\+\_\+sensor\+\_\+reading (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{const char $\ast$}]{reference,  }\item[{bool $\ast$}]{values,  }\item[{uint16\+\_\+t}]{values\+\_\+size,  }\item[{uint32\+\_\+t}]{utc\+\_\+time }\end{DoxyParamCaption})}
+
 
 
 Add multi-\/value bool reading. 
@@ -302,17 +342,12 @@ Add multi-\/value bool reading.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_a27582cf8777d4a8c5f4e8a7aae4c71e0}\label{wolk__connector_8h_a27582cf8777d4a8c5f4e8a7aae4c71e0}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading}}
 \index{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, double $\ast$values, uint16\+\_\+t values\+\_\+size, uint32\+\_\+t utc\+\_\+time)}{wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t *ctx, const char *reference, double *values, uint16_t values_size, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{const char $\ast$}]{reference, }
-\item[{double $\ast$}]{values, }
-\item[{uint16\+\_\+t}]{values\+\_\+size, }
-\item[{uint32\+\_\+t}]{utc\+\_\+time}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_a27582cf8777d4a8c5f4e8a7aae4c71e0}{}\label{wolk__connector_8h_a27582cf8777d4a8c5f4e8a7aae4c71e0}
+\subsubsection{\texorpdfstring{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading()}{wolk\_add\_multi\_value\_numeric\_sensor\_reading()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+numeric\+\_\+sensor\+\_\+reading (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{const char $\ast$}]{reference,  }\item[{double $\ast$}]{values,  }\item[{uint16\+\_\+t}]{values\+\_\+size,  }\item[{uint32\+\_\+t}]{utc\+\_\+time }\end{DoxyParamCaption})}
+
 
 
 Add multi-\/value numeric reading. 
@@ -333,17 +368,12 @@ Add multi-\/value numeric reading.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_a4a7c8f7b4ead8006d8330e4bba64f6ec}\label{wolk__connector_8h_a4a7c8f7b4ead8006d8330e4bba64f6ec}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading}}
 \index{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, const char($\ast$values)[R\+E\+A\+D\+I\+N\+G\+\_\+\+S\+I\+ZE], uint16\+\_\+t values\+\_\+size, uint32\+\_\+t utc\+\_\+time)}{wolk_add_multi_value_string_sensor_reading(wolk_ctx_t *ctx, const char *reference, const char(*values)[READING_SIZE], uint16_t values_size, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{const char $\ast$}]{reference, }
-\item[{const char($\ast$)}]{values\mbox{[}\+R\+E\+A\+D\+I\+N\+G\+\_\+\+S\+I\+Z\+E\mbox{]}, }
-\item[{uint16\+\_\+t}]{values\+\_\+size, }
-\item[{uint32\+\_\+t}]{utc\+\_\+time}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_a4a7c8f7b4ead8006d8330e4bba64f6ec}{}\label{wolk__connector_8h_a4a7c8f7b4ead8006d8330e4bba64f6ec}
+\subsubsection{\texorpdfstring{wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading()}{wolk\_add\_multi\_value\_string\_sensor\_reading()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+multi\+\_\+value\+\_\+string\+\_\+sensor\+\_\+reading (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{const char $\ast$}]{reference,  }\item[{const char($\ast$)}]{values\mbox{[}\+R\+E\+A\+D\+I\+N\+G\+\_\+\+S\+I\+Z\+E\mbox{]},  }\item[{uint16\+\_\+t}]{values\+\_\+size,  }\item[{uint32\+\_\+t}]{utc\+\_\+time }\end{DoxyParamCaption})}
+
 
 
 Add multi-\/value string reading. 
@@ -364,16 +394,12 @@ Add multi-\/value string reading.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_ab7bcc53c7c06a6cc2b8db5190b1af70f}\label{wolk__connector_8h_ab7bcc53c7c06a6cc2b8db5190b1af70f}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading}}
 \index{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, double value, uint32\+\_\+t utc\+\_\+time)}{wolk_add_numeric_sensor_reading(wolk_ctx_t *ctx, const char *reference, double value, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{const char $\ast$}]{reference, }
-\item[{double}]{value, }
-\item[{uint32\+\_\+t}]{utc\+\_\+time}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_ab7bcc53c7c06a6cc2b8db5190b1af70f}{}\label{wolk__connector_8h_ab7bcc53c7c06a6cc2b8db5190b1af70f}
+\subsubsection{\texorpdfstring{wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading()}{wolk\_add\_numeric\_sensor\_reading()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+numeric\+\_\+sensor\+\_\+reading (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{const char $\ast$}]{reference,  }\item[{double}]{value,  }\item[{uint32\+\_\+t}]{utc\+\_\+time }\end{DoxyParamCaption})}
+
 
 
 Add numeric reading. 
@@ -392,16 +418,12 @@ Add numeric reading.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_a5588d57c8ff9d6138f418803bbe064fb}\label{wolk__connector_8h_a5588d57c8ff9d6138f418803bbe064fb}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading}}
 \index{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading@{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference, const char $\ast$value, uint32\+\_\+t utc\+\_\+time)}{wolk_add_string_sensor_reading(wolk_ctx_t *ctx, const char *reference, const char *value, uint32_t utc_time)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{const char $\ast$}]{reference, }
-\item[{const char $\ast$}]{value, }
-\item[{uint32\+\_\+t}]{utc\+\_\+time}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_a5588d57c8ff9d6138f418803bbe064fb}{}\label{wolk__connector_8h_a5588d57c8ff9d6138f418803bbe064fb}
+\subsubsection{\texorpdfstring{wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading()}{wolk\_add\_string\_sensor\_reading()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+add\+\_\+string\+\_\+sensor\+\_\+reading (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{const char $\ast$}]{reference,  }\item[{const char $\ast$}]{value,  }\item[{uint32\+\_\+t}]{utc\+\_\+time }\end{DoxyParamCaption})}
+
 
 
 Add string reading. 
@@ -420,13 +442,12 @@ Add string reading.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_ab246fad03ad57f3efe89f4ec2c93a288}\label{wolk__connector_8h_ab246fad03ad57f3efe89f4ec2c93a288}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+connect@{wolk\+\_\+connect}}
 \index{wolk\+\_\+connect@{wolk\+\_\+connect}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+connect(wolk\+\_\+ctx\+\_\+t $\ast$ctx)}{wolk_connect(wolk_ctx_t *ctx)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+connect (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_ab246fad03ad57f3efe89f4ec2c93a288}{}\label{wolk__connector_8h_ab246fad03ad57f3efe89f4ec2c93a288}
+\subsubsection{\texorpdfstring{wolk\+\_\+connect()}{wolk\_connect()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+connect (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
 
 
 Connect to Wolk\+About IoT Platform. 
@@ -445,13 +466,12 @@ Prior to connecting, following must be performed\+:
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_ac04ee6d0e9cac773f77a57b89383c715}\label{wolk__connector_8h_ac04ee6d0e9cac773f77a57b89383c715}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+disable\+\_\+keep\+\_\+alive@{wolk\+\_\+disable\+\_\+keep\+\_\+alive}}
 \index{wolk\+\_\+disable\+\_\+keep\+\_\+alive@{wolk\+\_\+disable\+\_\+keep\+\_\+alive}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+disable\+\_\+keep\+\_\+alive(wolk\+\_\+ctx\+\_\+t $\ast$ctx)}{wolk_disable_keep_alive(wolk_ctx_t *ctx)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+disable\+\_\+keep\+\_\+alive (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_ac04ee6d0e9cac773f77a57b89383c715}{}\label{wolk__connector_8h_ac04ee6d0e9cac773f77a57b89383c715}
+\subsubsection{\texorpdfstring{wolk\+\_\+disable\+\_\+keep\+\_\+alive()}{wolk\_disable\_keep\_alive()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+disable\+\_\+keep\+\_\+alive (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
 
 
 Disables internal keep alive mechanism. 
@@ -464,13 +484,12 @@ Disables internal keep alive mechanism.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_af174943365b8cddc1e6e9351996805c3}\label{wolk__connector_8h_af174943365b8cddc1e6e9351996805c3}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+disconnect@{wolk\+\_\+disconnect}}
 \index{wolk\+\_\+disconnect@{wolk\+\_\+disconnect}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+disconnect(wolk\+\_\+ctx\+\_\+t $\ast$ctx)}{wolk_disconnect(wolk_ctx_t *ctx)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+disconnect (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_af174943365b8cddc1e6e9351996805c3}{}\label{wolk__connector_8h_af174943365b8cddc1e6e9351996805c3}
+\subsubsection{\texorpdfstring{wolk\+\_\+disconnect()}{wolk\_disconnect()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+disconnect (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
 
 
 Disconnect from Wolk\+About IoT Platform. 
@@ -483,24 +502,12 @@ Disconnect from Wolk\+About IoT Platform.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}\label{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+init@{wolk\+\_\+init}}
 \index{wolk\+\_\+init@{wolk\+\_\+init}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+init(wolk\+\_\+ctx\+\_\+t $\ast$ctx, send\+\_\+func\+\_\+t snd\+\_\+func, recv\+\_\+func\+\_\+t rcv\+\_\+func, actuation\+\_\+handler\+\_\+t actuation\+\_\+handler, actuator\+\_\+status\+\_\+provider\+\_\+t actuator\+\_\+status\+\_\+provider, configuration\+\_\+handler\+\_\+t configuration\+\_\+handler, configuration\+\_\+provider\+\_\+t configuration\+\_\+provider, const char $\ast$device\+\_\+key, const char $\ast$device\+\_\+password, protocol\+\_\+t protocol, const char $\ast$$\ast$actuator\+\_\+references, uint32\+\_\+t num\+\_\+actuator\+\_\+references)}{wolk_init(wolk_ctx_t *ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler, actuator_status_provider_t actuator_status_provider, configuration_handler_t configuration_handler, configuration_provider_t configuration_provider, const char *device_key, const char *device_password, protocol_t protocol, const char **actuator_references, uint32_t num_actuator_references)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{{\bf send\+\_\+func\+\_\+t}}]{snd\+\_\+func, }
-\item[{{\bf recv\+\_\+func\+\_\+t}}]{rcv\+\_\+func, }
-\item[{{\bf actuation\+\_\+handler\+\_\+t}}]{actuation\+\_\+handler, }
-\item[{{\bf actuator\+\_\+status\+\_\+provider\+\_\+t}}]{actuator\+\_\+status\+\_\+provider, }
-\item[{{\bf configuration\+\_\+handler\+\_\+t}}]{configuration\+\_\+handler, }
-\item[{{\bf configuration\+\_\+provider\+\_\+t}}]{configuration\+\_\+provider, }
-\item[{const char $\ast$}]{device\+\_\+key, }
-\item[{const char $\ast$}]{device\+\_\+password, }
-\item[{{\bf protocol\+\_\+t}}]{protocol, }
-\item[{const char $\ast$$\ast$}]{actuator\+\_\+references, }
-\item[{uint32\+\_\+t}]{num\+\_\+actuator\+\_\+references}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}{}\label{wolk__connector_8h_a607b5439ae7741284a73312b7794fa7a}
+\subsubsection{\texorpdfstring{wolk\+\_\+init()}{wolk\_init()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{\hyperlink{wolk__connector_8h_a830662686699e21c1280f63d2ec80faf}{send\+\_\+func\+\_\+t}}]{snd\+\_\+func,  }\item[{\hyperlink{wolk__connector_8h_ac6f167182b7b63052d13946a6c4fba06}{recv\+\_\+func\+\_\+t}}]{rcv\+\_\+func,  }\item[{\hyperlink{wolk__connector_8h_acde87869e807b1774680f3f2b5b04e2f}{actuation\+\_\+handler\+\_\+t}}]{actuation\+\_\+handler,  }\item[{\hyperlink{wolk__connector_8h_af3e8919a04a293972b64605557287537}{actuator\+\_\+status\+\_\+provider\+\_\+t}}]{actuator\+\_\+status\+\_\+provider,  }\item[{\hyperlink{wolk__connector_8h_a6662d0d41546795466cc2b398d8dcb08}{configuration\+\_\+handler\+\_\+t}}]{configuration\+\_\+handler,  }\item[{\hyperlink{wolk__connector_8h_a64d56254d09f9e452751f32b3c5a39d3}{configuration\+\_\+provider\+\_\+t}}]{configuration\+\_\+provider,  }\item[{const char $\ast$}]{device\+\_\+key,  }\item[{const char $\ast$}]{device\+\_\+password,  }\item[{\hyperlink{wolk__connector_8h_a91e19fa4fff461493e1a41f7c7aa4e5f}{protocol\+\_\+t}}]{protocol,  }\item[{const char $\ast$$\ast$}]{actuator\+\_\+references,  }\item[{uint32\+\_\+t}]{num\+\_\+actuator\+\_\+references }\end{DoxyParamCaption})}
+
 
 
 Initializes Wolk\+About IoT Platform connector context. 
@@ -535,17 +542,12 @@ Initializes Wolk\+About IoT Platform connector context.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_a4cb5cc0164b0ab19f9b2bf36d28e9913}\label{wolk__connector_8h_a4cb5cc0164b0ab19f9b2bf36d28e9913}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+init\+\_\+custom\+\_\+persistence@{wolk\+\_\+init\+\_\+custom\+\_\+persistence}}
 \index{wolk\+\_\+init\+\_\+custom\+\_\+persistence@{wolk\+\_\+init\+\_\+custom\+\_\+persistence}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+init\+\_\+custom\+\_\+persistence(wolk\+\_\+ctx\+\_\+t $\ast$ctx, persistence\+\_\+push\+\_\+t push, persistence\+\_\+peek\+\_\+t peek, persistence\+\_\+pop\+\_\+t pop, persistence\+\_\+is\+\_\+empty\+\_\+t is\+\_\+empty)}{wolk_init_custom_persistence(wolk_ctx_t *ctx, persistence_push_t push, persistence_peek_t peek, persistence_pop_t pop, persistence_is_empty_t is_empty)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init\+\_\+custom\+\_\+persistence (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{persistence\+\_\+push\+\_\+t}]{push, }
-\item[{persistence\+\_\+peek\+\_\+t}]{peek, }
-\item[{persistence\+\_\+pop\+\_\+t}]{pop, }
-\item[{persistence\+\_\+is\+\_\+empty\+\_\+t}]{is\+\_\+empty}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_a4cb5cc0164b0ab19f9b2bf36d28e9913}{}\label{wolk__connector_8h_a4cb5cc0164b0ab19f9b2bf36d28e9913}
+\subsubsection{\texorpdfstring{wolk\+\_\+init\+\_\+custom\+\_\+persistence()}{wolk\_init\_custom\_persistence()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init\+\_\+custom\+\_\+persistence (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{persistence\+\_\+push\+\_\+t}]{push,  }\item[{persistence\+\_\+peek\+\_\+t}]{peek,  }\item[{persistence\+\_\+pop\+\_\+t}]{pop,  }\item[{persistence\+\_\+is\+\_\+empty\+\_\+t}]{is\+\_\+empty }\end{DoxyParamCaption})}
+
 
 
 Initializes persistence mechanism with custom implementation. 
@@ -567,25 +569,12 @@ Error code
 \begin{DoxySeeAlso}{See also}
 persistence.\+h for signatures of methods to be implemented, and implementation contract 
 \end{DoxySeeAlso}
+\mbox{\Hypertarget{wolk__connector_8h_a077b59e55a348cd2601bb269a04c77d6}\label{wolk__connector_8h_a077b59e55a348cd2601bb269a04c77d6}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+init\+\_\+firmware\+\_\+update@{wolk\+\_\+init\+\_\+firmware\+\_\+update}}
 \index{wolk\+\_\+init\+\_\+firmware\+\_\+update@{wolk\+\_\+init\+\_\+firmware\+\_\+update}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+init\+\_\+firmware\+\_\+update(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$version, size\+\_\+t maximum\+\_\+firmware\+\_\+size, size\+\_\+t chunk\+\_\+size, firmware\+\_\+update\+\_\+start\+\_\+t start, firmware\+\_\+update\+\_\+write\+\_\+chunk\+\_\+t write\+\_\+chunk, firmware\+\_\+update\+\_\+read\+\_\+chunk\+\_\+t read\+\_\+chunk, firmware\+\_\+update\+\_\+abort\+\_\+t abort, firmware\+\_\+update\+\_\+finalize\+\_\+t finalize, firmware\+\_\+update\+\_\+persist\+\_\+firmware\+\_\+version\+\_\+t persist\+\_\+version, firmware\+\_\+update\+\_\+unpersist\+\_\+firmware\+\_\+version\+\_\+t unpersist\+\_\+version, firmware\+\_\+update\+\_\+start\+\_\+url\+\_\+download\+\_\+t start\+\_\+url\+\_\+download, firmware\+\_\+update\+\_\+is\+\_\+url\+\_\+download\+\_\+done\+\_\+t is\+\_\+url\+\_\+download\+\_\+done)}{wolk_init_firmware_update(wolk_ctx_t *ctx, const char *version, size_t maximum_firmware_size, size_t chunk_size, firmware_update_start_t start, firmware_update_write_chunk_t write_chunk, firmware_update_read_chunk_t read_chunk, firmware_update_abort_t abort, firmware_update_finalize_t finalize, firmware_update_persist_firmware_version_t persist_version, firmware_update_unpersist_firmware_version_t unpersist_version, firmware_update_start_url_download_t start_url_download, firmware_update_is_url_download_done_t is_url_download_done)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init\+\_\+firmware\+\_\+update (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{const char $\ast$}]{version, }
-\item[{size\+\_\+t}]{maximum\+\_\+firmware\+\_\+size, }
-\item[{size\+\_\+t}]{chunk\+\_\+size, }
-\item[{firmware\+\_\+update\+\_\+start\+\_\+t}]{start, }
-\item[{firmware\+\_\+update\+\_\+write\+\_\+chunk\+\_\+t}]{write\+\_\+chunk, }
-\item[{firmware\+\_\+update\+\_\+read\+\_\+chunk\+\_\+t}]{read\+\_\+chunk, }
-\item[{firmware\+\_\+update\+\_\+abort\+\_\+t}]{abort, }
-\item[{firmware\+\_\+update\+\_\+finalize\+\_\+t}]{finalize, }
-\item[{firmware\+\_\+update\+\_\+persist\+\_\+firmware\+\_\+version\+\_\+t}]{persist\+\_\+version, }
-\item[{firmware\+\_\+update\+\_\+unpersist\+\_\+firmware\+\_\+version\+\_\+t}]{unpersist\+\_\+version, }
-\item[{firmware\+\_\+update\+\_\+start\+\_\+url\+\_\+download\+\_\+t}]{start\+\_\+url\+\_\+download, }
-\item[{firmware\+\_\+update\+\_\+is\+\_\+url\+\_\+download\+\_\+done\+\_\+t}]{is\+\_\+url\+\_\+download\+\_\+done}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_a077b59e55a348cd2601bb269a04c77d6}{}\label{wolk__connector_8h_a077b59e55a348cd2601bb269a04c77d6}
+\subsubsection{\texorpdfstring{wolk\+\_\+init\+\_\+firmware\+\_\+update()}{wolk\_init\_firmware\_update()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init\+\_\+firmware\+\_\+update (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{const char $\ast$}]{version,  }\item[{size\+\_\+t}]{maximum\+\_\+firmware\+\_\+size,  }\item[{size\+\_\+t}]{chunk\+\_\+size,  }\item[{firmware\+\_\+update\+\_\+start\+\_\+t}]{start,  }\item[{firmware\+\_\+update\+\_\+write\+\_\+chunk\+\_\+t}]{write\+\_\+chunk,  }\item[{firmware\+\_\+update\+\_\+read\+\_\+chunk\+\_\+t}]{read\+\_\+chunk,  }\item[{firmware\+\_\+update\+\_\+abort\+\_\+t}]{abort,  }\item[{firmware\+\_\+update\+\_\+finalize\+\_\+t}]{finalize,  }\item[{firmware\+\_\+update\+\_\+persist\+\_\+firmware\+\_\+version\+\_\+t}]{persist\+\_\+version,  }\item[{firmware\+\_\+update\+\_\+unpersist\+\_\+firmware\+\_\+version\+\_\+t}]{unpersist\+\_\+version,  }\item[{firmware\+\_\+update\+\_\+start\+\_\+url\+\_\+download\+\_\+t}]{start\+\_\+url\+\_\+download,  }\item[{firmware\+\_\+update\+\_\+is\+\_\+url\+\_\+download\+\_\+done\+\_\+t}]{is\+\_\+url\+\_\+download\+\_\+done }\end{DoxyParamCaption})}
+
 
 
 Initializes firmware update. 
@@ -614,16 +603,12 @@ Initializes firmware update.
 \begin{DoxyReturn}{Returns}
 Error code. 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_a0fbb983c6b65072501b078ba6ff8e5ad}\label{wolk__connector_8h_a0fbb983c6b65072501b078ba6ff8e5ad}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence@{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence}}
 \index{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence@{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence(wolk\+\_\+ctx\+\_\+t $\ast$ctx, void $\ast$storage, uint32\+\_\+t size, bool wrap)}{wolk_init_in_memory_persistence(wolk_ctx_t *ctx, void *storage, uint32_t size, bool wrap)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{void $\ast$}]{storage, }
-\item[{uint32\+\_\+t}]{size, }
-\item[{bool}]{wrap}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_a0fbb983c6b65072501b078ba6ff8e5ad}{}\label{wolk__connector_8h_a0fbb983c6b65072501b078ba6ff8e5ad}
+\subsubsection{\texorpdfstring{wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence()}{wolk\_init\_in\_memory\_persistence()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+init\+\_\+in\+\_\+memory\+\_\+persistence (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{void $\ast$}]{storage,  }\item[{uint32\+\_\+t}]{size,  }\item[{bool}]{wrap }\end{DoxyParamCaption})}
+
 
 
 Initializes persistence mechanism with in-\/memory implementation. 
@@ -642,14 +627,12 @@ Initializes persistence mechanism with in-\/memory implementation.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_a57a05d76cc96bc5de0ee0e9a23ca5a8e}\label{wolk__connector_8h_a57a05d76cc96bc5de0ee0e9a23ca5a8e}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+process@{wolk\+\_\+process}}
 \index{wolk\+\_\+process@{wolk\+\_\+process}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+process(wolk\+\_\+ctx\+\_\+t $\ast$ctx, uint32\+\_\+t tick)}{wolk_process(wolk_ctx_t *ctx, uint32_t tick)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+process (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{uint32\+\_\+t}]{tick}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_a57a05d76cc96bc5de0ee0e9a23ca5a8e}{}\label{wolk__connector_8h_a57a05d76cc96bc5de0ee0e9a23ca5a8e}
+\subsubsection{\texorpdfstring{wolk\+\_\+process()}{wolk\_process()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+process (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{uint32\+\_\+t}]{tick }\end{DoxyParamCaption})}
+
 
 
 Must be called periodically to keep alive connection to Wolk\+About IoT platform, obtain and perform actuation requests. 
@@ -664,13 +647,12 @@ Must be called periodically to keep alive connection to Wolk\+About IoT platform
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_ac5e7ddb346ea4b9a7cc4511d3728be09}\label{wolk__connector_8h_ac5e7ddb346ea4b9a7cc4511d3728be09}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+publish@{wolk\+\_\+publish}}
 \index{wolk\+\_\+publish@{wolk\+\_\+publish}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+publish(wolk\+\_\+ctx\+\_\+t $\ast$ctx)}{wolk_publish(wolk_ctx_t *ctx)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+publish (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_ac5e7ddb346ea4b9a7cc4511d3728be09}{}\label{wolk__connector_8h_ac5e7ddb346ea4b9a7cc4511d3728be09}
+\subsubsection{\texorpdfstring{wolk\+\_\+publish()}{wolk\_publish()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+publish (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx }\end{DoxyParamCaption})}
+
 
 
 Publish accumulated sensor readings, and alarms. 
@@ -683,14 +665,12 @@ Publish accumulated sensor readings, and alarms.
 \begin{DoxyReturn}{Returns}
 Error code 
 \end{DoxyReturn}
+\mbox{\Hypertarget{wolk__connector_8h_aa510c9f8df1d095d4e1aef9b7fdaf600}\label{wolk__connector_8h_aa510c9f8df1d095d4e1aef9b7fdaf600}} 
 \index{wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}!wolk\+\_\+publish\+\_\+actuator\+\_\+status@{wolk\+\_\+publish\+\_\+actuator\+\_\+status}}
 \index{wolk\+\_\+publish\+\_\+actuator\+\_\+status@{wolk\+\_\+publish\+\_\+actuator\+\_\+status}!wolk\+\_\+connector.\+h@{wolk\+\_\+connector.\+h}}
-\subsubsection[{\texorpdfstring{wolk\+\_\+publish\+\_\+actuator\+\_\+status(wolk\+\_\+ctx\+\_\+t $\ast$ctx, const char $\ast$reference)}{wolk_publish_actuator_status(wolk_ctx_t *ctx, const char *reference)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+publish\+\_\+actuator\+\_\+status (
-\begin{DoxyParamCaption}
-\item[{{\bf wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx, }
-\item[{const char $\ast$}]{reference}
-\end{DoxyParamCaption}
-)}\hypertarget{wolk__connector_8h_aa510c9f8df1d095d4e1aef9b7fdaf600}{}\label{wolk__connector_8h_aa510c9f8df1d095d4e1aef9b7fdaf600}
+\subsubsection{\texorpdfstring{wolk\+\_\+publish\+\_\+actuator\+\_\+status()}{wolk\_publish\_actuator\_status()}}
+{\footnotesize\ttfamily \hyperlink{wolk__connector_8h_a5e8017d60f3753b4d489aeb7d3392641}{W\+O\+L\+K\+\_\+\+E\+R\+R\+\_\+T} wolk\+\_\+publish\+\_\+actuator\+\_\+status (\begin{DoxyParamCaption}\item[{\hyperlink{wolk__connector_8h_ac2ef8e5728bb7f6b92489fb48d3cf154}{wolk\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{const char $\ast$}]{reference }\end{DoxyParamCaption})}
+
 
 
 Obtains actuator status via actuator\+\_\+status\+\_\+provider\+\_\+t and publishes it. If actuator status can not be published, it is persisted. 
