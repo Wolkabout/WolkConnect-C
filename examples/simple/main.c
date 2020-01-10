@@ -17,20 +17,19 @@
 #include "wolk_connector.h"
 #include "wolk_utils.h"
 
-#include <time.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include <memory.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <netdb.h>
+#include <netinet/in.h>
 #include <signal.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
 
 #include <openssl/ssl.h>
 
@@ -38,14 +37,14 @@
 static SSL_CTX* ctx;
 static BIO* sockfd;
 
-static const char *device_key = "device_key";
-static const char *device_password = "some_password";
-static const char *hostname = "api-demo.wolkabout.com";
+static const char* device_key = "device_key";
+static const char* device_password = "some_password";
+static const char* hostname = "api-demo.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
 
 /* Sample in-memory persistence storage - size 1MB */
-static uint8_t persistence_storage[1024*1024];
+static uint8_t persistence_storage[1024 * 1024];
 
 /* WolkConnect-C Connector context */
 static wolk_ctx_t wolk;
@@ -85,7 +84,9 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     return n;
 }
 
-static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const int portno, const char* ca_file, const char* ca_path) {
+static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const int portno, const char* ca_file,
+                        const char* ca_path)
+{
     SSL* ssl;
     const char port[5];
     snprintf(port, 5, "%d", portno);
@@ -114,13 +115,14 @@ static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const in
 
     /* Wait for connection in 15 second timeout */
     int start_time = time(NULL);
-    while(BIO_do_connect(*bio) <= 0 && (int)time(NULL) - start_time < 15);
+    while (BIO_do_connect(*bio) <= 0 && (int)time(NULL) - start_time < 15)
+        ;
     if (BIO_do_connect(*bio) <= 0) {
         printf("Wolk client - Error, do connect\n");
         BIO_free_all(*bio);
         SSL_CTX_free(*ssl_ctx);
         *bio = NULL;
-        *ssl_ctx=NULL;
+        *ssl_ctx = NULL;
         return;
     }
 
@@ -132,7 +134,7 @@ static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const in
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     WOLK_UNUSED(argc);
     WOLK_UNUSED(argv);
@@ -140,29 +142,25 @@ int main(int argc, char *argv[])
     signal(SIGINT, int_handler);
 
     if (strcmp(device_key, "device_key") == 0) {
-        printf ("Wolk client - Error, device key not provided\n");
+        printf("Wolk client - Error, device key not provided\n");
         return 1;
     }
 
     if (strcmp(device_password, "password") == 0) {
-        printf ("Wolk client - Error, password key not provided\n");
+        printf("Wolk client - Error, password key not provided\n");
         return 1;
     }
 
-    printf ("Wolk client - Establishing connection to WolkAbout IoT platform\n");
+    printf("Wolk client - Establishing connection to WolkAbout IoT platform\n");
     open_socket(&sockfd, &ctx, hostname, portno, certs, NULL);
     if (sockfd == NULL) {
-        printf ("Wolk client - Error establishing connection to WolkAbout IoT platform\n");
+        printf("Wolk client - Error establishing connection to WolkAbout IoT platform\n");
         return 1;
     }
 
-    if (wolk_init(&wolk,
-                  send_buffer, receive_buffer,
-                  NULL, ACTUATOR_STATE_READY,
-                  NULL,NULL,
-                  device_key, device_password,
-                  PROTOCOL_JSON_SINGLE,
-                  NULL, NULL) != W_FALSE) {
+    if (wolk_init(&wolk, send_buffer, receive_buffer, NULL, ACTUATOR_STATE_READY, NULL, NULL, device_key,
+                  device_password, PROTOCOL_JSON_SINGLE, NULL, NULL)
+        != W_FALSE) {
         printf("Error initializing WolkConnect-C\n");
         return 1;
     }
@@ -172,19 +170,19 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    printf ("Wolk client - Connecting to server\n");
+    printf("Wolk client - Connecting to server\n");
     if (wolk_connect(&wolk) != W_FALSE) {
-        printf ("Wolk client - Error connecting to server\n");
+        printf("Wolk client - Error connecting to server\n");
         return -1;
     }
-    printf ("Wolk client - Connected to server\n");
+    printf("Wolk client - Connected to server\n");
 
-    wolk_add_numeric_sensor_reading(&wolk, "T", rand()%100-20, 0);
+    wolk_add_numeric_sensor_reading(&wolk, "T", rand() % 100 - 20, 0);
     wolk_publish(&wolk);
 
 
     while (keep_running) {
-        //MANDATORY: sleep(currently 200us) and number of tick(currently 5) when are multiplied needs to give 1ms.
+        // MANDATORY: sleep(currently 200us) and number of tick(currently 5) when are multiplied needs to give 1ms.
         // you can change this parameters, but keep it's multiplication
         usleep(200);
         wolk_process(&wolk, 5);

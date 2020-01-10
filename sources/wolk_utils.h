@@ -28,6 +28,7 @@
 
 #define BOOL_TO_STR(b) ((b) ? "true" : "false")
 
-#define WOLK_CEIL(VARIABLE) ((VARIABLE - (unsigned long)VARIABLE) == 0 ? ((unsigned long)VARIABLE) : ((unsigned long)VARIABLE + 1))
+#define WOLK_CEIL(VARIABLE)                                                                                            \
+    ((VARIABLE - (unsigned long)VARIABLE) == 0 ? ((unsigned long)VARIABLE) : ((unsigned long)VARIABLE + 1))
 
 #endif

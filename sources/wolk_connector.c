@@ -302,7 +302,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
 
-    //lastwill message
+    // lastwill message
     MQTTString lastwill_topic_string = MQTTString_initializer;
 
     char lastwill_topic[TOPIC_SIZE];
@@ -315,14 +315,14 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
     unsigned char* lastwill_msg = (unsigned char*)LASTWILL_MESSAGE;
 
     int len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 2, 0, 0, lastwill_topic_string, lastwill_msg,
-                                              (int)strlen((const char*)lastwill_msg));
+                                    (int)strlen((const char*)lastwill_msg));
     if (transport_sendPacketBuffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
 
     memset(buf, 0, MQTT_PACKET_SIZE);
 
-    //disconnect message
+    // disconnect message
     len = MQTTSerialize_disconnect(buf, sizeof(buf));
     if (transport_sendPacketBuffer(ctx->sock, buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
@@ -505,7 +505,7 @@ WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, bool state, ui
     reading_t alarm_reading;
     reading_init(&alarm_reading, &alarm);
     reading_set_rtc(&alarm_reading, utc_time);
-    reading_set_data(&alarm_reading, (state==true ? "ON" : "OFF"));
+    reading_set_data(&alarm_reading, (state == true ? "ON" : "OFF"));
 
     outbound_message_t outbound_message;
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &alarm_reading, 1, &outbound_message);
