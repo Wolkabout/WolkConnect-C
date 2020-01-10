@@ -53,13 +53,14 @@ Create a device on WolkAbout IoT platform by importing template file `Full-examp
 **Establishing connection with WolkAbout IoT platform:**
 
 ```c
-static const char *device_key = "device_key";
-static const char *device_password = "some_password";
-static const char *hostname = "api-demo.wolkabout.com";
-static int portno = 1883;
+static const char* device_key = "device_key";
+static const char* device_password = "some_password";
+static const char* hostname = "api-demo.wolkabout.com";
+static int portno = 8883;
+static char certs[] = "../ca.crt";
 
 /* Sample in-memory persistence storage - size 1MB */
-static uint8_t persistence_storage[1024*1024];
+static uint8_t persistence_storage[1024 * 1024];
 
 /* WolkConnect-C Connector context */
 static wolk_ctx_t wolk;
@@ -73,6 +74,8 @@ wolk_init(&wolk,                                             /* Context */
           receive_buffer,                                    /* See recv_func_t */
           actuation_handler,                                 /* Actuation handler        - see actuation_handler_t */
           actuator_status_provider,                          /* Actuator status provider - see actuator_status_provider_t */
+	  configuration_handler,                             /* Configuration handler        - see configuration_handler_t */
+	  configuration_provider,                            /* Configuration status provider - see configuration_provider_t */
           device_key, device_password,                       /* Device key and password provided by WolkAbout IoT Platform upon device creation */
           PROTOCOL_JSON_SINGLE,                              /* Protocol specified for device */
           actuator_references,                               /* Array of actuator references */

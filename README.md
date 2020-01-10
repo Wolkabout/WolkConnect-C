@@ -52,10 +52,11 @@ Create a device on WolkAbout IoT platform by importing `Simple-example-deviceTem
 This template fits `simple` example and demonstrates the sending of a temperature sensor reading.
 
 ```c
-static const char *device_key = "device_key";
-static const char *device_password = "some_password";
-static const char *hostname = "api-demo.wolkabout.com";
-static int portno = 1883;
+static const char* device_key = "device_key";
+static const char* device_password = "some_password";
+static const char* hostname = "api-demo.wolkabout.com";
+static int portno = 8883;
+static char certs[] = "../ca.crt";
 
 /* Sample in-memory persistence storage - size 1MB */
 static uint8_t persistence_storage[1024*1024];
@@ -70,12 +71,14 @@ static wolk_ctx_t wolk;
 wolk_init(&wolk,                                             /* Context */
           send_buffer,                                       /* See send_func_t */
           receive_buffer,                                    /* See recv_func_t */
-          actuation_handler,                                 /* Actuation handler        - see actuation_handler_t */
-          actuator_status_provider,                          /* Actuator status provider - see actuator_status_provider_t */
+          NULL,                                              /* Actuation handler        - see actuation_handler_t */
+          ACTUATOR_STATE_READY,                              /* Actuator status provider - see actuator_status_provider_t */
+	  NULL,                                              /* Configuration handler        - see configuration_handler_t */
+	  NULL,                                              /* Configuration provider - see configuration_provider_t */
           device_key, device_password,                       /* Device key and password provided by WolkAbout IoT Platform upon device creation */
           PROTOCOL_JSON_SINGLE,                              /* Protocol specified for device */
-          actuator_references,                               /* Array of actuator references */
-          num_actuator_references);                          /* Number of actuator references */
+          NULL,                                              /* Array of actuator references */
+          NULL);                                             /* Number of actuator references */
 
 wolk_init_in_memory_persistence(&wolk,                       /* Context */
                                 persistence_storage,         /* Address to start of the memory which will be used by persistence mechanism */
