@@ -304,6 +304,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
 
     // lastwill message
     MQTTString lastwill_topic_string = MQTTString_initializer;
+    MQTTString lastwill_message_string = MQTTString_initializer;
 
     char lastwill_topic[TOPIC_SIZE];
     memset(lastwill_topic, 0, TOPIC_SIZE);
@@ -311,11 +312,10 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
     strcat(lastwill_topic, ctx->device_key);
 
     lastwill_topic_string.cstring = lastwill_topic;
+    lastwill_message_string.cstring = LASTWILL_MESSAGE;
 
-    unsigned char* lastwill_msg = (unsigned char*)LASTWILL_MESSAGE;
-
-    int len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 2, 0, 0, lastwill_topic_string, lastwill_msg,
-                                    (int)strlen((const char*)lastwill_msg));
+    int len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 1, 0, 0, lastwill_topic_string, lastwill_message_string.cstring,
+                                    (int)strlen((const char*)lastwill_message_string.cstring));
     if (transport_sendPacketBuffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
