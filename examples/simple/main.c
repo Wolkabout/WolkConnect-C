@@ -37,9 +37,9 @@
 static SSL_CTX* ctx;
 static BIO* sockfd;
 
-static const char* device_key = "device_key";
-static const char* device_password = "some_password";
-static const char* hostname = "api-demo.wolkabout.com";
+static const char* device_key = "b2mdcwwgiapf6sl9";
+static const char* device_password = "d9f7e229-6ed6-404e-acef-8e8dd91a518e";
+static const char* hostname = "api-verification2.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
 
@@ -140,6 +140,7 @@ int main(int argc, char* argv[])
     WOLK_UNUSED(argv);
 
     signal(SIGINT, int_handler);
+    signal(SIGTERM, int_handler);
 
     if (strcmp(device_key, "device_key") == 0) {
         printf("Wolk client - Error, device key not provided\n");
