@@ -36,9 +36,9 @@
 static SSL_CTX* ctx;
 static BIO* sockfd;
 
-static const char* device_key = "d1aolahyfd290zdu";
-static const char* device_password = "a31d58b5-826d-4bf8-8597-b8e315fed491";
-static const char* hostname = "api-verification2.wolkabout.com";
+static const char* device_key = "device_key";
+static const char* device_password = "some_password";
+static const char* hostname = "api-demo.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
 
