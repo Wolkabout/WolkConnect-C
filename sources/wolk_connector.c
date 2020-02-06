@@ -314,8 +314,9 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
     lastwill_topic_string.cstring = lastwill_topic;
     lastwill_message_string.cstring = LASTWILL_MESSAGE;
 
-    int len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 1, 0, 0, lastwill_topic_string, lastwill_message_string.cstring,
-                                    (int)strlen((const char*)lastwill_message_string.cstring));
+    int len =
+        MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 1, 0, 0, lastwill_topic_string, lastwill_message_string.cstring,
+                              (int)strlen((const char*)lastwill_message_string.cstring));
     if (transport_sendPacketBuffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
