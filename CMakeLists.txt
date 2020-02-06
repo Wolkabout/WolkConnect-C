@@ -61,7 +61,7 @@ file(GLOB_RECURSE SOURCE_FILES "sources/*.c")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")
 
-#dependency
+#dependencies
 ##MQTT
 if(NOT DEFINED CMAKE_PREFIX_PATH)
     set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_BINARY_DIR}/build")
@@ -91,14 +91,13 @@ add_dependencies(${LIBRARY_NAME} pahomqttembeddedc)
 
 # Format code
 add_custom_target(format
-                  COMMAND "/usr/local/bin/clang-format" -i -sort-includes -style=file ${HEADER_FILES} ${SOURCE_FILES}
+                  COMMAND "/usr/bin/clang-format" -i -sort-includes -style=file ${HEADER_FILES} ${SOURCE_FILES}
                   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
                   COMMENT "[Formatting source code]"
                   VERBATIM)
 
-# Example
-#add_dependencies(${LIBRARY_NAME} format) #TODO: check sys path for clang
+# Examples
 add_subdirectory(examples/simple)
 add_subdirectory(examples/full_feature_set)
 
-#TODO: build ssl here alson insted in download.sh
+#TODO: build ssl here also instead in download.sh
