@@ -18,13 +18,11 @@ cmake_minimum_required(VERSION 3.10)
 project(WolkConnector-C C)
 
 set(CMAKE_C_STANDARD 99)
-set(PAHO_MQTT_C_VERSION "1.3.1")
+set(PAHO_MQTT_EMBEDDED_C_VERSION "1.1.0")
 
 include(ExternalProject)
 
 include_directories(dependencies/libssl/include)
-#include_directories(dependencies/MQTTPacket/src dependencies/libssl/include)
-#add_subdirectory(dependencies/MQTTPacket/src)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
                                     -Wall                             \
@@ -70,12 +68,17 @@ if(NOT DEFINED CMAKE_PREFIX_PATH)
 endif(NOT DEFINED CMAKE_PREFIX_PATH)
 include_directories(SYSTEM "${CMAKE_PREFIX_PATH}/include")
 
-ExternalProject_Add(pahomqttc
-        GIT_REPOSITORY "https://github.com/eclipse/paho.mqtt.c"
-        GIT_TAG "v${PAHO_MQTT_C_VERSION}"
+ExternalProject_Add(pahomqttembeddedc
+        SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/pahomqttembeddedc"
+        GIT_REPOSITORY "https://github.com/eclipse/paho.mqtt.embedded-c"
+        GIT_TAG "v${PAHO_MQTT_EMBEDDED_C_VERSION}"
         UPDATE_COMMAND ""
+        INSTALL_COMMAND ""
         CMAKE_ARGS -DPAHO_WITH_SSL=TRUE -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY} -DCMAKE_INSTALL_PREFIX=${CMAKE_PREFIX_PATH} -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} -DCMAKE_INSTALL_RPATH='.'
         )
+
+include_directories(dependencies/pahomqttembeddedc/MQTTPacket/src)
+add_subdirectory(dependencies/pahomqttembeddedc/MQTTPacket)
 
 ##LIBSSL
 link_directories(${CMAKE_SOURCE_DIR}/dependencies/libssl)
@@ -84,7 +87,7 @@ add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
-add_dependencies(${LIBRARY_NAME} pahomqttc)
+add_dependencies(${LIBRARY_NAME} pahomqttembeddedc)
 
 # Format code
 add_custom_target(format
