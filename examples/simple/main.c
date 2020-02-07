@@ -17,17 +17,12 @@
 #include "wolk_connector.h"
 #include "wolk_utils.h"
 
-#include <memory.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
