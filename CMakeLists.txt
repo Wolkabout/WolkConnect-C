@@ -18,9 +18,6 @@ cmake_minimum_required(VERSION 3.10)
 project(WolkConnector-C C)
 
 set(CMAKE_C_STANDARD 99)
-set(PAHO_MQTT_EMBEDDED_C_VERSION "1.1.0")
-
-include(ExternalProject)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
                                     -Wall                             \
@@ -59,22 +56,8 @@ file(GLOB_RECURSE SOURCE_FILES "sources/*.c")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")
 
-#dependencies
-##MQTT
-if(NOT DEFINED CMAKE_PREFIX_PATH)
-    set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_BINARY_DIR}/build")
-endif(NOT DEFINED CMAKE_PREFIX_PATH)
-include_directories(SYSTEM "${CMAKE_PREFIX_PATH}/include")
-
-ExternalProject_Add(pahomqttembeddedc
-        SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/pahomqttembeddedc"
-        GIT_REPOSITORY "https://github.com/eclipse/paho.mqtt.embedded-c"
-        GIT_TAG "v${PAHO_MQTT_EMBEDDED_C_VERSION}"
-        UPDATE_COMMAND ""
-        INSTALL_COMMAND ""
-        CMAKE_ARGS -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY} -DCMAKE_INSTALL_PREFIX=${CMAKE_PREFIX_PATH} -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} -DCMAKE_INSTALL_RPATH='.'
-        )
-
+#Dependencies
+add_subdirectory(dependencies)
 include_directories(dependencies/pahomqttembeddedc/MQTTPacket/src)
 add_subdirectory(dependencies/pahomqttembeddedc/MQTTPacket)
 
