@@ -74,14 +74,11 @@ ExternalProject_Add(pahomqttembeddedc
         GIT_TAG "v${PAHO_MQTT_EMBEDDED_C_VERSION}"
         UPDATE_COMMAND ""
         INSTALL_COMMAND ""
-        CMAKE_ARGS -DPAHO_WITH_SSL=TRUE -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY} -DCMAKE_INSTALL_PREFIX=${CMAKE_PREFIX_PATH} -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} -DCMAKE_INSTALL_RPATH='.'
+        CMAKE_ARGS -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY} -DCMAKE_INSTALL_PREFIX=${CMAKE_PREFIX_PATH} -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} -DCMAKE_INSTALL_RPATH='.'
         )
 
 include_directories(dependencies/pahomqttembeddedc/MQTTPacket/src)
 add_subdirectory(dependencies/pahomqttembeddedc/MQTTPacket)
-
-##LIBSSL
-link_directories(${CMAKE_SOURCE_DIR}/dependencies/libssl)
 
 add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)
@@ -99,5 +96,3 @@ add_custom_target(format
 # Examples
 add_subdirectory(examples/simple)
 add_subdirectory(examples/full_feature_set)
-
-#TODO: build ssl here also instead in download.sh
