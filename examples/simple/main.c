@@ -17,17 +17,12 @@
 #include "wolk_connector.h"
 #include "wolk_utils.h"
 
-#include <memory.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -140,6 +135,7 @@ int main(int argc, char* argv[])
     WOLK_UNUSED(argv);
 
     signal(SIGINT, int_handler);
+    signal(SIGTERM, int_handler);
 
     if (strcmp(device_key, "device_key") == 0) {
         printf("Wolk client - Error, device key not provided\n");

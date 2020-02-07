@@ -305,6 +305,7 @@ int main(int argc, char* argv[])
     WOLK_UNUSED(argv);
 
     signal(SIGINT, int_handler);
+    signal(SIGTERM, int_handler);
 
     if (strcmp(device_key, "device_key") == 0) {
         printf("Wolk client - Error, device key not provided\n");

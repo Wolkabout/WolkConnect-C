@@ -16,4 +16,4 @@
 
 add_executable(simple main.c)
 
-target_link_libraries(simple WolkConnector_c pthread)
+target_link_libraries(simple WolkConnector-C pthread)

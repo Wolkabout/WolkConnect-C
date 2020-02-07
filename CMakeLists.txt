@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+cmake_minimum_required(VERSION 3.10)
 
-cmake_minimum_required(VERSION 2.8)
-project(WolkAboutConnector C)
+project(WolkConnector-C C)
+
 set(CMAKE_C_STANDARD 99)
-
-include_directories(dependencies/MQTTPacket/src dependencies/libssl/include)
-add_subdirectory(dependencies/MQTTPacket/src)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
                                     -Wall                             \
@@ -49,7 +47,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
                                     -Wmissing-prototypes              \
                                     -Wconversion")
 
-set(LIBRARY_NAME "WolkConnector_c")
+set(LIBRARY_NAME "WolkConnector-C")
 
 include_directories("sources")
 file(GLOB_RECURSE HEADER_FILES "sources/*.h")
@@ -58,19 +56,24 @@ file(GLOB_RECURSE SOURCE_FILES "sources/*.c")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")
 
-link_directories(${CMAKE_SOURCE_DIR}/dependencies/libssl)
+#Dependencies
+add_subdirectory(dependencies)
+include_directories(dependencies/pahomqttembeddedc/MQTTPacket/src)
+add_subdirectory(dependencies/pahomqttembeddedc/MQTTPacket)
 
 add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
+add_dependencies(${LIBRARY_NAME} pahomqttembeddedc)
+
 # Format code
 add_custom_target(format
-                  COMMAND "/usr/local/bin/clang-format" -i -sort-includes -style=file ${HEADER_FILES} ${SOURCE_FILES}
+                  COMMAND "/usr/bin/clang-format" -i -sort-includes -style=file ${HEADER_FILES} ${SOURCE_FILES}
                   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
                   COMMENT "[Formatting source code]"
                   VERBATIM)
 
-# Example
+# Examples
 add_subdirectory(examples/simple)
 add_subdirectory(examples/full_feature_set)
