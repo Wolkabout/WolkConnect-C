@@ -22,8 +22,6 @@ set(PAHO_MQTT_EMBEDDED_C_VERSION "1.1.0")
 
 include(ExternalProject)
 
-include_directories(dependencies/libssl/include)
-
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
                                     -Wall                             \
                                     -Wextra                           \
