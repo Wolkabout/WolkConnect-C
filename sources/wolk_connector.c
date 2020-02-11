@@ -106,7 +106,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     ctx->iof.send = snd_func;
     ctx->iof.recv = rcv_func;
 
-    ctx->sock = transport_open(&ctx->iof);
+    ctx->sock = transmission_open(&ctx->iof);
     if (ctx->sock < 0) {
         return W_TRUE;
     }
@@ -115,7 +115,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     strcpy(&ctx->device_password[0], device_password);
 
     ctx->mqtt_transport.sck = &ctx->sock;
-    ctx->mqtt_transport.getfn = transport_getdatanb;
+    ctx->mqtt_transport.getfn = transmission_get_data_nb;
     ctx->mqtt_transport.state = 0;
     ctx->connectData.clientID.cstring = &ctx->device_key[0];
     ctx->connectData.keepAliveInterval = MQTT_KEEP_ALIVE_INTERVAL;
@@ -214,7 +214,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     ctx->connectData.willFlag = 1;
 
     int len = MQTTSerialize_connect((unsigned char*)buf, sizeof(buf), &ctx->connectData);
-    if (transport_sendPacketBuffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
+    if (transmission_buffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
 
@@ -317,7 +317,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
     int len =
         MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 1, 0, 0, lastwill_topic_string, lastwill_message_string.cstring,
                               (int)strlen((const char*)lastwill_message_string.cstring));
-    if (transport_sendPacketBuffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
+    if (transmission_buffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
 
@@ -325,7 +325,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
 
     // disconnect message
     len = MQTTSerialize_disconnect(buf, sizeof(buf));
-    if (transport_sendPacketBuffer(ctx->sock, buf, len) == TRANSPORT_DONE) {
+    if (transmission_buffer(ctx->sock, buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
 
@@ -575,10 +575,10 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
     }
 
     int len = MQTTSerialize_pingreq(buf, MQTT_PACKET_SIZE);
-    transport_sendPacketBuffernb_start(ctx->sock, buf, len);
+    transmission_buffer_nb_start(ctx->sock, buf, len);
 
     do {
-        switch (transport_sendPacketBuffernb(ctx->sock)) {
+        switch (transmission_buffer_nb(ctx->sock)) {
         case TRANSPORT_DONE:
             ctx->connectData.keepAliveInterval = 0;
             return W_FALSE;
@@ -685,10 +685,10 @@ static WOLK_ERR_T _publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message
     unsigned char* payload = (unsigned char*)outbound_message_get_payload(outbound_message);
     len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 0, 0, 0, mqtt_topic, payload,
                                 (int)strlen((const char*)payload));
-    transport_sendPacketBuffernb_start(ctx->sock, buf, len);
+    transmission_buffer_nb_start(ctx->sock, buf, len);
 
     do {
-        switch (transport_sendPacketBuffernb(ctx->sock)) {
+        switch (transmission_buffer_nb(ctx->sock)) {
         case TRANSPORT_DONE:
             return W_FALSE;
 
@@ -717,10 +717,10 @@ static WOLK_ERR_T _subscribe(wolk_ctx_t* ctx, const char* topic)
     topicString.cstring = topic;
 
     const int len = MQTTSerialize_subscribe(buf, MQTT_PACKET_SIZE, 0, 1, 1, &topicString, &req_qos);
-    transport_sendPacketBuffernb_start(ctx->sock, buf, len);
+    transmission_buffer_nb_start(ctx->sock, buf, len);
 
     do {
-        switch (transport_sendPacketBuffernb(ctx->sock)) {
+        switch (transmission_buffer_nb(ctx->sock)) {
         case TRANSPORT_DONE:
             return W_FALSE;
 
