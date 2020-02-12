@@ -29,11 +29,11 @@ extern "C" {
 
 #include "MQTTPacket.h"
 #include "actuator_status.h"
+#include "data_transmission.h"
 #include "firmware_update.h"
 #include "parser.h"
 #include "persistence.h"
 #include "size_definitions.h"
-#include "transport.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -111,7 +111,7 @@ typedef struct wolk_ctx {
     int sock;
     MQTTPacket_connectData connectData;
     MQTTTransport mqtt_transport;
-    transport_iofunctions_t iof;
+    transmission_io_functions_t iof;
 
     actuation_handler_t actuation_handler; /**< Callback for handling received actuation from WolkAbout IoT Platform.
                                               @see actuation_handler_t*/
