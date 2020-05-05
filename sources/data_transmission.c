@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <assert.h>
 #include <string.h>
 
 #include "data_transmission.h"
@@ -36,7 +35,7 @@ int transmission_get_data_nb(void* socket, unsigned char* buffer, int count)
     transmission_io_functions_t* tmp_io = io_functions;
     int length = 0;
 
-    assert((tmp_io != NULL) && (tmp_io->recv != NULL));
+    WOLK_ASSERT((tmp_io != NULL) && (tmp_io->recv != NULL));
 
     if ((length = tmp_io->recv(buffer, count)) >= 0) {
         return length;
@@ -60,7 +59,7 @@ int transmission_buffer_nb(int socket)
     transmission_io_functions_t* tmp_io = io_functions;
     int length;
 
-    assert((tmp_io != NULL) && (tmp_io->send != NULL) && (starting_add != NULL));
+    WOLK_ASSERT((tmp_io != NULL) && (tmp_io->send != NULL) && (starting_add != NULL));
 
     if ((length = tmp_io->send(starting_add, number_of_bytes)) > 0) {
         starting_add += length;

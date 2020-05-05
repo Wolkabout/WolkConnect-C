@@ -56,10 +56,11 @@ file(GLOB_RECURSE SOURCE_FILES "sources/*.c")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")
 
+link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+
 #Dependencies
 add_subdirectory(dependencies)
 include_directories(dependencies/pahomqttembeddedc/MQTTPacket/src)
-add_subdirectory(dependencies/pahomqttembeddedc/MQTTPacket)
 
 add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)

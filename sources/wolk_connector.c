@@ -193,7 +193,6 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     /* Sanity check */
     WOLK_ASSERT(_is_wolk_initialized(ctx));
 
-    // TODO: Extract this
     uint64_t i;
     char buf[MQTT_PACKET_SIZE];
     char topic_buf[TOPIC_SIZE];
@@ -218,7 +217,6 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
-    // TODO: Extract this
     memset(topic_buf, '\0', sizeof(topic_buf));
     strcpy(&topic_buf[0], FIRMWARE_UPDATE_COMMANDS_TOPIC_JSON);
     strcat(&topic_buf[0], ctx->device_key);
@@ -227,7 +225,6 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
-    // TODO: Extract this
     memset(topic_buf, '\0', sizeof(topic_buf));
     strcpy(&topic_buf[0], FIRMWARE_UPDATE_PACKET_TOPIC_JSON);
     strcat(&topic_buf[0], ctx->device_key);
@@ -236,7 +233,6 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
-    // TODO: Extract this
     memset(topic_buf, '\0', sizeof(topic_buf));
     strcpy(&topic_buf[0], CONFIGURATION_COMMANDS);
     strcat(&topic_buf[0], ctx->device_key);
@@ -245,7 +241,6 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
-    // TODO: Extract this
     for (i = 0; i < ctx->num_actuator_references; ++i) {
         const char* reference = ctx->actuator_references[i];
         memset(topic_buf, '\0', sizeof(topic_buf));
@@ -260,7 +255,6 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         }
     }
 
-    // TODO: Extract this
     for (i = 0; i < ctx->num_actuator_references; ++i) {
         const char* reference = ctx->actuator_references[i];
 
@@ -276,12 +270,10 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         }
     }
 
-    // TODO: Extract this
     configuration_command_t configuration_command;
     configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_CURRENT);
     _handle_configuration_command(ctx, &configuration_command);
 
-    // TODO: Extract this
     outbound_message_t firmware_version_message;
     if (outbound_message_make_from_firmware_version(&ctx->parser, ctx->device_key,
                                                     firmware_update_get_current_version(&ctx->firmware_update),

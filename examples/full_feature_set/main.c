@@ -289,7 +289,7 @@ static bool firmware_update_unpersist_firmware_version(char* version, size_t ver
 static bool firmware_update_start_url_download(const char* url)
 {
     /* Dummy firmware downloader */
-    printf("Starting dirmware download from url %s\n", url);
+    printf("Starting firmware download from url %s\n", url);
     return true;
 }
 
