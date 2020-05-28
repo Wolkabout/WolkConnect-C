@@ -4,7 +4,7 @@ jobs:
   include:
     - stage: compile
       dist: bionic
-      language: cpp
+      language: c
       addons:
         apt:
           packages:
