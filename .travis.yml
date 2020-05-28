@@ -1,0 +1,34 @@
+sudo: false
+
+jobs:
+  include:
+    - stage: compile
+      dist: bionic
+      language: cpp
+      addons:
+        apt:
+          packages:
+            - cmake
+            - gcc
+      script:
+        - ./configure.sh
+        - pushd out
+        - make format -j$(nproc)
+    # - stage: deploy
+    #   if: branch = master
+    #   branches:
+    #     only:
+    #       - master
+    #   addons:
+    #     apt:
+    #       packages:
+    #         - doxygen
+    #   script:
+    #     - doxygen Doxyfile
+    #   deploy:
+    #     provider: pages
+    #     skip_cleanup: true
+    #     local_dir: docs
+    #     github_token: $GH_REPO_TOKEN
+    #     on:
+    #       branch: master
