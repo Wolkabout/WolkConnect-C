@@ -10,6 +10,8 @@ jobs:
           packages:
             - cmake
             - gcc
+            - libssl-dev
+            - clang-format
       script:
         - ./configure
         - pushd build
