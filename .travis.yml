@@ -11,7 +11,7 @@ jobs:
             - cmake
             - gcc
       script:
-        - ./configure.sh
+        - ./configure
         - pushd out
         - make format -j$(nproc)
     # - stage: deploy
