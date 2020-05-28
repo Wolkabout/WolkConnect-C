@@ -12,6 +12,7 @@ jobs:
             - gcc
       script:
         - ./configure
+        - pushd build
         - make format -j$(nproc)
     # - stage: deploy
     #   if: branch = master
