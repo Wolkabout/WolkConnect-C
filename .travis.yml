@@ -16,6 +16,7 @@ jobs:
         - ./configure
         - pushd build
         - make format -j$(nproc)
+        - make -j$(nproc)
     # - stage: deploy
     #   if: branch = master
     #   branches:
