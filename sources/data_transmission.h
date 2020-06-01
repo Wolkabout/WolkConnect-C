@@ -21,7 +21,7 @@ typedef struct {
     int (*recv)(unsigned char* address, unsigned int max_bytes_number);
 } transmission_io_functions_t;
 
-typedef enum { TRANSPORT_ERROR = -1, TRANSPORT_AGAIN = 0, TRANSPORT_DONE = 1 };
+enum { TRANSPORT_ERROR = -1, TRANSPORT_AGAIN = 0, TRANSPORT_DONE = 1 };
 
 int transmission_open(transmission_io_functions_t* trans_io);
 
