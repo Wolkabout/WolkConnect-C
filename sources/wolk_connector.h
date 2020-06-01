@@ -41,7 +41,7 @@ extern "C" {
 /**
  * @brief Library versioning
  */
-enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 6, WOLK_VERSION_PATCH = 2 };
+enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 6, WOLK_VERSION_PATCH = 3 };
 
 /**
  * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_JSON_SINGLE
@@ -274,7 +274,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx);
  * platform, obtain and perform actuation requests
  *
  * @param ctx Context
- * @param tick Perid at which wolk_process is called
+ * @param tick Period at which wolk_process is called
  *
  * @return Error code
  */
