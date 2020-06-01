@@ -180,8 +180,8 @@ int main(int argc, char* argv[])
     while (keep_running) {
         // MANDATORY: sleep(currently 200us) and number of tick(currently 5) when are multiplied needs to give 1ms.
         // you can change this parameters, but keep it's multiplication
-        usleep(200);
-        wolk_process(&wolk, 5);
+        usleep(1000);
+        wolk_process(&wolk, 1);
     }
 
     printf("Wolk client - Diconnecting\n");

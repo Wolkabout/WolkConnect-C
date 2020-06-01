@@ -34,9 +34,9 @@
 
 #define NON_EXISTING "N/A"
 
-#define MQTT_KEEP_ALIVE_INTERVAL 60              //Unit:s
+#define MQTT_KEEP_ALIVE_INTERVAL 60              //Unit: s
 
-#define PING_KEEP_ALIVE_INTERVAL (600 * 1000)    //Unit: ms
+#define PING_KEEP_ALIVE_INTERVAL (60 * 1000)    //Unit: ms
 
 static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "actuators/commands/";
 
@@ -561,11 +561,12 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
 
-    if (ctx->connectData.keepAliveInterval < MQTT_KEEP_ALIVE_INTERVAL) {
+    if (ctx->connectData.keepAliveInterval < (MQTT_KEEP_ALIVE_INTERVAL * 1000)) { //Convert to Unit: ms
         ctx->connectData.keepAliveInterval += tick;
         return W_FALSE;
     }
 
+    printf("mqtt keepalive \n");
     int len = MQTTSerialize_pingreq(buf, MQTT_PACKET_SIZE);
     transmission_buffer_nb_start(ctx->sock, buf, len);
 
