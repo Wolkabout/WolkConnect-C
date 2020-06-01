@@ -58,7 +58,7 @@ static int send_buffer(unsigned char* buffer, unsigned int len)
 {
     int n;
 
-    n = (int)BIO_write(sockfd, buffer, len);
+    n = (int)BIO_write(sockfd, buffer, (int)len);
     if (n < 0) {
         return -1;
     }
@@ -71,7 +71,7 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     bzero(buffer, max_bytes);
     int n;
 
-    n = (int)BIO_read(sockfd, buffer, max_bytes);
+    n = (int)BIO_read(sockfd, buffer, (int)max_bytes);
     if (n < 0) {
         return -1;
     }
@@ -79,12 +79,12 @@ static int receive_buffer(unsigned char* buffer, unsigned int max_bytes)
     return n;
 }
 
-static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const int portno, const char* ca_file,
+static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const int port_number, const char* ca_file,
                         const char* ca_path)
 {
     SSL* ssl;
-    const char port[5];
-    snprintf(port, 5, "%d", portno);
+    char port[5];
+    snprintf(port, 5, "%d", port_number);
 
     /* Load OpenSSL */
     SSL_load_error_strings();
@@ -109,7 +109,7 @@ static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const in
     BIO_set_conn_port(*bio, port);
 
     /* Wait for connection in 15 second timeout */
-    int start_time = time(NULL);
+    int start_time = (int)time(NULL);
     while (BIO_do_connect(*bio) <= 0 && (int)time(NULL) - start_time < 15)
         ;
     if (BIO_do_connect(*bio) <= 0) {
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
     }
 
     if (wolk_init(&wolk, send_buffer, receive_buffer, NULL, ACTUATOR_STATE_READY, NULL, NULL, device_key,
-                  device_password, PROTOCOL_JSON_SINGLE, NULL, NULL)
+                  device_password, PROTOCOL_JSON_SINGLE, NULL, 0)
         != W_FALSE) {
         printf("Error initializing WolkConnect-C\n");
         return 1;
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
 
     wolk_disconnect(&wolk);
 
-    close(sockfd);
+    BIO_free_all(sockfd);
 
     return 0;
 }
