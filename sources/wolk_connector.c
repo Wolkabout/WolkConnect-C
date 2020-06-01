@@ -566,7 +566,6 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
         return W_FALSE;
     }
 
-    printf("mqtt keepalive \n");
     int len = MQTTSerialize_pingreq(buf, MQTT_PACKET_SIZE);
     transmission_buffer_nb_start(ctx->sock, buf, len);
 
