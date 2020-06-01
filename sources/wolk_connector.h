@@ -274,7 +274,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx);
  * platform, obtain and perform actuation requests
  *
  * @param ctx Context
- * @param tick Perid at which wolk_process is called
+ * @param tick Period at which wolk_process is called
  *
  * @return Error code
  */
