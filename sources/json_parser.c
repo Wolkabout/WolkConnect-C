@@ -34,7 +34,7 @@
 
 static const char* READINGS_TOPIC = "d2p/sensor_reading/d/";
 static const char* ACTUATORS_STATUS_TOPIC = "actuators/status/";
-static const char* EVENTS_TOPIC = "events/";
+static const char* EVENTS_TOPIC = "d2p/events/d/";
 
 static bool all_readings_have_equal_rtc(reading_t* first_reading, size_t num_readings)
 {
@@ -272,7 +272,7 @@ bool json_serialize_readings_topic(reading_t* first_Reading, size_t num_readings
     case READING_TYPE_ALARM:
         strcpy(buffer, EVENTS_TOPIC);
         strcat(buffer, device_key);
-        strcat(buffer, "/");
+        strcat(buffer, "/r/");
         strcat(buffer, manifest_item_get_reference(manifest_item));
         break;
 

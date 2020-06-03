@@ -498,7 +498,7 @@ WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, bool state, ui
     reading_t alarm_reading;
     reading_init(&alarm_reading, &alarm);
     reading_set_rtc(&alarm_reading, utc_time);
-    reading_set_data(&alarm_reading, (state == true ? "ON" : "OFF"));
+    reading_set_data(&alarm_reading, (state == true ? "true" : "false"));
 
     outbound_message_t outbound_message;
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &alarm_reading, 1, &outbound_message);
