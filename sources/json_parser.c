@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char* READINGS_TOPIC = "readings/";
+static const char* READINGS_TOPIC = "d2p/sensor_reading/d/";
 static const char* ACTUATORS_STATUS_TOPIC = "actuators/status/";
 static const char* EVENTS_TOPIC = "events/";
 
@@ -258,7 +258,7 @@ bool json_serialize_readings_topic(reading_t* first_Reading, size_t num_readings
     case READING_TYPE_SENSOR:
         strcpy(buffer, READINGS_TOPIC);
         strcat(buffer, device_key);
-        strcat(buffer, "/");
+        strcat(buffer, "/r/");
         strcat(buffer, manifest_item_get_reference(manifest_item));
         break;
 
