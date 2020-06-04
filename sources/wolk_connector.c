@@ -38,7 +38,7 @@
 
 #define PING_KEEP_ALIVE_INTERVAL (60 * 1000)    //Unit: ms
 
-static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "actuators/commands/";
+static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "p2d/actuator_set/d/";
 
 static const char* FIRMWARE_UPDATE_COMMANDS_TOPIC_JSON = "service/commands/firmware/";
 static const char* FIRMWARE_UPDATE_PACKET_TOPIC_JSON = "service/binary/";
@@ -247,7 +247,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 
         strcpy(&topic_buf[0], ACTUATOR_COMMANDS_TOPIC_JSON);
         strcat(&topic_buf[0], ctx->device_key);
-        strcat(&topic_buf[0], "/");
+        strcat(&topic_buf[0], "/r/");
         strcat(&topic_buf[0], reference);
 
         if (_subscribe(ctx, topic_buf) != W_FALSE) {

@@ -33,7 +33,7 @@
 #include <string.h>
 
 static const char* READINGS_TOPIC = "d2p/sensor_reading/d/";
-static const char* ACTUATORS_STATUS_TOPIC = "actuators/status/";
+static const char* ACTUATORS_STATUS_TOPIC = "d2p/actuator_status/d/";
 static const char* EVENTS_TOPIC = "d2p/events/d/";
 
 static bool all_readings_have_equal_rtc(reading_t* first_reading, size_t num_readings)
@@ -190,19 +190,29 @@ static bool deserialize_actuator_command(char* topic, size_t topic_size, char* b
         return false;
     }
 
-    /* Obtain command type and value */
+
     char command_buffer[COMMAND_MAX_SIZE];
     char value_buffer[READING_SIZE];
-    for (int i = 1; i < parser_result; i++) {
-        if (json_token_str_equal(buffer, &tokens[i], "command")) {
-            if (snprintf(command_buffer, WOLK_ARRAY_LENGTH(command_buffer), "%.*s",
-                         tokens[i + 1].end - tokens[i + 1].start, buffer + tokens[i + 1].start)
-                >= (int)WOLK_ARRAY_LENGTH(command_buffer)) {
-                return false;
-            }
 
-            i++;
-        } else if (json_token_str_equal(buffer, &tokens[i], "value")) {
+    /* Obtain reference */
+    char* reference_start = strrchr(topic, '/');
+    if (reference_start == NULL) {
+        return false;
+    }
+
+    /*Obtain command type*/
+    char* command_start = strchr(topic, '/');
+    if (command_start == NULL) {
+        return false;
+    }
+    strncpy( command_buffer, strtok(command_start, "/"), COMMAND_MAX_SIZE );
+    if ( strlen(command_buffer) == NULL) {
+        return false;
+    }
+
+    /*Obtain values*/
+    for (int i = 1; i < parser_result; i++) {
+        if (json_token_str_equal(buffer, &tokens[i], "value")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
                 >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
@@ -216,15 +226,10 @@ static bool deserialize_actuator_command(char* topic, size_t topic_size, char* b
         }
     }
 
-    /* Obtain actuator reference */
-    char* reference_start = strrchr(topic, '/');
-    if (reference_start == NULL) {
-        return false;
-    }
-
-    if (strcmp(command_buffer, "STATUS") == 0) {
+    /*Init actuation*/
+    if (strcmp(command_buffer, "actuator_status") == 0) {
         actuator_command_init(command, ACTUATOR_COMMAND_TYPE_STATUS, "", "");
-    } else if (strcmp(command_buffer, "SET") == 0) {
+    } else if (strcmp(command_buffer, "actuator_set") == 0) {
         actuator_command_init(command, ACTUATOR_COMMAND_TYPE_SET, "", value_buffer);
     } else {
         actuator_command_init(command, ACTUATOR_COMMAND_TYPE_UNKNOWN, "", value_buffer);
@@ -265,7 +270,7 @@ bool json_serialize_readings_topic(reading_t* first_Reading, size_t num_readings
     case READING_TYPE_ACTUATOR:
         strcpy(buffer, ACTUATORS_STATUS_TOPIC);
         strcat(buffer, device_key);
-        strcat(buffer, "/");
+        strcat(buffer, "/r/");
         strcat(buffer, manifest_item_get_reference(manifest_item));
         break;
 
