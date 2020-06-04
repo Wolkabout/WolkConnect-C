@@ -44,9 +44,9 @@ extern "C" {
 enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 6, WOLK_VERSION_PATCH = 3 };
 
 /**
- * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_JSON_SINGLE
+ * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_WOLKABOUT
  */
-typedef enum { PROTOCOL_JSON_SINGLE = 0 } protocol_t;
+typedef enum { PROTOCOL_WOLKABOUT = 0 } protocol_t;
 
 /**
  * @brief WOLK_ERR_T Boolean used for error handling in WolkConnect-C library

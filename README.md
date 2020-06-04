@@ -76,7 +76,7 @@ wolk_init(&wolk,                                             /* Context */
 	  NULL,                                              /* Configuration handler        - see configuration_handler_t */
 	  NULL,                                              /* Configuration provider - see configuration_provider_t */
           device_key, device_password,                       /* Device key and password provided by WolkAbout IoT Platform upon device creation */
-          PROTOCOL_JSON_SINGLE,                              /* Protocol specified for device */
+          PROTOCOL_WOLKABOUT,                              /* Protocol specified for device */
           NULL,                                              /* Array of actuator references */
           NULL);                                             /* Number of actuator references */
 
