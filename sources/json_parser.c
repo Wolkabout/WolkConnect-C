@@ -320,7 +320,7 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
     outbound_message_init(outbound_message, "", "");
 
     /* Serialize topic */
-    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "configurations/current/%s",
+    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "d2p/configuration_get/d/%s",
                  device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return 0;

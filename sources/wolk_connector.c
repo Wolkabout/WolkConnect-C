@@ -43,7 +43,7 @@ static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "p2d/actuator_set/d/";
 static const char* FIRMWARE_UPDATE_COMMANDS_TOPIC_JSON = "service/commands/firmware/";
 static const char* FIRMWARE_UPDATE_PACKET_TOPIC_JSON = "service/binary/";
 
-static const char* CONFIGURATION_COMMANDS = "configurations/commands/";
+static const char* CONFIGURATION_COMMANDS = "p2d/configuration_set/d/";
 
 static const char* LASTWILL_TOPIC = "lastwill/";
 static char* LASTWILL_MESSAGE = "Gone offline";
@@ -85,7 +85,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     WOLK_ASSERT(strlen(device_key) < DEVICE_KEY_SIZE);
     WOLK_ASSERT(strlen(device_password) < DEVICE_PASSWORD_SIZE);
 
-    WOLK_ASSERT(protocol == PROTOCOL_JSON_SINGLE);
+    WOLK_ASSERT(protocol == PROTOCOL_WOLKABOUT);
 
     if (num_actuator_references > 0 && (actuation_handler == NULL || actuator_status_provider == NULL)) {
         WOLK_ASSERT(false);
@@ -733,7 +733,7 @@ static WOLK_ERR_T _subscribe(wolk_ctx_t* ctx, const char* topic)
 static void _parser_init(wolk_ctx_t* ctx, protocol_t protocol)
 {
     switch (protocol) {
-    case PROTOCOL_JSON_SINGLE:
+    case PROTOCOL_WOLKABOUT:
         parser_init(&ctx->parser, PARSER_TYPE_JSON);
         break;
 
