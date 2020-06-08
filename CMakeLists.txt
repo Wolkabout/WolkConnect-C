@@ -75,6 +75,15 @@ add_custom_target(format
                   COMMENT "[Formatting source code]"
                   VERBATIM)
 
+# Run Unit tests
+set(TEST_FILES "${CMAKE_SOURCE_DIR}/tests")
+
+add_custom_target(test
+        WORKING_DIRECTORY "${TEST_FILES}"
+        COMMAND /usr/local/bin/ceedling test:all
+        COMMENT "[Run Unit tests]"
+        VERBATIM)
+
 # Examples
 add_subdirectory(examples/simple)
 add_subdirectory(examples/full_feature_set)
