@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
     }
 
     if (wolk_init(&wolk, send_buffer, receive_buffer, NULL, ACTUATOR_STATE_READY, NULL, NULL, device_key,
-                  device_password, PROTOCOL_JSON_SINGLE, NULL, 0)
+                  device_password, PROTOCOL_WOLKABOUT, NULL, 0)
         != W_FALSE) {
         printf("Error initializing WolkConnect-C\n");
         return 1;
@@ -185,9 +185,7 @@ int main(int argc, char* argv[])
     }
 
     printf("Wolk client - Diconnecting\n");
-
     wolk_disconnect(&wolk);
-
     BIO_free_all(sockfd);
 
     return 0;
