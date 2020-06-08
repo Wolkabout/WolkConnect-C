@@ -24,7 +24,7 @@ This allows WolkConnect-C Connector to work on wide variety of systems, bare met
 Given examples are intended to be run on Debian based system.
 
 Supported protocol(s):
-* JSON single
+* WOLKABOUT PROTOCOL
 
 Prerequisite
 ------
