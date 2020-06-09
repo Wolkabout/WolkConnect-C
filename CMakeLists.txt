@@ -70,7 +70,7 @@ add_dependencies(${LIBRARY_NAME} pahomqttembeddedc)
 
 # Format code
 add_custom_target(format
-                  COMMAND "/usr/bin/clang-format" -i -sort-includes -style=file ${HEADER_FILES} ${SOURCE_FILES}
+                  COMMAND "clang-format" -i -sort-includes -style=file ${HEADER_FILES} ${SOURCE_FILES}
                   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
                   COMMENT "[Formatting source code]"
                   VERBATIM)
@@ -80,7 +80,7 @@ set(TEST_FILES "${CMAKE_SOURCE_DIR}/tests")
 
 add_custom_target(tests
         WORKING_DIRECTORY "${TEST_FILES}"
-        COMMAND /usr/local/bin/ceedling test:all
+        COMMAND ceedling test:all
         COMMENT "[Run Unit tests]"
         VERBATIM)
 
