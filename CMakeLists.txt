@@ -78,7 +78,7 @@ add_custom_target(format
 # Run Unit tests
 set(TEST_FILES "${CMAKE_SOURCE_DIR}/tests")
 
-add_custom_target(test
+add_custom_target(tests
         WORKING_DIRECTORY "${TEST_FILES}"
         COMMAND /usr/local/bin/ceedling test:all
         COMMENT "[Run Unit tests]"
