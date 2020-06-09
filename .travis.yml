@@ -27,10 +27,9 @@ jobs:
             - gcc
             - libssl-dev
             - ruby
-        rvm:
-            - ceedling
+      install:
+        - gem install ceedling
       script:
         - ./configure
         - pushd build
-        - pwd
         - make tests -j$(nproc)
