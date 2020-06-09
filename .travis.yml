@@ -31,5 +31,5 @@ jobs:
         - gem install ceedling
       script:
         - ./configure
-        - pushd tests
-        - ceedling test:all
+        - pushd build
+        - make tests -j$(nproc)
