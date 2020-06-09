@@ -18,16 +18,16 @@ jobs:
         - make format -j$(nproc)
         - make -j$(nproc)
     - stage: tests
-        dist: bionic
-        language: c
-        addons:
-          apt:
-            packages:
-              - cmake
-              - gcc
-              - libssl-dev
-              - ceedling
-        script:
-          - ./configure
-          - pushd build
-          - make tests -j$(nproc)
+      dist: bionic
+      language: c
+      addons:
+        apt:
+          packages:
+            - cmake
+            - gcc
+            - libssl-dev
+            - ceedling
+      script:
+        - ./configure
+        - pushd build
+        - make tests -j$(nproc)
