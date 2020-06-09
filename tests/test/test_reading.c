@@ -26,6 +26,7 @@ void test_readings_init(void)
     TEST_ASSERT_EQUAL_INT(reading.actuator_status, ACTUATOR_STATE_READY);
     TEST_ASSERT_EQUAL_INT(reading.manifest_item.reading_type, READING_TYPE_SENSOR);
     TEST_ASSERT_EQUAL_INT(reading.manifest_item.data_type, DATA_TYPE_STRING);
+    TEST_ASSERT_EQUAL_STRING("T", reading.manifest_item.reference);
 
     reading_clear(&reading);
 }
