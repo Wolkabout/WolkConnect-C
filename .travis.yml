@@ -31,5 +31,6 @@ jobs:
             - ceedling
       script:
         - ./configure
-        - pushd tests
+        - pushd build
+        - pwd
         - make tests -j$(nproc)
