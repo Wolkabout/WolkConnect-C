@@ -26,6 +26,8 @@ jobs:
             - cmake
             - gcc
             - libssl-dev
+            - ruby
+        rvm:
             - ceedling
       script:
         - ./configure
