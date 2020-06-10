@@ -20,7 +20,6 @@ void test_reading_readings_init(void)
     manifest_item_t string_sensor;
     manifest_item_init(&string_sensor, "T", READING_TYPE_SENSOR, DATA_TYPE_STRING);
 
-    reading_t reading;
     reading_init(&reading, &string_sensor);
 
     TEST_ASSERT_EQUAL_INT(reading.actuator_status, ACTUATOR_STATE_READY);
