@@ -15,6 +15,8 @@
 #include "outbound_message.h"
 #include "configuration_command.h"
 
+#include "string.h"
+
 void setUp(void)
 {
 }
@@ -113,4 +115,19 @@ void test_json_parser_json_serialize_readings_alarm(void)
 
     TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
     TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"ON\"}", buffer);
+}
+
+void test_json_parser_json_deserialize_actuator_commands(void)
+{
+    char topic_str[TOPIC_SIZE];
+    char payload[PAYLOAD_SIZE];
+    int payload_len = 0;
+    actuator_command_t actuator_command;
+
+    strncpy(topic_str, "p2d/actuator_set/d/device_key/r/reference", strlen("p2d/actuator_set/d/device_key/r/reference"));
+    strncpy(payload, "{\"value\":\"32.1\"}", strlen("{\"value\":\"32.1\"}"));
+    payload_len = strlen(payload);
+
+    TEST_ASSERT_EQUAL_INT(1, json_deserialize_actuator_commands(topic_str, strlen(topic_str), payload, (size_t)payload_len, &actuator_command, 1));
+    TEST_ASSERT_EQUAL_STRING("32.1", actuator_command.argument);
 }
