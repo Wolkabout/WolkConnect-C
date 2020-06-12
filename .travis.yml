@@ -33,3 +33,21 @@ jobs:
         - ./configure
         - pushd build
         - make tests -j$(nproc)
+    - stage: deploy
+      if: branch = master
+       branches:
+         only:
+           - master
+       addons:
+         apt:
+           packages:
+             - doxygen
+       script:
+         - doxygen Doxyfile
+       deploy:
+         provider: pages
+         skip_cleanup: true
+         local_dir: doc/html
+         github_token: $GH_REPO_TOKEN
+       on:
+         branch: master
