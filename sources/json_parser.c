@@ -191,7 +191,6 @@ static bool deserialize_actuator_command(char* topic, size_t topic_size, char* b
         return false;
     }
 
-
     char command_buffer[COMMAND_MAX_SIZE];
     char value_buffer[READING_SIZE];
 
@@ -403,10 +402,6 @@ size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
     }
 
     for (int i = 1; i < num_json_tokens; i += 2) {
-        if (!json_token_str_equal(buffer, &tokens[i], "command")) {
-            continue;
-        }
-
         if (snprintf(command_buffer, WOLK_ARRAY_LENGTH(command_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                      buffer + tokens[i + 1].start)
             >= (int)WOLK_ARRAY_LENGTH(command_buffer)) {
