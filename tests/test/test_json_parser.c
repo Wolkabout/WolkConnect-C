@@ -150,3 +150,36 @@ void test_json_json_serialize_readings_topic(void)
     TEST_ASSERT_TRUE(json_serialize_readings_topic(&first_reading, 1, device_key, buffer, PAYLOAD_SIZE));
     TEST_ASSERT_EQUAL_STRING("readings/some_device_key/reference", buffer);
 }
+
+void test_json_parser_json_serialize_configuration_single_item(void)
+{
+    char device_key[DEVICE_KEY_SIZE];
+    char value[CONFIGURATION_VALUE_SIZE];
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    int8_t num_configuration_items = 1;
+    outbound_message_t outbound_message;
+
+    strncpy(reference, "reference", strlen("reference"));
+    strncpy(device_key, "some_device_key", strlen("some_device_key"));
+    strncpy(value, "string", strlen("string"));
+
+    TEST_ASSERT_TRUE(json_serialize_configuration(device_key, &reference, &value, num_configuration_items, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING("configurations/current/some_device_key", outbound_message.topic);
+    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"reference\":\"string\"}}", outbound_message.payload);
+}
+
+void test_json_parser_json_serialize_configuration_multi_item(void)
+{
+    char device_key[DEVICE_KEY_SIZE] = {"some_device_key"};
+    char references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"reference1", "reference2", "referenceN"};
+    char values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"string1", "string2", "stringN"};
+    const char topic[TOPIC_SIZE] = {"configurations/current/"};
+    int8_t num_configuration_items = 3;
+    outbound_message_t outbound_message;
+
+    strcat(topic, device_key);
+
+    TEST_ASSERT_TRUE(json_serialize_configuration(device_key, references, values, num_configuration_items, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING(topic, outbound_message.topic);
+    TEST_ASSERT_EQUAL_STRING("{\"{reference1}\": \"string1\",\"{reference2}\": \"string2\",\"{referenceN}\": \"stringN\"}", outbound_message.payload);
+}
