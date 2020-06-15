@@ -35,6 +35,7 @@
 static const char* READINGS_TOPIC = "d2p/sensor_reading/d/";
 static const char* ACTUATORS_STATUS_TOPIC = "d2p/actuator_status/d/";
 static const char* EVENTS_TOPIC = "d2p/events/d/";
+static const char* CONFIGURATION_GET_TOPIC = "d2p/configuration_get/d/";
 
 static bool all_readings_have_equal_rtc(reading_t* first_reading, size_t num_readings)
 {
@@ -319,8 +320,9 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
 {
     outbound_message_init(outbound_message, "", "");
 
+    strncpy(outbound_message->topic, CONFIGURATION_GET_TOPIC, strlen(CONFIGURATION_GET_TOPIC));
     /* Serialize topic */
-    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "d2p/configuration_get/d/%s",
+    if (snprintf(outbound_message->topic+strlen(CONFIGURATION_GET_TOPIC), WOLK_ARRAY_LENGTH(outbound_message->topic), "%s",
                  device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return 0;
@@ -345,7 +347,7 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
 
         /* -1 so we can have enough space left to append closing '}' */
         size_t num_bytes_to_write = payload_size - strlen(payload);
-        if (snprintf(payload + strlen(payload), payload_size - strlen(payload) - 1, "\"%s\":\"%s\"",
+        if (snprintf(payload + strlen(payload), payload_size - strlen(payload) - 1, "\"{%s}\":\"%s\"",
                      configuration_item_reference, configuration_item_value)
             >= (int)num_bytes_to_write - 1) {
             break;
