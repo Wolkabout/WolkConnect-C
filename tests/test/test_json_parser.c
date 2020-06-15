@@ -17,6 +17,18 @@
 
 #include "string.h"
 
+
+reading_t first_reading;
+
+static const char* UNIT_TEST_READINGS_TOPIC = "d2p/sensor_reading/d/";
+static const char* UNIT_TEST_EVENTS_TOPIC = "d2p/events/d/";
+
+static const char* UNIT_TEST_ACTUATOR_SET_TOPIC = "p2d/actuator_set/d/";
+static const char* UNIT_TEST_ACTUATOR_STATUS_TOPIC = "d2p/actuator_status/d/";
+
+static const char* UNIT_TEST_CONFIGURATION_SET = "p2d/configuration_set/d/";
+static const char* UNIT_TEST_CONFIGURATION_GET = "d2p/configuration_get/d/";
+
 void setUp(void)
 {
 }
@@ -24,8 +36,6 @@ void setUp(void)
 void tearDown(void)
 {
 }
-
-reading_t first_reading;
 
 void test_json_parser_json_serialize_readings_sensor(void)
 {
@@ -119,27 +129,30 @@ void test_json_parser_json_serialize_readings_alarm(void)
 
 void test_json_parser_json_deserialize_actuator_commands(void)
 {
-    char topic_str[TOPIC_SIZE];
+    char topic[TOPIC_SIZE];
     char payload[PAYLOAD_SIZE];
     int payload_len = 0;
     actuator_command_t actuator_command;
 
-    strncpy(topic_str, "p2d/actuator_set/d/device_key/r/reference", strlen("p2d/actuator_set/d/device_key/r/reference"));
+    strncpy(topic, UNIT_TEST_ACTUATOR_SET_TOPIC, strlen(UNIT_TEST_ACTUATOR_SET_TOPIC));
+    strcat(topic, "/r/reference");
     strncpy(payload, "{\"value\":\"32.1\"}", strlen("{\"value\":\"32.1\"}"));
     payload_len = strlen(payload);
 
-//    TEST_ASSERT_EQUAL_INT(1, json_deserialize_actuator_commands(topic_str, strlen(topic_str), payload, (size_t)payload_len, &actuator_command, 1));
-//    TEST_ASSERT_EQUAL_STRING("32.1", actuator_command.argument);
+    TEST_ASSERT_EQUAL_INT(1, json_deserialize_actuator_commands(topic, strlen(topic), payload, (size_t)payload_len, &actuator_command, 1));
+    TEST_ASSERT_EQUAL_STRING("32.1", actuator_command.argument);
 }
 
 void test_json_json_serialize_readings_topic(void)
 {
     char device_key[DEVICE_KEY_SIZE];
     char buffer[PAYLOAD_SIZE];
+    char topic[TOPIC_SIZE];
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE] = {"reference"};
     manifest_item_t string_sensor;
 
     //Data type String
-    manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_STRING);
+    manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
     manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
 
     reading_init(&first_reading, &string_sensor);
@@ -147,25 +160,30 @@ void test_json_json_serialize_readings_topic(void)
 
     strncpy(device_key, "some_device_key", strlen("some_device_key"));
 
+    strncpy(topic, UNIT_TEST_READINGS_TOPIC, strlen(UNIT_TEST_READINGS_TOPIC)+1);
+    strcat(topic, device_key);
+    strcat(topic, "/r/");
+    strcat(topic, reference);
+
     TEST_ASSERT_TRUE(json_serialize_readings_topic(&first_reading, 1, device_key, buffer, PAYLOAD_SIZE));
-    TEST_ASSERT_EQUAL_STRING("readings/some_device_key/reference", buffer);
+    TEST_ASSERT_EQUAL_STRING(topic, buffer);
 }
 
 void test_json_parser_json_serialize_configuration_single_item(void)
 {
-    char device_key[DEVICE_KEY_SIZE];
-    char value[CONFIGURATION_VALUE_SIZE];
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char device_key[DEVICE_KEY_SIZE] = {"some_device_key"};
+    char references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"reference"};
+    char values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"string"};
+    char topic[TOPIC_SIZE];
     int8_t num_configuration_items = 1;
     outbound_message_t outbound_message;
 
-    strncpy(reference, "reference", strlen("reference"));
-    strncpy(device_key, "some_device_key", strlen("some_device_key"));
-    strncpy(value, "string", strlen("string"));
+    strncpy(topic, UNIT_TEST_CONFIGURATION_GET, strlen(UNIT_TEST_CONFIGURATION_GET)+1);
+    strcat(topic, device_key);
 
-    TEST_ASSERT_TRUE(json_serialize_configuration(device_key, &reference, &value, num_configuration_items, &outbound_message));
-    TEST_ASSERT_EQUAL_STRING("configurations/current/some_device_key", outbound_message.topic);
-    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"reference\":\"string\"}}", outbound_message.payload);
+    TEST_ASSERT_TRUE(json_serialize_configuration(device_key, references, values, num_configuration_items, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING(topic, outbound_message.topic);
+    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"{reference}\":\"string\"}}", outbound_message.payload);
 }
 
 void test_json_parser_json_serialize_configuration_multi_item(void)
@@ -173,13 +191,14 @@ void test_json_parser_json_serialize_configuration_multi_item(void)
     char device_key[DEVICE_KEY_SIZE] = {"some_device_key"};
     char references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"reference1", "reference2", "referenceN"};
     char values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"string1", "string2", "stringN"};
-    const char topic[TOPIC_SIZE] = {"configurations/current/"};
+    char topic[TOPIC_SIZE];
     int8_t num_configuration_items = 3;
     outbound_message_t outbound_message;
 
+    strncpy(topic, UNIT_TEST_CONFIGURATION_GET, strlen(UNIT_TEST_CONFIGURATION_GET)+1);
     strcat(topic, device_key);
 
     TEST_ASSERT_TRUE(json_serialize_configuration(device_key, references, values, num_configuration_items, &outbound_message));
     TEST_ASSERT_EQUAL_STRING(topic, outbound_message.topic);
-    TEST_ASSERT_EQUAL_STRING("{\"{reference1}\": \"string1\",\"{reference2}\": \"string2\",\"{referenceN}\": \"stringN\"}", outbound_message.payload);
+    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"{reference1}\":\"string1\",\"{reference2}\":\"string2\",\"{referenceN}\":\"stringN\"}}", outbound_message.payload);
 }
