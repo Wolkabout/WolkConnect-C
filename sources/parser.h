@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-typedef enum { PARSER_TYPE_JSON = 0 } parser_type_t;
+typedef enum { PARSER_TYPE_WOLKABOUT = 0 } parser_type_t;
 
 typedef struct {
     parser_type_t type;
