@@ -138,7 +138,7 @@ void test_json_parser_json_deserialize_actuator_commands(void)
     strcat(topic, "/r/reference");
     strncpy(payload, "{\"value\":\"32.1\"}", strlen("{\"value\":\"32.1\"}"));
     payload_len = strlen(payload);
-
+//TODO: resolve this bug
     TEST_ASSERT_EQUAL_INT(1, json_deserialize_actuator_commands(topic, strlen(topic), payload, (size_t)payload_len, &actuator_command, 1));
     TEST_ASSERT_EQUAL_STRING("32.1", actuator_command.argument);
 }
@@ -183,7 +183,7 @@ void test_json_parser_json_serialize_configuration_single_item(void)
 
     TEST_ASSERT_TRUE(json_serialize_configuration(device_key, references, values, num_configuration_items, &outbound_message));
     TEST_ASSERT_EQUAL_STRING(topic, outbound_message.topic);
-    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"{reference}\":\"string\"}}", outbound_message.payload);
+    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"reference\":\"string\"}}", outbound_message.payload);
 }
 
 void test_json_parser_json_serialize_configuration_multi_item(void)
@@ -200,5 +200,5 @@ void test_json_parser_json_serialize_configuration_multi_item(void)
 
     TEST_ASSERT_TRUE(json_serialize_configuration(device_key, references, values, num_configuration_items, &outbound_message));
     TEST_ASSERT_EQUAL_STRING(topic, outbound_message.topic);
-    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"{reference1}\":\"string1\",\"{reference2}\":\"string2\",\"{referenceN}\":\"stringN\"}}", outbound_message.payload);
+    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"reference1\":\"string1\",\"reference2\":\"string2\",\"referenceN\":\"stringN\"}}", outbound_message.payload);
 }
