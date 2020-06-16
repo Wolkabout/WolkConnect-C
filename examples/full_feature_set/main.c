@@ -32,6 +32,7 @@
 
 #include <openssl/ssl.h>
 
+#define DEFAULT_PUBLISH_PERIOD_SECONDS 5
 
 static SSL_CTX* ctx;
 static BIO* sockfd;
@@ -48,6 +49,7 @@ static uint8_t persistence_storage[1024 * 1024];
 /* WolkConnect-C Connector context */
 static wolk_ctx_t wolk;
 
+static int publish_period_seconds = DEFAULT_PUBLISH_PERIOD_SECONDS;
 static const char* actuator_references[] = {"SW", "SL"};
 static const uint32_t num_actuator_references = 2;
 
@@ -161,18 +163,31 @@ static actuator_status_t actuator_status_provider(const char* reference)
 }
 
 static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {
-    "config_1", "config_2", "config_3", "config_4"};
+    "HB", "LL", "EF"};
 static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {
-    "0", "False", "config_3", "configuration_4a,configuration_4b,configuration_4c"};
+    "5", "INFO", "T,H,P"};
 
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                   char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items)
 {
     for (size_t i = 0; i < num_configuration_items; ++i) {
-        printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
+        size_t iteration_counter = 0;
 
-        strcpy(device_configuration_references[i], reference[i]);
-        strcpy(device_configuration_values[i], value[i]);
+        for (size_t j = 0; j < CONFIGURATION_ITEMS_SIZE; ++j) {
+            if(!strcmp(reference[i], device_configuration_references[j])) {
+                strcpy(device_configuration_values[j], value[i]);
+                printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
+
+                if(!strcmp(reference[i], device_configuration_references[0])) {
+                    publish_period_seconds=atoi(value[i]);
+                }
+            } else
+                iteration_counter++;
+
+            if(iteration_counter==CONFIGURATION_ITEMS_SIZE){
+                printf("Unrecognised Reference received!\n");
+            }
+        }
     }
 }
 
@@ -299,6 +314,12 @@ static bool firmware_update_is_url_download_done(bool* success)
     return true;
 }
 
+static void sending_pressure_reading(void);
+static void sending_temperature_reading(void);
+static void sending_humidity_reading(void);
+static void sending_accl_readings(void);
+static bool sensor_readings_process(int* publish_period);
+
 int main(int argc, char* argv[])
 {
     WOLK_UNUSED(argc);
@@ -356,21 +377,13 @@ int main(int argc, char* argv[])
     wolk_add_alarm(&wolk, "HH", true, 0);
     wolk_publish(&wolk);
 
-    wolk_add_numeric_sensor_reading(&wolk, "P", 1024, 0);
-    wolk_add_numeric_sensor_reading(&wolk, "T", 25.6, 0);
-    wolk_add_numeric_sensor_reading(&wolk, "H", 52, 0);
-
-    double accl_readings[3] = {1, 0, 0};
-    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, 0);
-
-    wolk_publish(&wolk);
-
-
     while (keep_running) {
-        // MANDATORY: sleep(currently 200us) and number of tick(currently 5) when are multiplied needs to give 1ms.
+        // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
         // you can change this parameters, but keep it's multiplication
         usleep(1000);
         wolk_process(&wolk, 1);
+
+        sensor_readings_process(&publish_period_seconds);
     }
 
     printf("Wolk client - Diconnecting\n");
@@ -378,4 +391,60 @@ int main(int argc, char* argv[])
     BIO_free_all(sockfd);
 
     return 0;
+}
+
+static bool sensor_readings_process(int* publish_period_seconds) {
+    static double publish_period_counter = 0;
+
+    if(publish_period_seconds < DEFAULT_PUBLISH_PERIOD_SECONDS)
+        return 1;
+
+    publish_period_counter++;
+    if (publish_period_counter > (*publish_period_seconds)*1000)
+    {
+        printf("Sending sensor readings:\n");
+        sending_pressure_reading();
+        sending_temperature_reading();
+        sending_humidity_reading();
+        sending_accl_readings();
+
+        publish_period_counter = 0;
+    }
+    return 0;
+}
+
+static void sending_pressure_reading(void){
+    int8_t pressure = 0;
+
+    pressure = (rand() % 800)+300;
+    wolk_add_numeric_sensor_reading(&wolk, "P", pressure, 0);
+    wolk_publish(&wolk);
+    printf("\tPressure\t: %dmb\n", pressure);
+}
+
+static void sending_temperature_reading(void){
+    int8_t temperature = 0;
+
+    temperature = (rand() % 125)-40;
+    wolk_add_numeric_sensor_reading(&wolk, "T", temperature, 0);
+    wolk_publish(&wolk);
+    printf("\tTemperature\t: %d°C\n", temperature);
+}
+
+static void sending_humidity_reading(void){
+    int8_t humidity = 0;
+
+    humidity = rand() % 100;
+    wolk_add_numeric_sensor_reading(&wolk, "H", humidity, 0);
+    wolk_publish(&wolk);
+    printf("\tHumidity\t: %d%\n", humidity);
+}
+
+static void sending_accl_readings(void)
+{
+    double accl_readings[3] = {1, 0, 0};
+
+    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, 0);
+    printf("\tAcceleration on XYZ\t: %fg, %fg, %fg\n", accl_readings[0],  accl_readings[1],  accl_readings[2]);
+    wolk_publish(&wolk);
 }
