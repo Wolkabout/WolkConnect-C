@@ -34,11 +34,11 @@
 
 #define NON_EXISTING "N/A"
 
-#define MQTT_KEEP_ALIVE_INTERVAL 60              //Unit: s
+#define MQTT_KEEP_ALIVE_INTERVAL 60 // Unit: s
 
-#define PING_KEEP_ALIVE_INTERVAL (60 * 1000)    //Unit: ms
+#define PING_KEEP_ALIVE_INTERVAL (60 * 1000) // Unit: ms
 
-static const char* ACTUATOR_COMMANDS_TOPIC_JSON = "p2d/actuator_set/d/";
+static const char* ACTUATOR_COMMANDS_TOPIC = "p2d/actuator_set/d/";
 
 static const char* FIRMWARE_UPDATE_COMMANDS_TOPIC_JSON = "service/commands/firmware/";
 static const char* FIRMWARE_UPDATE_PACKET_TOPIC_JSON = "service/binary/";
@@ -245,7 +245,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         const char* reference = ctx->actuator_references[i];
         memset(topic_buf, '\0', sizeof(topic_buf));
 
-        strcpy(&topic_buf[0], ACTUATOR_COMMANDS_TOPIC_JSON);
+        strcpy(&topic_buf[0], ACTUATOR_COMMANDS_TOPIC);
         strcat(&topic_buf[0], ctx->device_key);
         strcat(&topic_buf[0], "/r/");
         strcat(&topic_buf[0], reference);
@@ -271,7 +271,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     }
 
     configuration_command_t configuration_command;
-    configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_CURRENT);
+    configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_GET);
     _handle_configuration_command(ctx, &configuration_command);
 
     outbound_message_t firmware_version_message;
@@ -561,7 +561,7 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint32_t tick)
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
 
-    if (ctx->connectData.keepAliveInterval < (MQTT_KEEP_ALIVE_INTERVAL * 1000)) { //Convert to Unit: ms
+    if (ctx->connectData.keepAliveInterval < (MQTT_KEEP_ALIVE_INTERVAL * 1000)) { // Convert to Unit: ms
         ctx->connectData.keepAliveInterval += tick;
         return W_FALSE;
     }
@@ -637,7 +637,7 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
         memset(&topic_str[0], '\0', TOPIC_SIZE);
         strncpy(&topic_str[0], topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
 
-        if (strstr(topic_str, ACTUATOR_COMMANDS_TOPIC_JSON) != NULL) {
+        if (strstr(topic_str, ACTUATOR_COMMANDS_TOPIC) != NULL) {
             actuator_command_t actuator_command;
             const size_t num_deserialized_commands = parser_deserialize_actuator_commands(
                 &ctx->parser, topic_str, strlen(topic_str), (char*)payload, (size_t)payload_len, &actuator_command, 1);
@@ -734,7 +734,7 @@ static void _parser_init(wolk_ctx_t* ctx, protocol_t protocol)
 {
     switch (protocol) {
     case PROTOCOL_WOLKABOUT:
-        parser_init(&ctx->parser, PARSER_TYPE_JSON);
+        parser_init(&ctx->parser, PARSER_TYPE_WOLKABOUT);
         break;
 
     default:
@@ -796,7 +796,7 @@ static void _handle_configuration_command(wolk_ctx_t* ctx, configuration_command
         /* Fallthrough */
         /* break; */
 
-    case CONFIGURATION_COMMAND_TYPE_CURRENT:
+    case CONFIGURATION_COMMAND_TYPE_GET:
         if (ctx->configuration_provider != NULL) {
             char references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE];
             char values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE];
