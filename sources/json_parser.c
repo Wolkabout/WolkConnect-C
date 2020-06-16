@@ -205,13 +205,14 @@ static bool deserialize_actuator_command(char* topic, size_t topic_size, char* b
     if (command_start == NULL) {
         return false;
     }
-    strncpy( command_buffer, strtok(command_start, "/"), COMMAND_MAX_SIZE );
-    if ( strlen(command_buffer) == NULL) {
+    strncpy(command_buffer, strtok(command_start, "/"), COMMAND_MAX_SIZE);
+    if (strlen(command_buffer) == NULL) {
         return false;
     }
 
     /*Obtain values*/
     for (int i = 1; i < parser_result; i++) {
+        // TODO: ovde ne zadovolji
         if (json_token_str_equal(buffer, &tokens[i], "value")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
@@ -321,8 +322,8 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
 
     strncpy(outbound_message->topic, CONFIGURATION_GET_TOPIC, strlen(CONFIGURATION_GET_TOPIC));
     /* Serialize topic */
-    if (snprintf(outbound_message->topic+strlen(CONFIGURATION_GET_TOPIC), WOLK_ARRAY_LENGTH(outbound_message->topic), "%s",
-                 device_key)
+    if (snprintf(outbound_message->topic + strlen(CONFIGURATION_GET_TOPIC), WOLK_ARRAY_LENGTH(outbound_message->topic),
+                 "%s", device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return 0;
     }
@@ -346,7 +347,7 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
 
         /* -1 so we can have enough space left to append closing '}' */
         size_t num_bytes_to_write = payload_size - strlen(payload);
-        if (snprintf(payload + strlen(payload), payload_size - strlen(payload) - 1, "\"{%s}\":\"%s\"",
+        if (snprintf(payload + strlen(payload), payload_size - strlen(payload) - 1, "\"%s\":\"%s\"",
                      configuration_item_reference, configuration_item_value)
             >= (int)num_bytes_to_write - 1) {
             break;
@@ -355,7 +356,6 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
         if (i >= num_configuration_items - 1) {
             break;
         }
-
 
         /* +4 for '"', +1 for ':', +1 for ',' delimiter between configuration
          * items, +1 for closing '}' => +7 */
@@ -390,9 +390,6 @@ size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
 
     size_t num_deserialized_config_items = 0;
 
-    char command_buffer[COMMAND_MAX_SIZE];
-    memset(commands_buffer, '\0', WOLK_ARRAY_LENGTH(command_buffer));
-
     jsmn_init(&parser);
     int num_json_tokens = jsmn_parse(&parser, buffer, buffer_size, &tokens[0], WOLK_ARRAY_LENGTH(tokens));
 
@@ -401,78 +398,31 @@ size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
         return num_deserialized_config_items;
     }
 
-    for (int i = 1; i < num_json_tokens; i += 2) {
-        if (snprintf(command_buffer, WOLK_ARRAY_LENGTH(command_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
-                     buffer + tokens[i + 1].start)
-            >= (int)WOLK_ARRAY_LENGTH(command_buffer)) {
+    configuration_command_init(current_config_command, CONFIGURATION_COMMAND_TYPE_SET);
+
+    for (int i = 0; i < num_json_tokens; i += 2) {
+        if (i + 1 >= num_json_tokens || tokens[i + 1].type != JSMN_STRING) {
             continue;
         }
 
-        if (strcmp(command_buffer, "CURRENT") == 0) {
-            configuration_command_init(current_config_command, CONFIGURATION_COMMAND_TYPE_CURRENT);
-            ++num_deserialized_config_items;
-            break;
-        } else if (strcmp(command_buffer, "SET") == 0) {
-            configuration_command_init(current_config_command, CONFIGURATION_COMMAND_TYPE_SET);
-            ++num_deserialized_config_items;
-            break;
-        }
-    }
+        num_deserialized_config_items++;
 
-    if (num_deserialized_config_items == 0) {
-        return num_deserialized_config_items;
-    }
+        char configuration_item_reference[CONFIGURATION_REFERENCE_SIZE];
+        char configuration_item_value[CONFIGURATION_VALUE_SIZE];
 
-    for (int i = 1; i < num_json_tokens; i += 2) {
-        if (!json_token_str_equal(buffer, &tokens[i], "values")) {
+        if (snprintf(configuration_item_reference, WOLK_ARRAY_LENGTH(configuration_item_reference), "%.*s",
+                     tokens[i + 1].end - tokens[i + 1].start, buffer + tokens[i + 1].start)
+            >= (int)WOLK_ARRAY_LENGTH(configuration_item_reference)) {
             continue;
         }
 
-        if (i + 1 >= num_json_tokens || tokens[i + 1].type != JSMN_OBJECT) {
+        if (snprintf(configuration_item_value, WOLK_ARRAY_LENGTH(configuration_item_value), "%.*s",
+                     tokens[i + 2].end - tokens[i + 2].start, buffer + tokens[i + 2].start)
+            >= (int)WOLK_ARRAY_LENGTH(configuration_item_value)) {
             continue;
         }
 
-        char data_buffer[PARSER_INTERNAL_BUFFER_SIZE];
-        memset(data_buffer, '\0', WOLK_ARRAY_LENGTH(data_buffer));
-
-        size_t data_buffer_size = sizeof(data_buffer);
-
-        if (snprintf(data_buffer, WOLK_ARRAY_LENGTH(data_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
-                     buffer + tokens[i + 1].start)
-            >= (int)WOLK_ARRAY_LENGTH(data_buffer)) {
-            return 0;
-        }
-
-        jsmn_parser values_parser;
-        jsmn_init(&values_parser);
-
-        jsmntok_t values_tokens[50];
-        int num_values_json_tokens =
-            jsmn_parse(&values_parser, data_buffer, data_buffer_size, &values_tokens[0], WOLK_ARRAY_LENGTH(tokens));
-
-        if (num_values_json_tokens < 1 || values_tokens[0].type != JSMN_OBJECT) {
-            return 0;
-        }
-
-        for (int j = 1; j < num_values_json_tokens; j += 2) {
-            char configuration_item_reference[CONFIGURATION_REFERENCE_SIZE];
-            char configuration_item_value[CONFIGURATION_VALUE_SIZE];
-
-            if (snprintf(configuration_item_reference, WOLK_ARRAY_LENGTH(configuration_item_reference), "%.*s",
-                         values_tokens[j].end - values_tokens[j].start, data_buffer + values_tokens[j].start)
-                >= (int)WOLK_ARRAY_LENGTH(configuration_item_reference)) {
-                continue;
-            }
-
-            if (snprintf(configuration_item_value, WOLK_ARRAY_LENGTH(configuration_item_value), "%.*s",
-                         values_tokens[j + 1].end - values_tokens[j + 1].start,
-                         data_buffer + values_tokens[j + 1].start)
-                >= (int)WOLK_ARRAY_LENGTH(configuration_item_value)) {
-                continue;
-            }
-
-            configuration_command_add(current_config_command, configuration_item_reference, configuration_item_value);
-        }
+        configuration_command_add(current_config_command, configuration_item_reference, configuration_item_value);
     }
 
     return num_deserialized_config_items;
