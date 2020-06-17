@@ -56,7 +56,7 @@ static const uint32_t num_actuator_references = 2;
 /* Static function for data handling in example */
 static bool device_configuration_enable_feeds[4][1] = {true, true, true, true};
 
-static bool enable_feeds(char * value);
+static bool enable_feeds(char* value);
 static void sending_pressure_reading(void);
 static void sending_temperature_reading(void);
 static void sending_humidity_reading(void);
@@ -171,10 +171,10 @@ static actuator_status_t actuator_status_provider(const char* reference)
     return actuator_status;
 }
 
-static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {
-    "HB", "LL", "EF"};
-static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {
-    "5", "INFO", "T,H,P,ACL"};
+static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"HB", "LL",
+                                                                                                       "EF"};
+static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"5", "INFO",
+                                                                                               "T,H,P,ACL"};
 
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                   char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items)
@@ -183,20 +183,19 @@ static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE
         size_t iteration_counter = 0;
 
         for (size_t j = 0; j < CONFIGURATION_ITEMS_SIZE; ++j) {
-            if(!strcmp(reference[i], device_configuration_references[j])) {
+            if (!strcmp(reference[i], device_configuration_references[j])) {
                 strcpy(device_configuration_values[j], value[i]);
                 printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
 
-                if(!strcmp(reference[i], device_configuration_references[0])) {
-                    publish_period_seconds=atoi(value[i]);
-                }
-                else if(!strcmp(reference[i], device_configuration_references[2])){
+                if (!strcmp(reference[i], device_configuration_references[0])) {
+                    publish_period_seconds = atoi(value[i]);
+                } else if (!strcmp(reference[i], device_configuration_references[2])) {
                     enable_feeds(&value[i]);
                 }
             } else
                 iteration_counter++;
 
-            if(iteration_counter==CONFIGURATION_ITEMS_SIZE){
+            if (iteration_counter == CONFIGURATION_ITEMS_SIZE) {
                 printf("Unrecognised Reference received!\n");
             }
         }
@@ -400,44 +399,44 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static bool enable_feeds(char * value){
+static bool enable_feeds(char* value)
+{
     const char delimiter[2] = ",";
-    char *element = strtok(value, delimiter);;
+    char* element = strtok(value, delimiter);
+    ;
     int8_t elements_counter = 0;
 
-    for(int i=0; i<4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         device_configuration_enable_feeds[i][0] = false;
     }
 
-    while(element != NULL)
-    {
-        if(!strcmp(element, "T"))
+    while (element != NULL) {
+        if (!strcmp(element, "T"))
             device_configuration_enable_feeds[0][0] = true;
-        else if(!strcmp(element, "H"))
+        else if (!strcmp(element, "H"))
             device_configuration_enable_feeds[1][0] = true;
-        else if(!strcmp(element, "P"))
+        else if (!strcmp(element, "P"))
             device_configuration_enable_feeds[2][0] = true;
-        else if(!strcmp(element, "ACL"))
+        else if (!strcmp(element, "ACL"))
             device_configuration_enable_feeds[3][0] = true;
 
         element = strtok(NULL, delimiter);
 
-        if (elements_counter++>4)
+        if (elements_counter++ > 4)
             break;
     }
     return 0;
 }
 
-static bool sensor_readings_process(int* publish_period_seconds) {
+static bool sensor_readings_process(int* publish_period_seconds)
+{
     static double publish_period_counter = 0;
 
-    if(publish_period_seconds < DEFAULT_PUBLISH_PERIOD_SECONDS)
+    if (publish_period_seconds < DEFAULT_PUBLISH_PERIOD_SECONDS)
         return 1;
 
     publish_period_counter++;
-    if (publish_period_counter > (*publish_period_seconds)*1000)
-    {
+    if (publish_period_counter > (*publish_period_seconds) * 1000) {
         printf("Sending sensor readings:\n");
         sending_pressure_reading();
         sending_temperature_reading();
@@ -449,7 +448,8 @@ static bool sensor_readings_process(int* publish_period_seconds) {
     return 0;
 }
 
-static void sending_pressure_reading(void){
+static void sending_pressure_reading(void)
+{
     if (device_configuration_enable_feeds[2][0]) {
         int8_t pressure = 0;
 
@@ -460,18 +460,20 @@ static void sending_pressure_reading(void){
     }
 }
 
-static void sending_temperature_reading(void){
+static void sending_temperature_reading(void)
+{
     if (device_configuration_enable_feeds[0][0]) {
         int8_t temperature = 0;
 
-        temperature = (rand() % 125)-40;
+        temperature = (rand() % 125) - 40;
         wolk_add_numeric_sensor_reading(&wolk, "T", temperature, 0);
         wolk_publish(&wolk);
         printf("\tTemperature\t: %d°C\n", temperature);
     }
 }
 
-static void sending_humidity_reading(void){
+static void sending_humidity_reading(void)
+{
     if (device_configuration_enable_feeds[1][0]) {
         int8_t humidity = 0;
 
