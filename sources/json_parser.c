@@ -212,7 +212,6 @@ static bool deserialize_actuator_command(char* topic, size_t topic_size, char* b
 
     /*Obtain values*/
     for (int i = 1; i < parser_result; i++) {
-        // TODO: ovde ne zadovolji
         if (json_token_str_equal(buffer, &tokens[i], "value")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
