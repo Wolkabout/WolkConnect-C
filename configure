@@ -15,5 +15,5 @@
 # limitations under the License.
 mkdir -p build
 
-cd build
+cd build || exit
 cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
