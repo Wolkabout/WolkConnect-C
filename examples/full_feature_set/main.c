@@ -53,8 +53,17 @@ static int publish_period_seconds = DEFAULT_PUBLISH_PERIOD_SECONDS;
 static const char* actuator_references[] = {"SW", "SL"};
 static const uint32_t num_actuator_references = 2;
 
-static volatile bool keep_running = true;
+/* Static function for data handling in example */
+static bool device_configuration_enable_feeds[4][1] = {true, true, true, true};
 
+static bool enable_feeds(char * value);
+static void sending_pressure_reading(void);
+static void sending_temperature_reading(void);
+static void sending_humidity_reading(void);
+static void sending_accl_readings(void);
+static bool sensor_readings_process(int* publish_period);
+
+static volatile bool keep_running = true;
 static void int_handler(int dummy)
 {
     WOLK_UNUSED(dummy);
@@ -165,7 +174,7 @@ static actuator_status_t actuator_status_provider(const char* reference)
 static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {
     "HB", "LL", "EF"};
 static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {
-    "5", "INFO", "T,H,P"};
+    "5", "INFO", "T,H,P,ACL"};
 
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                   char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items)
@@ -180,6 +189,9 @@ static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE
 
                 if(!strcmp(reference[i], device_configuration_references[0])) {
                     publish_period_seconds=atoi(value[i]);
+                }
+                else if(!strcmp(reference[i], device_configuration_references[2])){
+                    enable_feeds(&value[i]);
                 }
             } else
                 iteration_counter++;
@@ -314,11 +326,6 @@ static bool firmware_update_is_url_download_done(bool* success)
     return true;
 }
 
-static void sending_pressure_reading(void);
-static void sending_temperature_reading(void);
-static void sending_humidity_reading(void);
-static void sending_accl_readings(void);
-static bool sensor_readings_process(int* publish_period);
 
 int main(int argc, char* argv[])
 {
@@ -393,6 +400,35 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+static bool enable_feeds(char * value){
+    const char delimiter[2] = ",";
+    char *element = strtok(value, delimiter);;
+    int8_t elements_counter = 0;
+
+    for(int i=0; i<4; i++)
+    {
+        device_configuration_enable_feeds[i][0] = false;
+    }
+
+    while(element != NULL)
+    {
+        if(!strcmp(element, "T"))
+            device_configuration_enable_feeds[0][0] = true;
+        else if(!strcmp(element, "H"))
+            device_configuration_enable_feeds[1][0] = true;
+        else if(!strcmp(element, "P"))
+            device_configuration_enable_feeds[2][0] = true;
+        else if(!strcmp(element, "ACL"))
+            device_configuration_enable_feeds[3][0] = true;
+
+        element = strtok(NULL, delimiter);
+
+        if (elements_counter++>4)
+            break;
+    }
+    return 0;
+}
+
 static bool sensor_readings_process(int* publish_period_seconds) {
     static double publish_period_counter = 0;
 
@@ -414,37 +450,45 @@ static bool sensor_readings_process(int* publish_period_seconds) {
 }
 
 static void sending_pressure_reading(void){
-    int8_t pressure = 0;
+    if (device_configuration_enable_feeds[2][0]) {
+        int8_t pressure = 0;
 
-    pressure = (rand() % 800)+300;
-    wolk_add_numeric_sensor_reading(&wolk, "P", pressure, 0);
-    wolk_publish(&wolk);
-    printf("\tPressure\t: %dmb\n", pressure);
+        pressure = (rand() % 800) + 300;
+        wolk_add_numeric_sensor_reading(&wolk, "P", pressure, 0);
+        wolk_publish(&wolk);
+        printf("\tPressure\t: %dmb\n", pressure);
+    }
 }
 
 static void sending_temperature_reading(void){
-    int8_t temperature = 0;
+    if (device_configuration_enable_feeds[0][0]) {
+        int8_t temperature = 0;
 
-    temperature = (rand() % 125)-40;
-    wolk_add_numeric_sensor_reading(&wolk, "T", temperature, 0);
-    wolk_publish(&wolk);
-    printf("\tTemperature\t: %d°C\n", temperature);
+        temperature = (rand() % 125)-40;
+        wolk_add_numeric_sensor_reading(&wolk, "T", temperature, 0);
+        wolk_publish(&wolk);
+        printf("\tTemperature\t: %d°C\n", temperature);
+    }
 }
 
 static void sending_humidity_reading(void){
-    int8_t humidity = 0;
+    if (device_configuration_enable_feeds[1][0]) {
+        int8_t humidity = 0;
 
-    humidity = rand() % 100;
-    wolk_add_numeric_sensor_reading(&wolk, "H", humidity, 0);
-    wolk_publish(&wolk);
-    printf("\tHumidity\t: %d%\n", humidity);
+        humidity = rand() % 100;
+        wolk_add_numeric_sensor_reading(&wolk, "H", humidity, 0);
+        wolk_publish(&wolk);
+        printf("\tHumidity\t: %d%\n", humidity);
+    }
 }
 
 static void sending_accl_readings(void)
 {
-    double accl_readings[3] = {1, 0, 0};
+    if (device_configuration_enable_feeds[3][0]) {
+        double accl_readings[3] = {1, 0, 0};
 
-    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, 0);
-    printf("\tAcceleration on XYZ\t: %fg, %fg, %fg\n", accl_readings[0],  accl_readings[1],  accl_readings[2]);
-    wolk_publish(&wolk);
+        wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, 0);
+        printf("\tAcceleration on XYZ\t: %fg, %fg, %fg\n", accl_readings[0], accl_readings[1], accl_readings[2]);
+        wolk_publish(&wolk);
+    }
 }
