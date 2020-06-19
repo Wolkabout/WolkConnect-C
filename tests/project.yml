@@ -34,7 +34,8 @@
     - +:test/**
     - -:test/support
   :source:
-    - ../sources
+    - ../sources/**
+    - ../dependencies/pahomqttembeddedc/MQTTPacket/src/**
     - src/**
   :support:
     - test/support
