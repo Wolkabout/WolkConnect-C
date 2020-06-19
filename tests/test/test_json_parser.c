@@ -202,3 +202,35 @@ void test_json_parser_json_serialize_configuration_multi_item(void)
     TEST_ASSERT_EQUAL_STRING(topic, outbound_message.topic);
     TEST_ASSERT_EQUAL_STRING("{\"values\":{\"reference1\":\"string1\",\"reference2\":\"string2\",\"referenceN\":\"stringN\"}}", outbound_message.payload);
 }
+
+void test_json_parser_json_deserialize_configuration_command_single(void)
+{
+    char buffer[PAYLOAD_SIZE];
+    configuration_command_t current_config_command;
+    int8_t num_deserialized_config_items = 1;
+
+    int8_t buffer_size = strlen("{\"EF\":\"T,H,P,ACL\"}")+1;
+    strncpy(buffer, "{\"EF\":\"T,H,P,ACL\"}", buffer_size);
+
+    TEST_ASSERT_EQUAL_INT(num_deserialized_config_items, json_deserialize_configuration_command(buffer, buffer_size, &current_config_command, num_deserialized_config_items));
+    TEST_ASSERT_EQUAL_STRING("EF", current_config_command.reference);
+    TEST_ASSERT_EQUAL_INT(CONFIGURATION_COMMAND_TYPE_SET, current_config_command.type);
+    TEST_ASSERT_EQUAL_STRING("T,H,P,ACL", current_config_command.value[0]);
+}
+
+void test_json_parser_json_deserialize_configuration_command_multi(void)
+{
+    char buffer[PAYLOAD_SIZE];
+    configuration_command_t current_config_command;
+    int8_t num_deserialized_config_items = 3;
+
+    int8_t buffer_size = strlen("{\"EF\":\"T,H,P,ACL\",\"HB\":\"5\",\"LL\":\"debug\"}")+1;
+    strncpy(buffer, "{\"EF\":\"T,H,P,ACL\",\"HB\":\"5\",\"LL\":\"debug\"}", buffer_size);
+
+    TEST_ASSERT_EQUAL_INT(num_deserialized_config_items, json_deserialize_configuration_command(buffer, buffer_size, &current_config_command, num_deserialized_config_items));
+    TEST_ASSERT_EQUAL_STRING("EF", current_config_command.reference);
+    TEST_ASSERT_EQUAL_INT(CONFIGURATION_COMMAND_TYPE_SET, current_config_command.type);
+    TEST_ASSERT_EQUAL_STRING("T,H,P,ACL", current_config_command.value[0]);
+    TEST_ASSERT_EQUAL_STRING("5", current_config_command.value[1]);
+    TEST_ASSERT_EQUAL_STRING("debug", current_config_command.value[2]);
+}
