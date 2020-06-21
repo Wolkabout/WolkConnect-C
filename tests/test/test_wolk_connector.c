@@ -63,7 +63,7 @@ void test_wolk_connector_wolk_init_simple(void)
     TEST_ASSERT_EQUAL_STRING("device_password", wolk.device_password);
     TEST_ASSERT_EQUAL_INT(PROTOCOL_WOLKABOUT, wolk.protocol);
     TEST_ASSERT_EQUAL_INT(NULL, wolk.actuator_references);
-    TEST_ASSERT_EQUAL_INT(0, wolk.num_actuator_references);
+    TEST_ASSERT_EQUAL_INT(ACTUATOR_STATE_READY, wolk.num_actuator_references);
 }
 
 void test_wolk_connector_wolk_init_ffs(void)
@@ -165,6 +165,7 @@ void test_wolk_connector_wolk_add_string_sensor_reading(void)
     char value[READING_SIZE];
     uint32_t utc_time = 1592574949;
     uint8_t persistence_storage[1024 * 1024];
+    static outbound_message_t outbound_message;
 
     strncpy(reference, "reference", strlen("reference"));
     strncpy(value, "string", strlen("string"));
@@ -173,6 +174,8 @@ void test_wolk_connector_wolk_add_string_sensor_reading(void)
     wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false);
 
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_add_string_sensor_reading(&wolk, reference, value, utc_time));
+    TEST_ASSERT_TRUE(persistence_pop(&wolk.persistence, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING("{\"utc\":1592574949,\"data\":\"string\"}", outbound_message.payload);
 }
 
 void test_wolkconnector_wolk_add_multi_value_string_sensor_reading(void)
@@ -182,6 +185,7 @@ void test_wolkconnector_wolk_add_multi_value_string_sensor_reading(void)
     char value[READING_DIMENSIONS][READING_SIZE];
     uint32_t utc_time = 1592574949;
     uint8_t persistence_storage[1024 * 1024];
+    static outbound_message_t outbound_message;
 
     strncpy(reference, "reference", strlen("reference"));
     for (int i = 0; i < READING_DIMENSIONS; ++i) {
@@ -192,4 +196,88 @@ void test_wolkconnector_wolk_add_multi_value_string_sensor_reading(void)
     wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false);
 
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_add_multi_value_string_sensor_reading(&wolk, reference, value, READING_DIMENSIONS, utc_time));
+    TEST_ASSERT_TRUE(persistence_pop(&wolk.persistence, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING("{\"utc\":1592574949,\"data\":\"string,string,string\"}", outbound_message.payload);
+}
+
+void test_wolk_connector_wolk_add_numeric_sensor_reading(void)
+{
+    wolk_ctx_t wolk;
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    double value = 32.1;
+    uint32_t utc_time = 1592574949;
+    uint8_t persistence_storage[1024 * 1024];
+    static outbound_message_t outbound_message;
+
+    strncpy(reference, "reference", strlen("reference"));
+
+    wolk_init(&wolk, NULL, NULL, NULL, ACTUATOR_STATE_READY, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0);
+    wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false);
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_add_numeric_sensor_reading(&wolk, reference, value, utc_time));
+    TEST_ASSERT_TRUE(persistence_pop(&wolk.persistence, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING("{\"utc\":1592574949,\"data\":\"32.100000\"}", outbound_message.payload);
+}
+
+void test_wolk_connector_wolk_add_multi_value_numeric_sensor_reading(void)
+{
+    wolk_ctx_t wolk;
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    double value[READING_SIZE];
+    uint32_t utc_time = 1592574949;
+    uint8_t persistence_storage[1024 * 1024];
+    static outbound_message_t outbound_message;
+
+    strncpy(reference, "reference", strlen("reference"));
+    for (int i = 0; i < READING_DIMENSIONS; ++i) {
+        value[i] = i;
+    }
+
+    wolk_init(&wolk, NULL, NULL, NULL, ACTUATOR_STATE_READY, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0);
+    wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false);
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_add_multi_value_numeric_sensor_reading(&wolk, reference, value, READING_DIMENSIONS, utc_time));
+    TEST_ASSERT_TRUE(persistence_pop(&wolk.persistence, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING("{\"utc\":1592574949,\"data\":\"0.000000,1.000000,2.000000\"}", outbound_message.payload);
+}
+
+void test_wolk_connector_wolk_add_bool_sensor_reading(void)
+{
+    wolk_ctx_t wolk;
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    bool value = 1;
+    uint32_t utc_time = 1592574949;
+    uint8_t persistence_storage[1024 * 1024];
+    static outbound_message_t outbound_message;
+
+    strncpy(reference, "reference", strlen("reference"));
+
+    wolk_init(&wolk, NULL, NULL, NULL, ACTUATOR_STATE_READY, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0);
+    wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false);
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_add_bool_sensor_reading(&wolk, reference, value, utc_time));
+    TEST_ASSERT_TRUE(persistence_pop(&wolk.persistence, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING("{\"utc\":1592574949,\"data\":\"true\"}", outbound_message.payload);
+}
+
+void test_wolk_connector_wolk_add_multi_value_bool_sensor_reading(void)
+{
+    wolk_ctx_t wolk;
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    bool value[READING_SIZE];
+    uint32_t utc_time = 1592574949;
+    uint8_t persistence_storage[1024 * 1024];
+    static outbound_message_t outbound_message;
+
+    strncpy(reference, "reference", strlen("reference"));
+    for (int i = 0; i < READING_DIMENSIONS; ++i) {
+        value[i] = true;
+    }
+
+    wolk_init(&wolk, NULL, NULL, NULL, ACTUATOR_STATE_READY, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0);
+    wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false);
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_add_multi_value_bool_sensor_reading(&wolk, reference, value, READING_DIMENSIONS, utc_time));
+    TEST_ASSERT_TRUE(persistence_pop(&wolk.persistence, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING("{\"utc\":1592574949,\"data\":\"true,true,true\"}", outbound_message.payload);
 }
