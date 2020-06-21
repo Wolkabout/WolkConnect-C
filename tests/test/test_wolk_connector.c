@@ -98,31 +98,64 @@ void test_wolk_connector_wolk_init_ffs(void)
 void test_wolk_connector_wolk_connect(void)
 {
     wolk_ctx_t wolk;
+    int send_buffer(unsigned char* buffer, unsigned int len){return 1;}
+    int receive_buffer(unsigned char* buffer, unsigned int max_bytes){return 1;}
+    void actuation_handler(const char* reference, const char* value){}
+    actuator_status_t actuator_status_provider(const char* reference){
+        actuator_status_t actuator_status;
+        actuator_status_init(&actuator_status, "1", ACTUATOR_STATE_READY);
+        return actuator_status;
+    }
+    void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE], char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items){}
+    size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_SIZE], char (*value)[CONFIGURATION_VALUE_SIZE], size_t max_num_configuration_items){return CONFIGURATION_ITEMS_SIZE;}
+    static const char* actuator_references[] = {"SW"};
+    static const uint32_t num_actuator_references = 1;
 
-    wolk_init(&wolk, NULL, NULL, NULL, ACTUATOR_STATE_READY, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0);
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider, configuration_handler, configuration_provider, "device_key", "device_password", PROTOCOL_WOLKABOUT, actuator_references, num_actuator_references));
 
-    //TODO: mock MQTT calls
-//    TEST_ASSERT_EQUAL_INT(1, wolk_connect(&wolk));
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_connect(&wolk));
 }
 
 void test_wolk_connector_wolk_disconnect(void)
 {
     wolk_ctx_t wolk;
+    int send_buffer(unsigned char* buffer, unsigned int len){return 1;}
+    int receive_buffer(unsigned char* buffer, unsigned int max_bytes){return 1;}
+    void actuation_handler(const char* reference, const char* value){}
+    actuator_status_t actuator_status_provider(const char* reference){
+        actuator_status_t actuator_status;
+        actuator_status_init(&actuator_status, "1", ACTUATOR_STATE_READY);
+        return actuator_status;
+    }
+    void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE], char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items){}
+    size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_SIZE], char (*value)[CONFIGURATION_VALUE_SIZE], size_t max_num_configuration_items){return CONFIGURATION_ITEMS_SIZE;}
+    static const char* actuator_references[] = {"SW"};
+    static const uint32_t num_actuator_references = 1;
 
-    wolk_init(&wolk, NULL, NULL, NULL, ACTUATOR_STATE_READY, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0);
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider, configuration_handler, configuration_provider, "device_key", "device_password", PROTOCOL_WOLKABOUT, actuator_references, num_actuator_references));
 
-    //TODO: mock MQTT calls
-//    TEST_ASSERT_EQUAL_INT(1, wolk_disconnect(&wolk));
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_disconnect(&wolk));
 }
 
 void test_wolk_connector_wolk_process(void)
 {
     wolk_ctx_t wolk;
+    int send_buffer(unsigned char* buffer, unsigned int len){return 1;}
+    int receive_buffer(unsigned char* buffer, unsigned int max_bytes){return 1;}
+    void actuation_handler(const char* reference, const char* value){}
+    actuator_status_t actuator_status_provider(const char* reference){
+        actuator_status_t actuator_status;
+        actuator_status_init(&actuator_status, "1", ACTUATOR_STATE_READY);
+        return actuator_status;
+    }
+    void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE], char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items){}
+    size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_SIZE], char (*value)[CONFIGURATION_VALUE_SIZE], size_t max_num_configuration_items){return CONFIGURATION_ITEMS_SIZE;}
+    static const char* actuator_references[] = {"SW"};
+    static const uint32_t num_actuator_references = 1;
 
-    wolk_init(&wolk, NULL, NULL, NULL, ACTUATOR_STATE_READY, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0);
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider, configuration_handler, configuration_provider, "device_key", "device_password", PROTOCOL_WOLKABOUT, actuator_references, num_actuator_references));
 
-    //TODO: mock MQTT calls
-//    TEST_ASSERT_EQUAL_INT(1, wolk_process(&wolk, 5));
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_process(&wolk, 5));
 }
 
 void test_wolk_connector_wolk_add_string_sensor_reading(void)
