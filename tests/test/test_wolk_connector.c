@@ -281,3 +281,58 @@ void test_wolk_connector_wolk_add_multi_value_bool_sensor_reading(void)
     TEST_ASSERT_TRUE(persistence_pop(&wolk.persistence, &outbound_message));
     TEST_ASSERT_EQUAL_STRING("{\"utc\":1592574949,\"data\":\"true,true,true\"}", outbound_message.payload);
 }
+
+void  test_wolk_connector_wolk_add_alarm(void)
+{
+    wolk_ctx_t wolk;
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    bool value;
+    uint32_t utc_time = 1592574949;
+    uint8_t persistence_storage[1024 * 1024];
+    static outbound_message_t outbound_message;
+
+    strncpy(reference, "reference", strlen("reference"));
+    value = false;
+
+    wolk_init(&wolk, NULL, NULL, NULL, ACTUATOR_STATE_READY, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0);
+    wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false);
+
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_add_alarm(&wolk, reference, value, utc_time));
+    TEST_ASSERT_TRUE(persistence_pop(&wolk.persistence, &outbound_message));
+    TEST_ASSERT_EQUAL_STRING("{\"utc\":1592574949,\"data\":\"false\"}", outbound_message.payload);
+}
+
+void test_wolkconnector_wolk_publish_actuator_status(void)
+{
+    wolk_ctx_t wolk;
+    int send_buffer(unsigned char* buffer, unsigned int len){return 1;}
+    int receive_buffer(unsigned char* buffer, unsigned int max_bytes){return 1;}
+    static const char* actuator_references[] = {"SW"};
+    static const uint32_t num_actuator_references = 1;
+    void actuation_handler(const char* reference, const char* value){}
+    actuator_status_t actuator_status_provider(const char* reference){
+        actuator_status_t actuator_status;
+        actuator_status_init(&actuator_status, "1", ACTUATOR_STATE_READY);
+        return actuator_status;
+    }
+
+    wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, actuator_references, num_actuator_references);
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_publish_actuator_status(&wolk, actuator_references[0]));
+}
+
+void test_wolkconnector_wolk_publish(void)
+{
+    wolk_ctx_t wolk;
+    int send_buffer(unsigned char* buffer, unsigned int len){return 1;}
+    int receive_buffer(unsigned char* buffer, unsigned int max_bytes){return 1;}
+    uint8_t persistence_storage[1024 * 1024];
+    static outbound_message_t outbound_message;
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init(&wolk, send_buffer, receive_buffer, NULL, NULL, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0));
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false));
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_connect(&wolk));
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_publish(&wolk));
+}
