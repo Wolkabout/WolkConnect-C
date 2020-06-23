@@ -137,7 +137,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     ctx->actuator_references = actuator_references;
     ctx->num_actuator_references = num_actuator_references;
 
-    ctx->is_keep_alive_enabled = true;
+    ctx->is_keep_ping_alive_enabled = true;
     ctx->milliseconds_since_last_ping_keep_alive = PING_KEEP_ALIVE_INTERVAL;
     ctx->utc = 0;
 
@@ -182,12 +182,21 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_disable_keep_alive(wolk_ctx_t* ctx)
+WOLK_ERR_T wolk_enable_ping_keep_alive(wolk_ctx_t* ctx)
 {
     /* Sanity check */
     WOLK_ASSERT(ctx);
 
-    ctx->is_keep_alive_enabled = false;
+    ctx->is_keep_ping_alive_enabled = true;
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_disable_ping_keep_alive(wolk_ctx_t* ctx)
+{
+    /* Sanity check */
+    WOLK_ASSERT(ctx);
+
+    ctx->is_keep_ping_alive_enabled = false;
     return W_FALSE;
 }
 
@@ -607,7 +616,7 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
 
 static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
 {
-    if (!ctx->is_keep_alive_enabled) {
+    if (!ctx->is_keep_ping_alive_enabled) {
         return W_FALSE;
     }
 

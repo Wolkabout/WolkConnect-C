@@ -139,7 +139,7 @@ typedef struct wolk_ctx {
     const char** actuator_references;
     uint32_t num_actuator_references;
 
-    bool is_keep_alive_enabled;
+    bool is_keep_ping_alive_enabled;
     uint32_t milliseconds_since_last_ping_keep_alive;
     uint64_t utc;
 
@@ -233,13 +233,23 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_
                                      firmware_update_is_url_download_done_t is_url_download_done);
 
 /**
- * @brief Disables internal keep alive mechanism
+ * @brief Enable internal ping keep alive mechanism.
+ * By default it is enable.
  *
  * @param ctx Context
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_disable_keep_alive(wolk_ctx_t* ctx);
+WOLK_ERR_T wolk_enable_ping_keep_alive(wolk_ctx_t* ctx);
+
+/**
+ * @brief Disables internal ping keep alive mechanism
+ *
+ * @param ctx Context
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_disable_ping_keep_alive(wolk_ctx_t* ctx);
 
 /**
  * @brief Connect to WolkAbout IoT Platform
