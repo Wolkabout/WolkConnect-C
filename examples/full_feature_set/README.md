@@ -181,13 +181,21 @@ wolk_init_firmware_update(&wolk,
 
 For more info on device firmware update mechanism see `firmware_update.h` file.
 
-**Keep Alive Mechanism:**
+**Ping Keep Alive Mechanism:**
 
 WolkAbout C Connector by default uses Keep Alive mechanism to notify WolkAbout IoT Platform that device is still connected.
 Keep alive message is sent to WolkAbout IoT Platform every 10 minutes.
 
-To reduce network usage Keep Alive mechanism can be disabled in following manner:
+To reduce network usage Ping Keep Alive mechanism can be disabled in following manner:
 
 ```c
-wolk_disable_keep_alive(&wolk);
+wolk_disable_ping_keep_alive(&wolk);
+```
+
+**Timestamp request**
+
+If you need access to the server's current time, you can request it in the following manner:
+
+```c
+wolk_request_timestamp(&wolk)
 ```
