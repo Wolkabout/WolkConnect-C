@@ -36,11 +36,13 @@ static const char* READINGS_TOPIC = "d2p/sensor_reading/d/";
 static const char* ACTUATORS_STATUS_TOPIC = "d2p/actuator_status/d/";
 static const char* EVENTS_TOPIC = "d2p/events/d/";
 static const char* CONFIGURATION_GET_TOPIC = "d2p/configuration_get/d/";
+static const char* PING_TOPIC = "ping/";
+
 
 static bool all_readings_have_equal_rtc(reading_t* first_reading, size_t num_readings)
 {
     reading_t* current_reading = first_reading;
-    uint32_t rtc = reading_get_rtc(current_reading);
+    uint64_t rtc = reading_get_rtc(current_reading);
 
     for (size_t i = 0; i < num_readings; ++i, ++current_reading) {
         if (rtc != reading_get_rtc(current_reading)) {
@@ -59,7 +61,7 @@ static bool serialize_sensor(reading_t* reading, char* buffer, size_t buffer_siz
     }
 
     if (reading_get_rtc(reading) > 0
-        && snprintf(buffer, buffer_size, "{\"utc\":%u,\"data\":\"%s\"}", reading_get_rtc(reading), data_buffer)
+        && snprintf(buffer, buffer_size, "{\"utc\":%ld,\"data\":\"%s\"}", reading_get_rtc(reading), data_buffer)
                >= (int)buffer_size) {
         return false;
     } else if (reading_get_rtc(reading) == 0
@@ -116,7 +118,7 @@ static bool serialize_alarm(reading_t* reading, char* buffer, size_t buffer_size
     }
 
     if (reading_get_rtc(reading) > 0
-        && snprintf(buffer, buffer_size, "{\"utc\":%u,\"data\":\"%s\"}", reading_get_rtc(reading), data_buffer)
+        && snprintf(buffer, buffer_size, "{\"utc\":%ld,\"data\":\"%s\"}", reading_get_rtc(reading), data_buffer)
                >= (int)buffer_size) {
         return false;
     } else if (reading_get_rtc(reading) == 0
@@ -634,14 +636,57 @@ bool json_serialize_firmware_update_version(const char* device_key, const char* 
     return true;
 }
 
-bool json_serialize_keep_alive_message(const char* device_key, outbound_message_t* outbound_message)
+bool json_serialize_ping_keep_alive_message(const char* device_key, outbound_message_t* outbound_message)
 {
     outbound_message_init(outbound_message, "", "");
 
     /* Serialize topic */
-    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "ping/%s", device_key)
+    strncpy(outbound_message->topic, PING_TOPIC, strlen(PING_TOPIC));
+
+    if (snprintf(outbound_message->topic + strlen(PING_TOPIC), WOLK_ARRAY_LENGTH(outbound_message->topic), "%s",
+                 device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return false;
+    }
+
+    return true;
+}
+
+bool json_deserialize_pong_keep_alive_message(char* buffer, size_t buffer_size, utc_command_t* utc_command)
+{
+    jsmn_parser parser;
+    jsmntok_t tokens[10]; /* No more than 10 JSON token(s) are expected, check
+                             jsmn documentation for token definition */
+    jsmn_init(&parser);
+    int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
+
+    /* Received JSON must be valid, and top level element must be object */
+    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+        return false;
+    }
+
+    char value_buffer[READING_SIZE];
+    /*Obtain values*/
+    for (int i = 1; i < parser_result; i++) {
+        if (i >= parser_result || tokens[i].type != JSMN_STRING) {
+            continue;
+        }
+
+        if (json_token_str_equal(buffer, &tokens[i], "value")) {
+            if (tokens[i + 1].type == JSMN_PRIMITIVE) {
+                if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s",
+                             tokens[i + 1].end - tokens[i + 1].start, buffer + tokens[i + 1].start)
+                    >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
+                    return false;
+                }
+
+                uint64_t conversion_result = strtod(value_buffer, NULL);
+                if (conversion_result == NULL) {
+                    return false;
+                }
+                utc_command->utc = conversion_result;
+            }
+        }
     }
 
     return true;

@@ -51,7 +51,8 @@ void parser_init(parser_t* parser, parser_type_t parser_type)
         parser->serialize_firmware_update_packet_request = json_serialize_firmware_update_packet_request;
         parser->serialize_firmware_update_version = json_serialize_firmware_update_version;
 
-        parser->serialize_keep_alive_message = json_serialize_keep_alive_message;
+        parser->serialize_ping_keep_alive_message = json_serialize_ping_keep_alive_message;
+        parser->deserialize_pong_keep_alive_message = json_deserialize_pong_keep_alive_message;
         break;
 
     default:
@@ -168,12 +169,21 @@ bool parser_serialize_firmware_update_version(parser_t* parser, const char* devi
     return parser->serialize_firmware_update_version(device_key, version, outbound_message);
 }
 
-bool parser_serialize_keep_alive_message(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
+bool parser_serialize_ping_keep_alive_message(parser_t* parser, const char* device_key,
+                                              outbound_message_t* outbound_message)
 {
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
 
-    return parser->serialize_keep_alive_message(device_key, outbound_message);
+    return parser->serialize_ping_keep_alive_message(device_key, outbound_message);
+}
+
+bool parser_deserialize_pong_keep_alive_message(parser_t* parser, char* buffer, size_t buffer_size, utc_command_t* utc)
+{
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+
+    return parser->deserialize_pong_keep_alive_message(buffer, buffer_size, utc);
 }
 
 parser_type_t parser_get_type(parser_t* parser)

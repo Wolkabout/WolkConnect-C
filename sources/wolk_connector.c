@@ -677,7 +677,7 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             }
         } else if (strstr(topic_str, PONG_TOPIC)) {
             utc_command_t utc_command;
-            const size_t response = parser_deserialize_ping_keep_alive_message(&ctx->parser, (char*)payload,
+            const size_t response = parser_deserialize_pong_keep_alive_message(&ctx->parser, (char*)payload,
                                                                                (size_t)payload_len, &utc_command);
             if (response != 0) {
                 _handle_utc_command(ctx, &utc_command);
