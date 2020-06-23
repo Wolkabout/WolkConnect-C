@@ -124,18 +124,18 @@ void test_reading_reading_get_manifest_item(void)
 
 void test_reading_set_rtc(void)
 {
-    uint32_t rtc = 1591621716;
+    uint64_t rtc = 1591621716;
     reading_set_rtc(&reading, rtc);
 
-    TEST_ASSERT_EQUAL_INT32(rtc, reading.rtc);
+    TEST_ASSERT_EQUAL_INT64(rtc, reading.rtc);
 }
 
 void test_reading_reading_get_rtc(void)
 {
-    uint32_t rtc = 1591621716;
+    uint64_t rtc = 1591621716;
     reading_set_rtc(&reading, rtc);
 
-    TEST_ASSERT_EQUAL_INT32(rtc, reading_get_rtc(&reading));
+    TEST_ASSERT_EQUAL_INT64(rtc, reading_get_rtc(&reading));
 }
 
 void test_reading_reading_set_actuator_state(void)

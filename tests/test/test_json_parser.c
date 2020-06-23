@@ -40,7 +40,7 @@ void tearDown(void)
 void test_json_parser_json_serialize_readings_sensor(void)
 {
     char buffer[PAYLOAD_SIZE];
-    uint32_t rtc = 1591621716;
+    uint64_t rtc = 1591621716;
     manifest_item_t string_sensor;
 
     //Data type String
@@ -113,7 +113,7 @@ void test_json_parser_json_serialize_readings_actuator(void)
 void test_json_parser_json_serialize_readings_alarm(void)
 {
     char buffer[PAYLOAD_SIZE];
-    uint32_t rtc = 1591621716;
+    uint64_t rtc = 1591621716;
     manifest_item_t string_sensor;
 
     //Data type String
