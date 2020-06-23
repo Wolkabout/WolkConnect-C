@@ -36,9 +36,9 @@ static SSL_CTX* ctx;
 static BIO* sockfd;
 
 /* WolkAbout Platform device connection parameters */
-static const char* device_key = "wolkconnect-c-wa-ffs";
-static const char* device_password = "RUOCGC8P2V";
-static const char* hostname = "api-integration.wolkabout.com";
+static const char* device_key = "device_key";
+static const char* device_password = "some_password";
+static const char* hostname = "api-demo.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
 
