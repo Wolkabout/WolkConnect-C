@@ -36,7 +36,7 @@ typedef struct {
 
     char reading_data[READING_DIMENSIONS][READING_SIZE];
 
-    uint32_t rtc;
+    uint64_t rtc;
 } reading_t;
 
 void reading_init(reading_t* reading, manifest_item_t* item);
@@ -54,8 +54,8 @@ char* reading_get_data_at(reading_t* reading, size_t data_position);
 
 manifest_item_t* reading_get_manifest_item(reading_t* reading);
 
-void reading_set_rtc(reading_t* reading, uint32_t rtc);
-uint32_t reading_get_rtc(reading_t* reading);
+void reading_set_rtc(reading_t* reading, uint64_t rtc);
+uint64_t reading_get_rtc(reading_t* reading);
 
 void reading_set_actuator_state(reading_t* reading, actuator_state_t actuator_status);
 actuator_state_t reading_get_actuator_state(reading_t* reading);
