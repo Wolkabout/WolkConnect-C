@@ -29,6 +29,5 @@ var searchData=
   ['wolk_5frequest_5ftimestamp_57',['wolk_request_timestamp',['../wolk__connector_8h.html#a85ee7218477d1627ec604d7a64bee81d',1,'wolk_connector.h']]],
   ['wolk_5fversion_5fmajor_58',['WOLK_VERSION_MAJOR',['../wolk__connector_8h.html#a06fc87d81c62e9abb8790b6e5713c55ba447aa6141eb0f03228f39d152985b062',1,'wolk_connector.h']]],
   ['wolk_5fversion_5fminor_59',['WOLK_VERSION_MINOR',['../wolk__connector_8h.html#a06fc87d81c62e9abb8790b6e5713c55ba969b4fa8b86e732fd734fad63a85c3da',1,'wolk_connector.h']]],
-  ['wolk_5fversion_5fpatch_60',['WOLK_VERSION_PATCH',['../wolk__connector_8h.html#a06fc87d81c62e9abb8790b6e5713c55ba747cdd3ba3df6a7a9813b05b06c698e0',1,'wolk_connector.h']]],
-  ['wolkconnect_2dfunctional_2ddocumentation_2emd_61',['WolkConnect-Functional-Documentation.md',['../_wolk_connect-_functional-_documentation_8md.html',1,'']]]
+  ['wolk_5fversion_5fpatch_60',['WOLK_VERSION_PATCH',['../wolk__connector_8h.html#a06fc87d81c62e9abb8790b6e5713c55ba747cdd3ba3df6a7a9813b05b06c698e0',1,'wolk_connector.h']]]
 ];
