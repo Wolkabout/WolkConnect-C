@@ -65,6 +65,8 @@ bool outbound_message_make_from_actuator_status(parser_t* parser, const char* de
 
     reading_t reading;
     reading_init(&reading, &manifest_item);
+    reading_set_data(&reading, actuator_status_get_value(actuator_status));
+    reading_set_actuator_state(&reading, actuator_status_get_state(actuator_status));
 
     char topic[TOPIC_SIZE];
     memset(topic, '\0', sizeof(topic));
