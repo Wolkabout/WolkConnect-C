@@ -227,7 +227,7 @@ static bool deserialize_actuator_command(char* topic, size_t topic_size, char* b
             return false;
         }
     }
-//ACTUATOR_COMMAND_TYPE_STATUS
+
     /*Init actuation*/
     if (strcmp(command_buffer, "actuator_set") == 0) {
         actuator_command_init(command, ACTUATOR_COMMAND_TYPE_SET, "", value_buffer);
