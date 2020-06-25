@@ -13,6 +13,7 @@
                                                                                            ╚██████╗
                                                                                             ╚═════╝
 ```
+[![Build Status](https://travis-ci.com/Wolkabout/WolkConnect-C.svg?branch=master)](https://travis-ci.com/Wolkabout/WolkConnect-C)
 -----
 WolkAbout C99 Connector library for connecting devices to [WolkAbout IoT platform](https://demo.wolkabout.com/#/login).
 
