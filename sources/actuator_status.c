@@ -27,3 +27,13 @@ void actuator_status_init(actuator_status_t* actuator_status, char* value, actua
     strcpy(&actuator_status->value[0], value);
     actuator_status->state = state;
 }
+
+char* actuator_status_get_value(actuator_status_t* actuator_status)
+{
+    return actuator_status->value;
+}
+
+actuator_state_t actuator_status_get_state(actuator_status_t* actuator_status)
+{
+    return actuator_status->state;
+}

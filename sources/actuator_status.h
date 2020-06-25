@@ -32,6 +32,10 @@ typedef struct {
 
 void actuator_status_init(actuator_status_t* actuator_status, char* value, actuator_state_t state);
 
+char* actuator_status_get_value(actuator_status_t* actuator_status);
+
+actuator_state_t actuator_status_get_state(actuator_status_t* actuator_status);
+
 #ifdef __cplusplus
 }
 #endif
