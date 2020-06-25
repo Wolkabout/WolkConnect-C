@@ -140,7 +140,12 @@ static void actuation_handler(const char* reference, const char* value)
 {
     printf("Actuation handler - Reference: %s Value: %s\n", reference, value);
 
-    strcpy(actuator_value, value);
+    if ( (strcmp(reference, actuator_references[0]) == 0) || (strcmp(reference, actuator_references[1]) == 0) ) {
+        strcpy(actuator_value, value);
+    }
+    else{
+        printf("Actuation handler - Wrong Reference\n");
+    }
 }
 
 static actuator_status_t actuator_status_provider(const char* reference)
