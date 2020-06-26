@@ -159,6 +159,8 @@ For more info on persistence mechanism see `sources/persistence.h` and `sources/
 
 **Firmware Update:**
 
+**THIS FEAT IS WORK IN PROGRESS IN v3.0.0**
+
 WolkAbout C Connector provides mechanism for updating device firmware.
 
 By default this feature is disabled.
