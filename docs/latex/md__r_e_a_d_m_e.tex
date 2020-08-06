@@ -16,8 +16,9 @@
 \end{DoxyCode}
 
 
-\DoxyHorRuler{0}
- Wolk\+About C99 Connector library for connecting devices to \href{https://demo.wolkabout.com/\#/login}{\texttt{ Wolk\+About IoT platform}}.
+\doxysubsection*{\href{https://travis-ci.com/Wolkabout/WolkConnect-C}{\texttt{ }} }
+
+Wolk\+About C99 Connector library for connecting devices to \href{https://demo.wolkabout.com/\#/login}{\texttt{ Wolk\+About IoT platform}}.
 
 Wolk\+Connect-\/C is transportation layer agnostic which means it is up to the user of the library to open socket to Wolk\+About IoT platform, configure S\+SL if desired, and forward read/write implementation to Wolk\+Connect-\/C Connector. Wolk\+Connect-\/C Connector is not thread safe, and is written with cooperative scheduling in mind. This allows Wolk\+Connect-\/C Connector to work on wide variety of systems, bare metal to OS based ones.
 
@@ -59,7 +60,7 @@ Library application is built to {\ttfamily out/lib} directory, and example appli
 
 {\bfseries{Initialize Wolk\+Connect-\/C Connector}}
 
-Create a device on Wolk\+About IoT platform by importing {\ttfamily Simple-\/example-\/device\+Template.\+json} located in {\ttfamily examples/simple/}. This template fits {\ttfamily simple} example and demonstrates the sending of a temperature sensor reading.
+Create a device on Wolk\+About IoT platform using {\ttfamily Simple example} device type. This device type fits \href{https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/simple/main.c}{\texttt{ simple example}} and demonstrates the sending of a temperature sensor reading.
 
 
 \begin{DoxyCode}{0}

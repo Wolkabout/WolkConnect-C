@@ -16,8 +16,9 @@
 \end{DoxyCode}
 
 
-\DoxyHorRuler{0}
- Wolk\+About C99 Connector library for connecting devices to \href{https://demo.wolkabout.com/\#/login}{\texttt{ Wolk\+About IoT platform}}.
+\doxysubsection*{\href{https://travis-ci.com/Wolkabout/WolkConnect-C}{\texttt{ }} }
+
+Wolk\+About C99 Connector library for connecting devices to \href{https://demo.wolkabout.com/\#/login}{\texttt{ Wolk\+About IoT platform}}.
 
 Wolk\+Connect-\/C is transportation layer agnostic which means it is up to the user of the library to open socket to Wolk\+About IoT platform, configure S\+SL if desired, and forward read/write implementation to Wolk\+Connect-\/C Connector. Wolk\+Connect-\/C Connector is not thread safe, and is written with cooperative scheduling in mind. This allows Wolk\+Connect-\/C Connector to work on wide variety of systems, bare metal to OS based ones.
 
@@ -53,7 +54,7 @@ Library application is built to {\ttfamily out/lib} directory, and example appli
 
 {\bfseries{Initialize Wolk\+Connect-\/C Connector}}
 
-Create a device on Wolk\+About IoT platform by importing template file {\ttfamily Full-\/example-\/device\+Template.\+json} located in {\ttfamily examples/full\+\_\+feature\+\_\+set/}. This template fits {\ttfamily full\+\_\+feature\+\_\+set} example and demonstrates all the functionality of Wolk\+Connect-\/C library.
+Create a device on Wolk\+About IoT platform sing \href{https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/full_feature_set/main.c}{\texttt{ Full example}} device type. This device type fits {\ttfamily full\+\_\+feature\+\_\+set} example and demonstrates all the functionality of Wolk\+Connect-\/C library.
 
 {\bfseries{Establishing connection with Wolk\+About IoT platform\+:}}
 
@@ -172,6 +173,8 @@ In cases when provided persistence implementation is suboptimal, one can use cus
 For more info on persistence mechanism see {\ttfamily sources/persistence.\+h} and {\ttfamily sources/in\+\_\+memory\+\_\+persistence.\+h} files.
 
 {\bfseries{Firmware Update\+:}}
+
+{\bfseries{T\+H\+IS F\+E\+AT IS W\+O\+RK IN P\+R\+O\+G\+R\+E\+SS IN v3.\+0.\+0}}
 
 Wolk\+About C Connector provides mechanism for updating device firmware.
 

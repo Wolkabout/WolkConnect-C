@@ -68,8 +68,8 @@ $(function() {
 <div class="line">                                                                                     ╚════╝██║     </div>
 <div class="line">                                                                                           ╚██████╗</div>
 <div class="line">                                                                                            ╚═════╝</div>
-</div><!-- fragment --><hr  />
-<p> WolkAbout C99 Connector library for connecting devices to <a href="https://demo.wolkabout.com/#/login">WolkAbout IoT platform</a>.</p>
+</div><!-- fragment --><h2><a href="https://travis-ci.com/Wolkabout/WolkConnect-C"><object type="image/svg+xml" data="https://travis-ci.com/Wolkabout/WolkConnect-C.svg?branch=master" style="pointer-events: none;">Build Status</object></a> </h2>
+<p>WolkAbout C99 Connector library for connecting devices to <a href="https://demo.wolkabout.com/#/login">WolkAbout IoT platform</a>.</p>
 <p>WolkConnect-C is transportation layer agnostic which means it is up to the user of the library to open socket to WolkAbout IoT platform, configure SSL if desired, and forward read/write implementation to WolkConnect-C Connector. WolkConnect-C Connector is not thread safe, and is written with cooperative scheduling in mind. This allows WolkConnect-C Connector to work on wide variety of systems, bare metal to OS based ones.</p>
 <p>Given examples are intended to be run on Debian based system.</p>
 <p>Supported protocol(s):</p><ul>
@@ -93,7 +93,7 @@ $(function() {
 <p>Library application is built to <code>out/lib</code> directory, and example application is built to <code>out/bin</code> directory.</p>
 <h2>Example Usage </h2>
 <p><b>Initialize WolkConnect-C Connector</b></p>
-<p>Create a device on WolkAbout IoT platform by importing <code>Simple-example-deviceTemplate.json</code> located in <code>examples/simple/</code>. This template fits <code>simple</code> example and demonstrates the sending of a temperature sensor reading.</p>
+<p>Create a device on WolkAbout IoT platform using <code>Simple example</code> device type. This device type fits <a href="https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/simple/main.c">simple example</a> and demonstrates the sending of a temperature sensor reading.</p>
 <div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* device_key = <span class="stringliteral">&quot;device_key&quot;</span>;</div>
 <div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* device_password = <span class="stringliteral">&quot;some_password&quot;</span>;</div>
 <div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* hostname = <span class="stringliteral">&quot;api-demo.wolkabout.com&quot;</span>;</div>
