@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 WolkAbout Technology s.r.o.
+ * Copyright 2020 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,26 @@
 #include "wolk_connector.h"
 #include "wolk_utils.h"
 
-#include <memory.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
 #include <openssl/ssl.h>
 
+#include "sensor_readings.h"
+#include "firmware_implementation.h"
+
+#define DEFAULT_PUBLISH_PERIOD_SECONDS 5
 
 static SSL_CTX* ctx;
 static BIO* sockfd;
 
+/* WolkAbout Platform device connection parameters */
 static const char* device_key = "device_key";
 static const char* device_password = "some_password";
 static const char* hostname = "api-demo.wolkabout.com";
@@ -48,11 +48,8 @@ static uint8_t persistence_storage[1024 * 1024];
 /* WolkConnect-C Connector context */
 static wolk_ctx_t wolk;
 
-static const char* actuator_references[] = {"SW", "SL"};
-static const uint32_t num_actuator_references = 2;
-
+/* System dependencies */
 static volatile bool keep_running = true;
-
 static void int_handler(int dummy)
 {
     WOLK_UNUSED(dummy);
@@ -134,14 +131,21 @@ static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const in
     }
 }
 
-
+/* Actuation setup and call-backs */
+static const char* actuator_references[] = {"SW", "SL"};
 static char actuator_value[READING_SIZE] = {"0"};
+static const uint32_t num_actuator_references = 2;
 
 static void actuation_handler(const char* reference, const char* value)
 {
     printf("Actuation handler - Reference: %s Value: %s\n", reference, value);
 
-    strcpy(actuator_value, value);
+    if ( (strcmp(reference, actuator_references[0]) == 0) || (strcmp(reference, actuator_references[1]) == 0) ) {
+        strcpy(actuator_value, value);
+    }
+    else{
+        printf("Actuation handler - Wrong Reference\n");
+    }
 }
 
 static actuator_status_t actuator_status_provider(const char* reference)
@@ -160,19 +164,35 @@ static actuator_status_t actuator_status_provider(const char* reference)
     return actuator_status;
 }
 
-static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {
-    "config_1", "config_2", "config_3", "config_4"};
-static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {
-    "0", "False", "config_3", "configuration_4a,configuration_4b,configuration_4c"};
-
+/* Configuration setup and call-backs */
+static int publish_period_seconds = DEFAULT_PUBLISH_PERIOD_SECONDS;
+static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"HB", "LL",
+                                                                                                       "EF"};
+static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"5", "INFO",
+                                                                                               "T,H,P,ACL"};
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                   char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items)
 {
     for (size_t i = 0; i < num_configuration_items; ++i) {
-        printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
+        size_t iteration_counter = 0;
 
-        strcpy(device_configuration_references[i], reference[i]);
-        strcpy(device_configuration_values[i], value[i]);
+        for (size_t j = 0; j < CONFIGURATION_ITEMS_SIZE; ++j) {
+            if (!strcmp(reference[i], device_configuration_references[j])) {
+                strcpy(device_configuration_values[j], value[i]);
+                printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
+
+                if (!strcmp(reference[i], device_configuration_references[0])) {
+                    publish_period_seconds = atoi(value[i]);
+                } else if (!strcmp(reference[i], device_configuration_references[2])) {
+                    enable_feeds(&value[i]);
+                }
+            } else
+                iteration_counter++;
+
+            if (iteration_counter == CONFIGURATION_ITEMS_SIZE) {
+                printf("Unrecognised Reference received!\n");
+            }
+        }
     }
 }
 
@@ -190,114 +210,6 @@ static size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_S
     return CONFIGURATION_ITEMS_SIZE;
 }
 
-static FILE* firmware_file;
-char firmware_file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
-static size_t firmware_file_size = 0;
-static bool firmware_update_start(const char* file_name, size_t file_size)
-{
-    printf("Starting firmware update. File name: %s. File size:%zu\n", file_name, file_size);
-    firmware_file_size = file_size;
-
-    firmware_file = fopen(file_name, "w+b");
-
-    if (firmware_file == NULL) {
-        return false;
-    }
-
-    strcpy(firmware_file_name, file_name);
-    return true;
-}
-
-static bool firmware_chunk_write(uint8_t* data, size_t data_size)
-{
-    printf("Firmware update chunk write\n");
-
-    const size_t items_written = fwrite(data, data_size, 1, firmware_file);
-    fflush(firmware_file);
-    return items_written == 1;
-}
-
-static size_t firmware_chunk_read(size_t index, uint8_t* data, size_t data_size)
-{
-    printf("Firmware update chunk read\n");
-
-    fseek(firmware_file, (long)index * (long)data_size, SEEK_SET);
-
-    /* When firmware size is not multiple of 'data_size' */
-    /* last chunk will be less than 'data_size' */
-    if (firmware_file_size < (index + 1) * data_size) {
-        data_size = firmware_file_size % data_size;
-    }
-    return fread(data, data_size, 1, firmware_file) == 1 ? data_size : 0;
-}
-
-static void firmware_update_abort(void)
-{
-    printf("Aborting firmware update\n");
-
-    if (firmware_file != NULL) {
-        fclose(firmware_file);
-    }
-
-    remove(firmware_file_name);
-}
-
-static void firmware_update_finalize(void)
-{
-    printf("Finalizing firmware update\n");
-
-    if (firmware_file != NULL) {
-        fclose(firmware_file);
-    }
-
-    exit(0);
-}
-
-static bool firmware_update_persist_firmware_version(const char* version)
-{
-    FILE* firmware_version = fopen(".firmware_version", "w");
-    if (firmware_version == NULL) {
-        return false;
-    }
-
-    if (fputs(version, firmware_version) <= 0) {
-        fclose(firmware_version);
-        return false;
-    }
-
-    fclose(firmware_version);
-    return true;
-}
-
-static bool firmware_update_unpersist_firmware_version(char* version, size_t version_size)
-{
-    FILE* firmware_version = fopen(".firmware_version", "r");
-    if (firmware_version == NULL) {
-        return false;
-    }
-
-    if (fgets(version, (int)version_size, firmware_version) == NULL) {
-        fclose(firmware_version);
-        return false;
-    }
-
-    fclose(firmware_version);
-    remove(".firmware_version");
-    return true;
-}
-
-static bool firmware_update_start_url_download(const char* url)
-{
-    /* Dummy firmware downloader */
-    printf("Starting firmware download from url %s\n", url);
-    return true;
-}
-
-static bool firmware_update_is_url_download_done(bool* success)
-{
-    *success = true;
-    return true;
-}
 
 int main(int argc, char* argv[])
 {
@@ -325,7 +237,7 @@ int main(int argc, char* argv[])
     }
 
     if (wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider,
-                  configuration_handler, configuration_provider, device_key, device_password, PROTOCOL_JSON_SINGLE,
+                  configuration_handler, configuration_provider, device_key, device_password, PROTOCOL_WOLKABOUT,
                   actuator_references, num_actuator_references)
         != W_FALSE) {
         printf("Error initializing WolkConnect-C\n");
@@ -337,7 +249,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init_firmware_update(&wolk, "1.0.0", 128 * 1024 * 1024, 256, firmware_update_start, firmware_chunk_write,
+    if (wolk_init_firmware_update(&wolk, FIRMWARE_VERSION, 128 * 1024 * 1024, 256, firmware_update_start, firmware_chunk_write,
                                   firmware_chunk_read, firmware_update_abort, firmware_update_finalize,
                                   firmware_update_persist_firmware_version, firmware_update_unpersist_firmware_version,
                                   firmware_update_start_url_download, firmware_update_is_url_download_done)
@@ -356,27 +268,17 @@ int main(int argc, char* argv[])
     wolk_add_alarm(&wolk, "HH", true, 0);
     wolk_publish(&wolk);
 
-    wolk_add_numeric_sensor_reading(&wolk, "P", 1024, 0);
-    wolk_add_numeric_sensor_reading(&wolk, "T", 25.6, 0);
-    wolk_add_numeric_sensor_reading(&wolk, "H", 52, 0);
-
-    double accl_readings[3] = {1, 0, 0};
-    wolk_add_multi_value_numeric_sensor_reading(&wolk, "ACL", &accl_readings[0], 3, 0);
-
-    wolk_publish(&wolk);
-
-
     while (keep_running) {
-        // MANDATORY: sleep(currently 200us) and number of tick(currently 5) when are multiplied needs to give 1ms.
+        // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
         // you can change this parameters, but keep it's multiplication
         usleep(1000);
         wolk_process(&wolk, 1);
+
+        sensor_readings_process(&wolk, &publish_period_seconds, DEFAULT_PUBLISH_PERIOD_SECONDS);
     }
 
     printf("Wolk client - Diconnecting\n");
-
     wolk_disconnect(&wolk);
-
     BIO_free_all(sockfd);
 
     return 0;

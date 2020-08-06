@@ -17,21 +17,35 @@ jobs:
         - pushd build
         - make format -j$(nproc)
         - make -j$(nproc)
-    # - stage: deploy
-    #   if: branch = master
-    #   branches:
-    #     only:
-    #       - master
-    #   addons:
-    #     apt:
-    #       packages:
-    #         - doxygen
-    #   script:
-    #     - doxygen Doxyfile
-    #   deploy:
-    #     provider: pages
-    #     skip_cleanup: true
-    #     local_dir: docs
-    #     github_token: $GH_REPO_TOKEN
-    #     on:
-    #       branch: master
+    - stage: tests
+      dist: bionic
+      language: c
+      addons:
+        apt:
+          packages:
+            - cmake
+            - gcc
+            - libssl-dev
+            - ruby
+      install:
+        - gem install ceedling
+      script:
+        - ./configure
+        - pushd build
+        - make -j$(nproc)
+        - make tests -j$(nproc)
+    - stage: deploy
+      if: branch = master
+      addons:
+        apt:
+          packages:
+            - doxygen
+      script:
+        - doxygen Doxyfile
+      deploy:
+        provider: pages
+        skip_cleanup: true
+        local_dir: docs/html
+        github_token: $GH_REPO_TOKEN
+      on:
+        branch: master

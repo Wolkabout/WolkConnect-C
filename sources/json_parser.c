@@ -32,14 +32,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char* READINGS_TOPIC = "readings/";
-static const char* ACTUATORS_STATUS_TOPIC = "actuators/status/";
-static const char* EVENTS_TOPIC = "events/";
+static const char* READINGS_TOPIC = "d2p/sensor_reading/d/";
+static const char* ACTUATORS_STATUS_TOPIC = "d2p/actuator_status/d/";
+static const char* EVENTS_TOPIC = "d2p/events/d/";
+static const char* CONFIGURATION_GET_TOPIC = "d2p/configuration_get/d/";
+static const char* PING_TOPIC = "ping/";
+
 
 static bool all_readings_have_equal_rtc(reading_t* first_reading, size_t num_readings)
 {
     reading_t* current_reading = first_reading;
-    uint32_t rtc = reading_get_rtc(current_reading);
+    uint64_t rtc = reading_get_rtc(current_reading);
 
     for (size_t i = 0; i < num_readings; ++i, ++current_reading) {
         if (rtc != reading_get_rtc(current_reading)) {
@@ -58,7 +61,7 @@ static bool serialize_sensor(reading_t* reading, char* buffer, size_t buffer_siz
     }
 
     if (reading_get_rtc(reading) > 0
-        && snprintf(buffer, buffer_size, "{\"utc\":%u,\"data\":\"%s\"}", reading_get_rtc(reading), data_buffer)
+        && snprintf(buffer, buffer_size, "{\"utc\":%ld,\"data\":\"%s\"}", reading_get_rtc(reading), data_buffer)
                >= (int)buffer_size) {
         return false;
     } else if (reading_get_rtc(reading) == 0
@@ -115,7 +118,7 @@ static bool serialize_alarm(reading_t* reading, char* buffer, size_t buffer_size
     }
 
     if (reading_get_rtc(reading) > 0
-        && snprintf(buffer, buffer_size, "{\"utc\":%u,\"data\":\"%s\"}", reading_get_rtc(reading), data_buffer)
+        && snprintf(buffer, buffer_size, "{\"utc\":%ld,\"data\":\"%s\"}", reading_get_rtc(reading), data_buffer)
                >= (int)buffer_size) {
         return false;
     } else if (reading_get_rtc(reading) == 0
@@ -190,19 +193,28 @@ static bool deserialize_actuator_command(char* topic, size_t topic_size, char* b
         return false;
     }
 
-    /* Obtain command type and value */
     char command_buffer[COMMAND_MAX_SIZE];
     char value_buffer[READING_SIZE];
-    for (int i = 1; i < parser_result; i++) {
-        if (json_token_str_equal(buffer, &tokens[i], "command")) {
-            if (snprintf(command_buffer, WOLK_ARRAY_LENGTH(command_buffer), "%.*s",
-                         tokens[i + 1].end - tokens[i + 1].start, buffer + tokens[i + 1].start)
-                >= (int)WOLK_ARRAY_LENGTH(command_buffer)) {
-                return false;
-            }
 
-            i++;
-        } else if (json_token_str_equal(buffer, &tokens[i], "value")) {
+    /* Obtain reference */
+    char* reference_start = strrchr(topic, '/');
+    if (reference_start == NULL) {
+        return false;
+    }
+
+    /*Obtain command type*/
+    char* command_start = strchr(topic, '/');
+    if (command_start == NULL) {
+        return false;
+    }
+    strncpy(command_buffer, strtok(command_start, "/"), COMMAND_MAX_SIZE);
+    if (strlen(command_buffer) == NULL) {
+        return false;
+    }
+
+    /*Obtain values*/
+    for (int i = 1; i < parser_result; i++) {
+        if (json_token_str_equal(buffer, &tokens[i], "value")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
                 >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
@@ -216,15 +228,8 @@ static bool deserialize_actuator_command(char* topic, size_t topic_size, char* b
         }
     }
 
-    /* Obtain actuator reference */
-    char* reference_start = strrchr(topic, '/');
-    if (reference_start == NULL) {
-        return false;
-    }
-
-    if (strcmp(command_buffer, "STATUS") == 0) {
-        actuator_command_init(command, ACTUATOR_COMMAND_TYPE_STATUS, "", "");
-    } else if (strcmp(command_buffer, "SET") == 0) {
+    /*Init actuation*/
+    if (strcmp(command_buffer, "actuator_set") == 0) {
         actuator_command_init(command, ACTUATOR_COMMAND_TYPE_SET, "", value_buffer);
     } else {
         actuator_command_init(command, ACTUATOR_COMMAND_TYPE_UNKNOWN, "", value_buffer);
@@ -258,21 +263,21 @@ bool json_serialize_readings_topic(reading_t* first_Reading, size_t num_readings
     case READING_TYPE_SENSOR:
         strcpy(buffer, READINGS_TOPIC);
         strcat(buffer, device_key);
-        strcat(buffer, "/");
+        strcat(buffer, "/r/");
         strcat(buffer, manifest_item_get_reference(manifest_item));
         break;
 
     case READING_TYPE_ACTUATOR:
         strcpy(buffer, ACTUATORS_STATUS_TOPIC);
         strcat(buffer, device_key);
-        strcat(buffer, "/");
+        strcat(buffer, "/r/");
         strcat(buffer, manifest_item_get_reference(manifest_item));
         break;
 
     case READING_TYPE_ALARM:
         strcpy(buffer, EVENTS_TOPIC);
         strcat(buffer, device_key);
-        strcat(buffer, "/");
+        strcat(buffer, "/r/");
         strcat(buffer, manifest_item_get_reference(manifest_item));
         break;
 
@@ -314,9 +319,10 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
 {
     outbound_message_init(outbound_message, "", "");
 
+    strncpy(outbound_message->topic, CONFIGURATION_GET_TOPIC, strlen(CONFIGURATION_GET_TOPIC));
     /* Serialize topic */
-    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "configurations/current/%s",
-                 device_key)
+    if (snprintf(outbound_message->topic + strlen(CONFIGURATION_GET_TOPIC), WOLK_ARRAY_LENGTH(outbound_message->topic),
+                 "%s", device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return 0;
     }
@@ -349,7 +355,6 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
         if (i >= num_configuration_items - 1) {
             break;
         }
-
 
         /* +4 for '"', +1 for ':', +1 for ',' delimiter between configuration
          * items, +1 for closing '}' => +7 */
@@ -384,9 +389,6 @@ size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
 
     size_t num_deserialized_config_items = 0;
 
-    char command_buffer[COMMAND_MAX_SIZE];
-    memset(commands_buffer, '\0', WOLK_ARRAY_LENGTH(command_buffer));
-
     jsmn_init(&parser);
     int num_json_tokens = jsmn_parse(&parser, buffer, buffer_size, &tokens[0], WOLK_ARRAY_LENGTH(tokens));
 
@@ -395,82 +397,31 @@ size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
         return num_deserialized_config_items;
     }
 
-    for (int i = 1; i < num_json_tokens; i += 2) {
-        if (!json_token_str_equal(buffer, &tokens[i], "command")) {
+    configuration_command_init(current_config_command, CONFIGURATION_COMMAND_TYPE_SET);
+
+    for (int i = 0; i < num_json_tokens; i += 2) {
+        if (i + 1 >= num_json_tokens || tokens[i + 1].type != JSMN_STRING) {
             continue;
         }
 
-        if (snprintf(command_buffer, WOLK_ARRAY_LENGTH(command_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
-                     buffer + tokens[i + 1].start)
-            >= (int)WOLK_ARRAY_LENGTH(command_buffer)) {
+        num_deserialized_config_items++;
+
+        char configuration_item_reference[CONFIGURATION_REFERENCE_SIZE];
+        char configuration_item_value[CONFIGURATION_VALUE_SIZE];
+
+        if (snprintf(configuration_item_reference, WOLK_ARRAY_LENGTH(configuration_item_reference), "%.*s",
+                     tokens[i + 1].end - tokens[i + 1].start, buffer + tokens[i + 1].start)
+            >= (int)WOLK_ARRAY_LENGTH(configuration_item_reference)) {
             continue;
         }
 
-        if (strcmp(command_buffer, "CURRENT") == 0) {
-            configuration_command_init(current_config_command, CONFIGURATION_COMMAND_TYPE_CURRENT);
-            ++num_deserialized_config_items;
-            break;
-        } else if (strcmp(command_buffer, "SET") == 0) {
-            configuration_command_init(current_config_command, CONFIGURATION_COMMAND_TYPE_SET);
-            ++num_deserialized_config_items;
-            break;
-        }
-    }
-
-    if (num_deserialized_config_items == 0) {
-        return num_deserialized_config_items;
-    }
-
-    for (int i = 1; i < num_json_tokens; i += 2) {
-        if (!json_token_str_equal(buffer, &tokens[i], "values")) {
+        if (snprintf(configuration_item_value, WOLK_ARRAY_LENGTH(configuration_item_value), "%.*s",
+                     tokens[i + 2].end - tokens[i + 2].start, buffer + tokens[i + 2].start)
+            >= (int)WOLK_ARRAY_LENGTH(configuration_item_value)) {
             continue;
         }
 
-        if (i + 1 >= num_json_tokens || tokens[i + 1].type != JSMN_OBJECT) {
-            continue;
-        }
-
-        char data_buffer[PARSER_INTERNAL_BUFFER_SIZE];
-        memset(data_buffer, '\0', WOLK_ARRAY_LENGTH(data_buffer));
-
-        size_t data_buffer_size = sizeof(data_buffer);
-
-        if (snprintf(data_buffer, WOLK_ARRAY_LENGTH(data_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
-                     buffer + tokens[i + 1].start)
-            >= (int)WOLK_ARRAY_LENGTH(data_buffer)) {
-            return 0;
-        }
-
-        jsmn_parser values_parser;
-        jsmn_init(&values_parser);
-
-        jsmntok_t values_tokens[50];
-        int num_values_json_tokens =
-            jsmn_parse(&values_parser, data_buffer, data_buffer_size, &values_tokens[0], WOLK_ARRAY_LENGTH(tokens));
-
-        if (num_values_json_tokens < 1 || values_tokens[0].type != JSMN_OBJECT) {
-            return 0;
-        }
-
-        for (int j = 1; j < num_values_json_tokens; j += 2) {
-            char configuration_item_reference[CONFIGURATION_REFERENCE_SIZE];
-            char configuration_item_value[CONFIGURATION_VALUE_SIZE];
-
-            if (snprintf(configuration_item_reference, WOLK_ARRAY_LENGTH(configuration_item_reference), "%.*s",
-                         values_tokens[j].end - values_tokens[j].start, data_buffer + values_tokens[j].start)
-                >= (int)WOLK_ARRAY_LENGTH(configuration_item_reference)) {
-                continue;
-            }
-
-            if (snprintf(configuration_item_value, WOLK_ARRAY_LENGTH(configuration_item_value), "%.*s",
-                         values_tokens[j + 1].end - values_tokens[j + 1].start,
-                         data_buffer + values_tokens[j + 1].start)
-                >= (int)WOLK_ARRAY_LENGTH(configuration_item_value)) {
-                continue;
-            }
-
-            configuration_command_add(current_config_command, configuration_item_reference, configuration_item_value);
-        }
+        configuration_command_add(current_config_command, configuration_item_reference, configuration_item_value);
     }
 
     return num_deserialized_config_items;
@@ -683,14 +634,57 @@ bool json_serialize_firmware_update_version(const char* device_key, const char* 
     return true;
 }
 
-bool json_serialize_keep_alive_message(const char* device_key, outbound_message_t* outbound_message)
+bool json_serialize_ping_keep_alive_message(const char* device_key, outbound_message_t* outbound_message)
 {
     outbound_message_init(outbound_message, "", "");
 
     /* Serialize topic */
-    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "ping/%s", device_key)
+    strncpy(outbound_message->topic, PING_TOPIC, strlen(PING_TOPIC));
+
+    if (snprintf(outbound_message->topic + strlen(PING_TOPIC), WOLK_ARRAY_LENGTH(outbound_message->topic), "%s",
+                 device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return false;
+    }
+
+    return true;
+}
+
+bool json_deserialize_pong_keep_alive_message(char* buffer, size_t buffer_size, utc_command_t* utc_command)
+{
+    jsmn_parser parser;
+    jsmntok_t tokens[10]; /* No more than 10 JSON token(s) are expected, check
+                             jsmn documentation for token definition */
+    jsmn_init(&parser);
+    int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
+
+    /* Received JSON must be valid, and top level element must be object */
+    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+        return false;
+    }
+
+    char value_buffer[READING_SIZE];
+    /*Obtain values*/
+    for (int i = 1; i < parser_result; i++) {
+        if (i >= parser_result || tokens[i].type != JSMN_STRING) {
+            continue;
+        }
+
+        if (json_token_str_equal(buffer, &tokens[i], "value")) {
+            if (tokens[i + 1].type == JSMN_PRIMITIVE) {
+                if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s",
+                             tokens[i + 1].end - tokens[i + 1].start, buffer + tokens[i + 1].start)
+                    >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
+                    return false;
+                }
+
+                uint64_t conversion_result = strtod(value_buffer, NULL);
+                if (conversion_result == NULL) {
+                    return false;
+                }
+                utc_command->utc = conversion_result;
+            }
+        }
     }
 
     return true;

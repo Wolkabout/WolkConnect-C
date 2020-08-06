@@ -13,6 +13,7 @@
                                                                                            ╚██████╗
                                                                                             ╚═════╝
 ```
+[![Build Status](https://travis-ci.com/Wolkabout/WolkConnect-C.svg?branch=master)](https://travis-ci.com/Wolkabout/WolkConnect-C)
 -----
 WolkAbout C99 Connector library for connecting devices to [WolkAbout IoT platform](https://demo.wolkabout.com/#/login).
 
@@ -48,7 +49,7 @@ Example Usage
 -------------
 **Initialize WolkConnect-C Connector**
 
-Create a device on WolkAbout IoT platform by importing template file `Full-example-deviceTemplate.json` located in `examples/full_feature_set/`. This template fits `full_feature_set` example and demonstrates all the functionality of WolkConnect-C library.
+Create a device on WolkAbout IoT platform sing [Full example](https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/full_feature_set/main.c) device type. This device type fits `full_feature_set` example and demonstrates all the functionality of WolkConnect-C library.
 
 **Establishing connection with WolkAbout IoT platform:**
 
@@ -77,7 +78,7 @@ wolk_init(&wolk,                                             /* Context */
 	  configuration_handler,                             /* Configuration handler        - see configuration_handler_t */
 	  configuration_provider,                            /* Configuration status provider - see configuration_provider_t */
           device_key, device_password,                       /* Device key and password provided by WolkAbout IoT Platform upon device creation */
-          PROTOCOL_JSON_SINGLE,                              /* Protocol specified for device */
+          PROTOCOL_WOLKABOUT,                              /* Protocol specified for device */
           actuator_references,                               /* Array of actuator references */
           num_actuator_references);                          /* Number of actuator references */
 
@@ -158,6 +159,8 @@ For more info on persistence mechanism see `sources/persistence.h` and `sources/
 
 **Firmware Update:**
 
+**THIS FEAT IS WORK IN PROGRESS IN v3.0.0**
+
 WolkAbout C Connector provides mechanism for updating device firmware.
 
 By default this feature is disabled.
@@ -181,13 +184,21 @@ wolk_init_firmware_update(&wolk,
 
 For more info on device firmware update mechanism see `firmware_update.h` file.
 
-**Keep Alive Mechanism:**
+**Ping Keep Alive Mechanism:**
 
 WolkAbout C Connector by default uses Keep Alive mechanism to notify WolkAbout IoT Platform that device is still connected.
 Keep alive message is sent to WolkAbout IoT Platform every 10 minutes.
 
-To reduce network usage Keep Alive mechanism can be disabled in following manner:
+To reduce network usage Ping Keep Alive mechanism can be disabled in following manner:
 
 ```c
-wolk_disable_keep_alive(&wolk);
+wolk_disable_ping_keep_alive(&wolk);
+```
+
+**Timestamp request**
+
+If you need access to the server's current time, you can request it in the following manner:
+
+```c
+wolk_request_timestamp(&wolk)
 ```

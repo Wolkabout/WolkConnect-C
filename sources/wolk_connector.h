@@ -34,6 +34,7 @@ extern "C" {
 #include "parser.h"
 #include "persistence.h"
 #include "size_definitions.h"
+#include "utc_command.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -41,12 +42,12 @@ extern "C" {
 /**
  * @brief Library versioning
  */
-enum { WOLK_VERSION_MAJOR = 2, WOLK_VERSION_MINOR = 6, WOLK_VERSION_PATCH = 3 };
+enum { WOLK_VERSION_MAJOR = 3, WOLK_VERSION_MINOR = 0, WOLK_VERSION_PATCH = 0 };
 
 /**
- * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_JSON_SINGLE
+ * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_WOLKABOUT
  */
-typedef enum { PROTOCOL_JSON_SINGLE = 0 } protocol_t;
+typedef enum { PROTOCOL_WOLKABOUT = 0 } protocol_t;
 
 /**
  * @brief WOLK_ERR_T Boolean used for error handling in WolkConnect-C library
@@ -138,8 +139,9 @@ typedef struct wolk_ctx {
     const char** actuator_references;
     uint32_t num_actuator_references;
 
-    bool is_keep_alive_enabled;
+    bool is_keep_ping_alive_enabled;
     uint32_t milliseconds_since_last_ping_keep_alive;
+    uint64_t utc;
 
     bool is_initialized;
 } wolk_ctx_t;
@@ -231,13 +233,23 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_
                                      firmware_update_is_url_download_done_t is_url_download_done);
 
 /**
- * @brief Disables internal keep alive mechanism
+ * @brief Enable internal ping keep alive mechanism.
+ * By default it is enable.
  *
  * @param ctx Context
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_disable_keep_alive(wolk_ctx_t* ctx);
+WOLK_ERR_T wolk_enable_ping_keep_alive(wolk_ctx_t* ctx);
+
+/**
+ * @brief Disables internal ping keep alive mechanism
+ *
+ * @param ctx Context
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_disable_ping_keep_alive(wolk_ctx_t* ctx);
 
 /**
  * @brief Connect to WolkAbout IoT Platform
@@ -278,7 +290,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx);
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint32_t tick);
+WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick);
 
 /** @brief Add string reading
  *
@@ -289,7 +301,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint32_t tick);
  *
  *  @return Error code
  */
-WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference, const char* value, uint32_t utc_time);
+WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference, const char* value, uint64_t utc_time);
 
 /** @brief Add multi-value string reading
  *
@@ -303,7 +315,7 @@ WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference
  */
 WOLK_ERR_T wolk_add_multi_value_string_sensor_reading(wolk_ctx_t* ctx, const char* reference,
                                                       const char (*values)[READING_SIZE], uint16_t values_size,
-                                                      uint32_t utc_time);
+                                                      uint64_t utc_time);
 
 /**
  * @brief Add numeric reading
@@ -315,7 +327,7 @@ WOLK_ERR_T wolk_add_multi_value_string_sensor_reading(wolk_ctx_t* ctx, const cha
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double value, uint32_t utc_time);
+WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double value, uint64_t utc_time);
 
 /**
  * @brief Add multi-value numeric reading
@@ -329,7 +341,7 @@ WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* referenc
  * @return Error code
  */
 WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double* values,
-                                                       uint16_t values_size, uint32_t utc_time);
+                                                       uint16_t values_size, uint64_t utc_time);
 
 /**
  * @brief Add bool reading
@@ -341,7 +353,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const ch
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool value, uint32_t utc_time);
+WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool value, uint64_t utc_time);
 
 /**
  * @brief Add multi-value bool reading
@@ -355,7 +367,7 @@ WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, 
  * @return Error code
  */
 WOLK_ERR_T wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool* values,
-                                                    uint16_t values_size, uint32_t utc_time);
+                                                    uint16_t values_size, uint64_t utc_time);
 
 /**
  * @brief Add alarm
@@ -367,7 +379,7 @@ WOLK_ERR_T wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t* ctx, const char*
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, bool state, uint32_t utc_time);
+WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, bool state, uint64_t utc_time);
 
 /**
  * @brief Obtains actuator status via actuator_status_provider_t and publishes
@@ -388,6 +400,15 @@ WOLK_ERR_T wolk_publish_actuator_status(wolk_ctx_t* ctx, const char* reference);
  * @return Error code
  */
 WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx);
+
+/**
+ * @brief Get last received UTC from platform
+ *
+ * @param ctx Context
+ *
+ * @return UTC in miliseconds
+ */
+uint64_t wolk_request_timestamp(wolk_ctx_t* ctx);
 
 #ifdef __cplusplus
 }

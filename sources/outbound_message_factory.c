@@ -68,7 +68,6 @@ bool outbound_message_make_from_actuator_status(parser_t* parser, const char* de
     reading_set_data(&reading, actuator_status_get_value(actuator_status));
     reading_set_actuator_state(&reading, actuator_status_get_state(actuator_status));
 
-
     char topic[TOPIC_SIZE];
     memset(topic, '\0', sizeof(topic));
     if (!parser_serialize_readings_topic(parser, device_key, &reading, 1, topic, sizeof(topic))) {
@@ -146,5 +145,5 @@ bool outbound_message_make_from_keep_alive_message(parser_t* parser, const char*
     WOLK_ASSERT(device_key);
     WOLK_ASSERT(outbound_message);
 
-    return parser_serialize_keep_alive_message(parser, device_key, outbound_message);
+    return parser_serialize_ping_keep_alive_message(parser, device_key, outbound_message);
 }

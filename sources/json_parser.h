@@ -18,7 +18,6 @@
 #define JSON_PARSER_H
 
 #include "actuator_command.h"
-
 #include "configuration_command.h"
 #include "configuration_item.h"
 #include "firmware_update_command.h"
@@ -26,6 +25,7 @@
 #include "firmware_update_status.h"
 #include "outbound_message.h"
 #include "reading.h"
+#include "utc_command.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -62,7 +62,8 @@ bool json_serialize_firmware_update_packet_request(const char* device_key,
 bool json_serialize_firmware_update_version(const char* device_key, const char* version,
                                             outbound_message_t* outbound_message);
 
-bool json_serialize_keep_alive_message(const char* device_key, outbound_message_t* outbound_message);
+bool json_serialize_ping_keep_alive_message(const char* device_key, outbound_message_t* outbound_message);
+bool json_deserialize_pong_keep_alive_message(char* buffer, size_t buffer_size, utc_command_t* utc_command);
 
 #ifdef __cplusplus
 }

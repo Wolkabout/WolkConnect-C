@@ -111,12 +111,12 @@ manifest_item_t* reading_get_manifest_item(reading_t* reading)
     return &reading->manifest_item;
 }
 
-void reading_set_rtc(reading_t* reading, uint32_t rtc)
+void reading_set_rtc(reading_t* reading, uint64_t rtc)
 {
     reading->rtc = rtc;
 }
 
-uint32_t reading_get_rtc(reading_t* reading)
+uint64_t reading_get_rtc(reading_t* reading)
 {
     return reading->rtc;
 }

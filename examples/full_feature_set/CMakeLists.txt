@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-add_executable(full-seature-set main.c)
+add_executable(full-seature-set main.c sensor_readings.c firmware_implementation.c)
 
 target_link_libraries(full-seature-set WolkConnector-C pthread)
