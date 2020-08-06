@@ -50,6 +50,10 @@ cmake-build-debug
 # Out directory
 out
 
+# Docs directories
+docs/html/
+docs/latex/
+
 # CLion
 .idea
 *.log

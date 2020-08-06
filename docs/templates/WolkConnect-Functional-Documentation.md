@@ -7,7 +7,7 @@ WolkConnect libraries are intended to be used on IP enabled devices. The availab
 
 Features of WolkAbout IoT Platform that have been incorporated into WolkConnect libraries will be disambiguated with information on how to perform these features on devices by using WolkConnect’s API.
 
-WolkConnect libraries are open-source and released under the [Apache License 2.0](https://github.com/Wolkabout/WolkConnect-C/blob/master/LICENSE).
+WolkConnect libraries are open-source and released under the [Apache License 2.0](https://github.com/Wolkabout/WolkConnect-Python/blob/master/LICENSE).
 
 
 ##Architecture
