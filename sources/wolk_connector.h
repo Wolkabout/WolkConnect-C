@@ -42,7 +42,7 @@ extern "C" {
 /**
  * @brief Library versioning
  */
-enum { WOLK_VERSION_MAJOR = 3, WOLK_VERSION_MINOR = 0, WOLK_VERSION_PATCH = 0 };
+enum { WOLK_VERSION_MAJOR = 3, WOLK_VERSION_MINOR = 0, WOLK_VERSION_PATCH = 1 };
 
 /**
  * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_WOLKABOUT
