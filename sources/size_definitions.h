@@ -26,10 +26,10 @@ enum {
     MQTT_PACKET_SIZE = 512,
 
     /* Maximum number of characters in device key string */
-    DEVICE_KEY_SIZE = 32,
+    DEVICE_KEY_SIZE = 64,
 
     /* Maximum number of characters in device password string */
-    DEVICE_PASSWORD_SIZE = 40,
+    DEVICE_PASSWORD_SIZE = 64,
 
     /* Maximum number of characters in topic string */
     TOPIC_SIZE = 64,
