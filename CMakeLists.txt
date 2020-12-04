@@ -66,7 +66,7 @@ add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
-add_dependencies(${LIBRARY_NAME} pahomqttembeddedc)
+add_dependencies(${LIBRARY_NAME} pahomqttembeddedc format tests)
 
 # Format code
 add_custom_target(format
