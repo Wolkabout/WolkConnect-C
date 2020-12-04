@@ -13,8 +13,8 @@ jobs:
             - libssl-dev
             - clang-format
             - ruby
-          install:
-            - gem install ceedling
+      install:
+        - gem install ceedling
       script:
         - ./configure
         - pushd build
