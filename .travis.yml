@@ -18,7 +18,6 @@ jobs:
       script:
         - ./configure
         - pushd build
-        - make format -j$(nproc)
         - make -j$(nproc)
     - stage: tests
       dist: bionic
