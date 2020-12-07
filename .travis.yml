@@ -28,12 +28,14 @@ jobs:
             - cmake
             - gcc
             - libssl-dev
+            - clang-format
             - ruby
       install:
         - gem install ceedling
       script:
         - ./configure
         - pushd build
+        - make -j$(nproc)
         - make tests -j$(nproc)
     - stage: deploy
       if: branch = master
