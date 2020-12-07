@@ -35,6 +35,7 @@ jobs:
       script:
         - ./configure
         - pushd build
+        - make all -j$(nproc)
         - make tests -j$(nproc)
     - stage: deploy
       if: branch = master
