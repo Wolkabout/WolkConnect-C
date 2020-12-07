@@ -27,10 +27,10 @@
 
 #include <openssl/ssl.h>
 
-#include "sensor_readings.h"
 #include "firmware_implementation.h"
+#include "sensor_readings.h"
 
-#define DEFAULT_PUBLISH_PERIOD_SECONDS 5
+#define DEFAULT_PUBLISH_PERIOD_SECONDS 15
 
 static SSL_CTX* ctx;
 static BIO* sockfd;
@@ -140,10 +140,9 @@ static void actuation_handler(const char* reference, const char* value)
 {
     printf("Actuation handler - Reference: %s Value: %s\n", reference, value);
 
-    if ( (strcmp(reference, actuator_references[0]) == 0) || (strcmp(reference, actuator_references[1]) == 0) ) {
+    if ((strcmp(reference, actuator_references[0]) == 0) || (strcmp(reference, actuator_references[1]) == 0)) {
         strcpy(actuator_value, value);
-    }
-    else{
+    } else {
         printf("Actuation handler - Wrong Reference\n");
     }
 }
@@ -168,11 +167,25 @@ static actuator_status_t actuator_status_provider(const char* reference)
 static int publish_period_seconds = DEFAULT_PUBLISH_PERIOD_SECONDS;
 static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"HB", "LL",
                                                                                                        "EF"};
-static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"5", "INFO",
-                                                                                               "T,H,P,ACL"};
+static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"", "DEBUG",
+                                                                                               "T,P,H,ACL"};
+
+int update_default_device_configuration_values(char* default_device_configuration_values[], int default_value)
+{
+    char default_publish_period[10];
+
+    int number_size = snprintf(default_publish_period, 10, "%d", default_value);
+    strncpy(&default_device_configuration_values[0], default_publish_period, number_size);
+}
+
+
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                   char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items)
 {
+    char value_str[READING_SIZE];
+    memset(value_str, 0, sizeof(value_str));
+    sprintf(value_str, "%f", value);
+
     for (size_t i = 0; i < num_configuration_items; ++i) {
         size_t iteration_counter = 0;
 
@@ -249,14 +262,17 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init_firmware_update(&wolk, FIRMWARE_VERSION, 128 * 1024 * 1024, 256, firmware_update_start, firmware_chunk_write,
-                                  firmware_chunk_read, firmware_update_abort, firmware_update_finalize,
-                                  firmware_update_persist_firmware_version, firmware_update_unpersist_firmware_version,
-                                  firmware_update_start_url_download, firmware_update_is_url_download_done)
+    if (wolk_init_firmware_update(&wolk, FIRMWARE_VERSION, 128 * 1024 * 1024, 256, firmware_update_start,
+                                  firmware_chunk_write, firmware_chunk_read, firmware_update_abort,
+                                  firmware_update_finalize, firmware_update_persist_firmware_version,
+                                  firmware_update_unpersist_firmware_version, firmware_update_start_url_download,
+                                  firmware_update_is_url_download_done)
         != W_FALSE) {
         printf("Error initializing firmware update");
         return 1;
     }
+
+    update_default_device_configuration_values(&device_configuration_values, DEFAULT_PUBLISH_PERIOD_SECONDS);
 
     printf("Wolk client - Connecting to server\n");
     if (wolk_connect(&wolk) != W_FALSE) {
