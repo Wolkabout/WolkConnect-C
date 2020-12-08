@@ -49,7 +49,7 @@ Example Usage
 -------------
 **Initialize WolkConnect-C Connector**
 
-Create a device on WolkAbout IoT platform sing [Full example](https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/full_feature_set/main.c) device type. This device type fits `full_feature_set` example and demonstrates all the functionality of WolkConnect-C library.
+Create a device on WolkAbout IoT platform using [Full example](https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/full_feature_set/full_example.json) device type. This device type fits `full_feature_set` example and demonstrates all the functionality of WolkConnect-C library.
 
 **Establishing connection with WolkAbout IoT platform:**
 

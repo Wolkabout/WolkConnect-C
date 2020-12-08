@@ -58,7 +58,7 @@ Example Usage
 **Initialize WolkConnect-C Connector**
 
 Create a device on WolkAbout IoT platform using `Simple example` device type.
-This device type fits [simple example](https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/simple/main.c) and demonstrates the sending of a temperature sensor reading.
+This device type fits [simple example](https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/simple/main.c) and demonstrates the periodic sending of a temperature sensor reading.
 
 ```c
 static const char* device_key = "device_key";
