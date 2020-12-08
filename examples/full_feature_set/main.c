@@ -167,8 +167,7 @@ static actuator_status_t actuator_status_provider(const char* reference)
 static int publish_period_seconds = DEFAULT_PUBLISH_PERIOD_SECONDS;
 static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"HB", "LL",
                                                                                                        "EF"};
-static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"", "DEBUG",
-                                                                                               "T,P,H,ACL"};
+static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"", "INFO", "T,H,P,ACL"};
 
 int update_default_device_configuration_values(char* default_device_configuration_values[], int default_value)
 {
