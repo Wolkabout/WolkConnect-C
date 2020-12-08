@@ -17,9 +17,9 @@
 #ifndef WOLKCONNECTOR_C_SENSOR_READINGS_H
 #define WOLKCONNECTOR_C_SENSOR_READINGS_H
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
 #include "wolk_connector.h"

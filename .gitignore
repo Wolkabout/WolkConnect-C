@@ -44,6 +44,8 @@
 
 # Build directory
 dependencies
+release
+cmake-build-release
 build
 cmake-build-debug
 

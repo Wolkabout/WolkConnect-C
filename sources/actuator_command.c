@@ -21,8 +21,7 @@
 
 void actuator_command_init(actuator_command_t* command, actuator_command_type_t type, const char* reference,
                            const char* argument)
-{
-    /* Sanity check */
+{ /* Sanity check */
     WOLK_ASSERT(strlen(reference) <= MANIFEST_ITEM_REFERENCE_SIZE);
     WOLK_ASSERT(strlen(argument) <= COMMAND_ARGUMENT_SIZE);
 

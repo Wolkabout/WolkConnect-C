@@ -53,6 +53,12 @@ include_directories("sources")
 file(GLOB_RECURSE HEADER_FILES "sources/*.h")
 file(GLOB_RECURSE SOURCE_FILES "sources/*.c")
 
+include_directories("examples")
+file(GLOB_RECURSE SIMPLE_HEADER_FILES "examples/simple/*.h")
+file(GLOB_RECURSE SIMPLE_SOURCE_FILES "examples/simple/*.c")
+file(GLOB_RECURSE FULL_EXAMPLE_HEADER_FILES "examples/full_feature_set/*.h")
+file(GLOB_RECURSE FULL_EXAMPLE_SOURCE_FILES "examples/full_feature_set/*.c")
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")
 
@@ -66,11 +72,14 @@ add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
-add_dependencies(${LIBRARY_NAME} pahomqttembeddedc)
+add_dependencies(${LIBRARY_NAME} pahomqttembeddedc format tests)
 
 # Format code
 add_custom_target(format
-                  COMMAND "clang-format" -i -sort-includes -style=file ${HEADER_FILES} ${SOURCE_FILES}
+                  COMMAND "clang-format" -i -sort-includes -style=file
+                  ${HEADER_FILES} ${SOURCE_FILES}
+                  ${FULL_EXAMPLE_HEADER_FILES} ${FULL_EXAMPLE_SOURCE_FILES}
+                  ${SIMPLE_HEADER_FILES} ${SIMPLE_SOURCE_FILES}
                   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
                   COMMENT "[Formatting source code]"
                   VERBATIM)

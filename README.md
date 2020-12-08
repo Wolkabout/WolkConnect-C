@@ -31,6 +31,7 @@ Prerequisite
 ------
 Following tools/libraries are required in order to build WolkConnect-C Connector
 
+* libz-dev & wget
 * gcc & g++
 * cmake - version 2.8 or later
 * libssl-dev
@@ -40,7 +41,7 @@ Following tools/libraries are required in order to build WolkConnect-C Connector
 
 Former can be installed on Debian based system from terminal by invoking
 
-`sudo apt-get install gcc g++ cmake libssl-dev clang-format ruby`
+`sudo apt-get install libz-dev wget gcc g++ cmake libssl-dev clang-format ruby`
 
 `gem install ceedling`
 
