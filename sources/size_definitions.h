@@ -64,14 +64,14 @@ enum {
     /* Maximum number of characters in version string */
     FIRMWARE_UPDATE_VERSION_SIZE = 8,
 
-    /* Maximum number of characters in firmware update filename */
-    FIRMWARE_UPDATE_FILE_NAME_SIZE = 32,
+    /* Maximum number of characters in file management filename */
+    FILE_MANAGEMENT_FILE_NAME_SIZE = 32,
 
-    /* Maximum number of characters in firmware file url */
-    FIRMWARE_UPDATE_URL_SIZE = 64,
+    /* Maximum number of characters in file management file url */
+    FILE_MANAGEMENT_URL_SIZE = 64,
 
-    /* Size of hash used for firmware update file transfer (SHA-256) */
-    FIRMWARE_UPDATE_HASH_SIZE = 32,
+    /* Size of hash used for file management file transfer (SHA-256) */
+    FILE_MANAGEMENT_HASH_SIZE = 32,
 };
 
 #ifdef __cplusplus

@@ -106,13 +106,13 @@ typedef bool (*firmware_update_start_url_download_t)(const char* url);
  */
 typedef bool (*firmware_update_is_url_download_done_t)(bool* success);
 
-typedef struct firmware_update firmware_update_t;
+typedef struct file_management_update file_management_t;
 
-typedef void (*firmware_update_on_status_listener)(firmware_update_t* firmware_update, firmware_update_status_t status);
-typedef void (*firmware_update_on_packet_request_listener)(firmware_update_t* firmware_update,
+typedef void (*firmware_update_on_status_listener)(file_management_t* firmware_update, firmware_update_status_t status);
+typedef void (*firmware_update_on_packet_request_listener)(file_management_t* firmware_update,
                                                            firmware_update_packet_request_t request);
 
-struct firmware_update {
+struct file_management_update {
     const char* device_key;
 
     char version[FIRMWARE_UPDATE_VERSION_SIZE];
@@ -133,15 +133,15 @@ struct firmware_update {
     firmware_update_is_url_download_done_t is_url_download_done;
 
     uint8_t state;
-    uint8_t last_packet_hash[FIRMWARE_UPDATE_HASH_SIZE];
+    uint8_t last_packet_hash[FILE_MANAGEMENT_HASH_SIZE];
     size_t next_chunk_index;
 
     size_t expected_number_of_chunks;
     uint32_t retry_count;
 
     /* Firmware update request parameters */
-    char file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
-    uint8_t file_hash[FIRMWARE_UPDATE_HASH_SIZE];
+    char file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
+    uint8_t file_hash[FILE_MANAGEMENT_HASH_SIZE];
     size_t file_size;
     /* Firmware update request parameters */
 
@@ -155,7 +155,7 @@ struct firmware_update {
     bool has_valid_configuration;
 };
 
-void firmware_update_init(firmware_update_t* firmware_update, const char* device_key, const char* version,
+void firmware_update_init(file_management_t* firmware_update, const char* device_key, const char* version,
                           size_t maximum_firmware_size, size_t chunk_size, firmware_update_start_t start,
                           firmware_update_write_chunk_t write_chunk, firmware_update_read_chunk_t read_chunk,
                           firmware_update_abort_t abort, firmware_update_finalize_t finalize,
@@ -164,18 +164,18 @@ void firmware_update_init(firmware_update_t* firmware_update, const char* device
                           firmware_update_start_url_download_t start_url_download,
                           firmware_update_is_url_download_done_t is_url_download_done, void* wolk_ctx);
 
-void firmware_update_handle_command(firmware_update_t* firmware_update,
+void firmware_update_handle_command(file_management_t * firmware_update,
                                     firmware_update_command_t* firmware_update_command);
 
-void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* packet, size_t packet_size);
+void firmware_update_handle_packet(file_management_t * firmware_update, uint8_t* packet, size_t packet_size);
 
-const char* firmware_update_get_current_version(firmware_update_t* firmware_update);
+const char* firmware_update_get_current_version(file_management_t * firmware_update);
 
-void firmware_update_process(firmware_update_t* firmware_update);
+void firmware_update_process(file_management_t * firmware_update);
 
-void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
+void firmware_update_set_on_status_listener(file_management_t * firmware_update,
                                             firmware_update_on_status_listener on_status);
-void firmware_update_set_on_packet_request_listener(firmware_update_t* firmware_update,
+void firmware_update_set_on_packet_request_listener(file_management_t * firmware_update,
                                                     firmware_update_on_packet_request_listener on_packet_request);
 
 #ifdef __cplusplus

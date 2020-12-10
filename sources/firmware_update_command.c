@@ -66,7 +66,7 @@ void firmware_update_command_set_filename(firmware_update_command_t* command, co
     WOLK_ASSERT(file_name);
     WOLK_ASSERT(strlen(file_name) <= FIRMWARE_UPDATE_FILE_NAME_SIZE);
 
-    strncpy(command->file_name, file_name, FIRMWARE_UPDATE_FILE_NAME_SIZE);
+    strncpy(command->file_name, file_name, FILE_MANAGEMENT_FILE_NAME_SIZE);
 }
 
 size_t firmware_update_command_get_file_size(firmware_update_command_t* command)
@@ -126,5 +126,5 @@ void firmware_update_command_set_file_url(firmware_update_command_t* command, co
     WOLK_ASSERT(file_url);
     WOLK_ASSERT(strlen(file_url) <= FIRMWARE_UPDATE_URL_SIZE);
 
-    strncpy(command->file_url, file_url, FIRMWARE_UPDATE_URL_SIZE);
+    strncpy(command->file_url, file_url, FILE_MANAGEMENT_URL_SIZE);
 }

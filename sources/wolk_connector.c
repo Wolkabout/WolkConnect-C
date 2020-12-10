@@ -64,12 +64,12 @@ static bool _is_wolk_initialized(wolk_ctx_t* ctx);
 static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command);
 static void _handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command);
 static void _handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc);
-static void _handle_firmware_update_command(firmware_update_t* firmware_update,
+static void _handle_firmware_update_command(file_management_t * firmware_update,
                                             firmware_update_command_t* firmware_update_command);
-static void _handle_firmware_update_packet(firmware_update_t* firmware_update, uint8_t* packet, size_t packet_size);
+static void _handle_firmware_update_packet(file_management_t * firmware_update, uint8_t* packet, size_t packet_size);
 
-static void _listener_on_status(firmware_update_t* firmware_update, firmware_update_status_t status);
-static void _listener_on_packet_request(firmware_update_t* firmware_update, firmware_update_packet_request_t request);
+static void _listener_on_status(file_management_t * firmware_update, firmware_update_status_t status);
+static void _listener_on_packet_request(file_management_t * firmware_update, firmware_update_packet_request_t request);
 
 WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler,
                      actuator_status_provider_t actuator_status_provider, configuration_handler_t configuration_handler,
@@ -173,12 +173,12 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_
                                      firmware_update_start_url_download_t start_url_download,
                                      firmware_update_is_url_download_done_t is_url_download_done)
 {
-    firmware_update_init(&ctx->firmware_update, ctx->device_key, version, maximum_firmware_size, chunk_size, start,
-                         write_chunk, read_chunk, abort, finalize, persist_version, unpersist_version,
+    firmware_update_init(&ctx->file_management_update, ctx->device_key, version, maximum_firmware_size, chunk_size,
+                         start, write_chunk, read_chunk, abort, finalize, persist_version, unpersist_version,
                          start_url_download, is_url_download_done, ctx);
 
-    firmware_update_set_on_status_listener(&ctx->firmware_update, _listener_on_status);
-    firmware_update_set_on_packet_request_listener(&ctx->firmware_update, _listener_on_packet_request);
+    firmware_update_set_on_status_listener(&ctx->file_management_update, _listener_on_status);
+    firmware_update_set_on_packet_request_listener(&ctx->file_management_update, _listener_on_packet_request);
     return W_FALSE;
 }
 
@@ -296,7 +296,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 
     outbound_message_t firmware_version_message;
     if (outbound_message_make_from_firmware_version(&ctx->parser, ctx->device_key,
-                                                    firmware_update_get_current_version(&ctx->firmware_update),
+                                                    firmware_update_get_current_version(&ctx->file_management_update),
                                                     &firmware_version_message)) {
         if (_publish(ctx, &firmware_version_message) != W_FALSE) {
             persistence_push(&ctx->persistence, &firmware_version_message);
@@ -361,7 +361,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
         return W_TRUE;
     }
 
-    firmware_update_process(&ctx->firmware_update);
+    firmware_update_process(&ctx->file_management_update);
 
     return W_FALSE;
 }
@@ -673,10 +673,10 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             firmware_update_command_t firmware_update_command;
             if (parser_deserialize_firmware_update_command(&ctx->parser, (char*)payload, (size_t)payload_len,
                                                            &firmware_update_command)) {
-                _handle_firmware_update_command(&ctx->firmware_update, &firmware_update_command);
+                _handle_firmware_update_command(&ctx->file_management_update, &firmware_update_command);
             }
         } else if (strstr(topic_str, FIRMWARE_UPDATE_PACKET_TOPIC_JSON)) {
-            _handle_firmware_update_packet(&ctx->firmware_update, (uint8_t*)payload, (size_t)payload_len);
+            _handle_firmware_update_packet(&ctx->file_management_update, (uint8_t*)payload, (size_t)payload_len);
         } else if (strstr(topic_str, CONFIGURATION_COMMANDS)) {
             configuration_command_t configuration_command;
             const size_t num_deserialized_commands = parser_deserialize_configuration_commands(
@@ -861,7 +861,7 @@ static void _handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc)
     ctx->utc = utc_command_get(utc);
 }
 
-static void _handle_firmware_update_command(firmware_update_t* firmware_update,
+static void _handle_firmware_update_command(file_management_t * firmware_update,
                                             firmware_update_command_t* firmware_update_command)
 {
     /* Sanity check */
@@ -871,7 +871,7 @@ static void _handle_firmware_update_command(firmware_update_t* firmware_update,
     firmware_update_handle_command(firmware_update, firmware_update_command);
 }
 
-static void _handle_firmware_update_packet(firmware_update_t* firmware_update, uint8_t* packet, size_t packet_size)
+static void _handle_firmware_update_packet(file_management_t * firmware_update, uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -880,7 +880,7 @@ static void _handle_firmware_update_packet(firmware_update_t* firmware_update, u
     firmware_update_handle_packet(firmware_update, packet, packet_size);
 }
 
-static void _listener_on_status(firmware_update_t* firmware_update, firmware_update_status_t status)
+static void _listener_on_status(file_management_t* firmware_update, firmware_update_status_t status)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -893,7 +893,7 @@ static void _listener_on_status(firmware_update_t* firmware_update, firmware_upd
     _publish(wolk_ctx, &outbound_message);
 }
 
-static void _listener_on_packet_request(firmware_update_t* firmware_update, firmware_update_packet_request_t request)
+static void _listener_on_packet_request(file_management_t* firmware_update, firmware_update_packet_request_t request)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);

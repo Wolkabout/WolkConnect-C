@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 typedef struct {
-    char file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
+    char file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
     size_t chunk_index;
     size_t chunk_size;
 } firmware_update_packet_request_t;

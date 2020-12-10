@@ -39,35 +39,35 @@ enum { MAX_RETRIES = 3 };
 
 enum { FIRMWARE_VERIFICATION_CHUNK_SIZE = 1024 };
 
-static void _handle_file_upload(firmware_update_t* firmware_update, firmware_update_command_t* command);
-static void _handle_url_download(firmware_update_t* firmware_update, firmware_update_command_t* command);
-static void _handle_install(firmware_update_t* firmware_update);
-static void _handle_abort(firmware_update_t* firmware_update);
+static void _handle_file_upload(file_management_t* firmware_update, firmware_update_command_t* command);
+static void _handle_url_download(file_management_t* firmware_update, firmware_update_command_t* command);
+static void _handle_install(file_management_t* firmware_update);
+static void _handle_abort(file_management_t* firmware_update);
 
-static bool _update_sequence_init(firmware_update_t* firmware_update, const char* file_name, size_t file_size);
-static bool _write_chunk(firmware_update_t* firmware_update, uint8_t* data, size_t data_size);
-static size_t _read_chunk(firmware_update_t* firmware_update, size_t index, uint8_t* data, size_t data_size);
-static void _update_abort(firmware_update_t* firmware_update);
-static void _update_finalize(firmware_update_t* firmware_update);
+static bool _update_sequence_init(file_management_t* firmware_update, const char* file_name, size_t file_size);
+static bool _write_chunk(file_management_t* firmware_update, uint8_t* data, size_t data_size);
+static size_t _read_chunk(file_management_t* firmware_update, size_t index, uint8_t* data, size_t data_size);
+static void _update_abort(file_management_t* firmware_update);
+static void _update_finalize(file_management_t* firmware_update);
 
-static bool _persist_version(firmware_update_t* firmware_update, const char* version);
-static bool _unpersist_version(firmware_update_t* firmware_update, char* version, size_t version_size);
+static bool _persist_version(file_management_t* firmware_update, const char* version);
+static bool _unpersist_version(file_management_t* firmware_update, char* version, size_t version_size);
 
-static bool _start_url_download(firmware_update_t* firmware_update, const char* url);
-static bool _is_url_download_done(firmware_update_t* firmware_update, bool* success);
-static bool _has_url_download(firmware_update_t* firmware_update);
+static bool _start_url_download(file_management_t* firmware_update, const char* url);
+static bool _is_url_download_done(file_management_t* firmware_update, bool* success);
+static bool _has_url_download(file_management_t* firmware_update);
 
-static void _report_result(firmware_update_t* firmware_update);
-static void _check_url_download(firmware_update_t* firmware_update);
+static void _report_result(file_management_t* firmware_update);
+static void _check_url_download(file_management_t* firmware_update);
 
-static void _reset_state(firmware_update_t* firmware_update);
+static void _reset_state(file_management_t* firmware_update);
 
-static bool _is_firmware_file_valid(firmware_update_t* firmware_update);
+static bool _is_firmware_file_valid(file_management_t* firmware_update);
 
-static void _listener_on_status(firmware_update_t* firmware_update, firmware_update_status_t status);
-static void _listener_on_packet_request(firmware_update_t* firmware_update, firmware_update_packet_request_t request);
+static void _listener_on_status(file_management_t* firmware_update, firmware_update_status_t status);
+static void _listener_on_packet_request(file_management_t* firmware_update, firmware_update_packet_request_t request);
 
-void firmware_update_init(firmware_update_t* firmware_update, const char* device_key, const char* version,
+void firmware_update_init(file_management_t* firmware_update, const char* device_key, const char* version,
                           size_t maximum_firmware_size, size_t chunk_size, firmware_update_start_t start,
                           firmware_update_write_chunk_t write_chunk, firmware_update_read_chunk_t read_chunk,
                           firmware_update_abort_t abort, firmware_update_finalize_t finalize,
@@ -121,12 +121,12 @@ void firmware_update_init(firmware_update_t* firmware_update, const char* device
     }
 }
 
-static void _report_result(firmware_update_t* firmware_update)
+static void _report_result(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
 
-    char persisted_version[FIRMWARE_UPDATE_FILE_NAME_SIZE];
+    char persisted_version[FILE_MANAGEMENT_FILE_NAME_SIZE];
     if (!_unpersist_version(firmware_update, persisted_version, WOLK_ARRAY_LENGTH(persisted_version))) {
         return;
     }
@@ -138,7 +138,7 @@ static void _report_result(firmware_update_t* firmware_update)
     }
 }
 
-static void _check_url_download(firmware_update_t* firmware_update)
+static void _check_url_download(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -177,7 +177,7 @@ static void _check_url_download(firmware_update_t* firmware_update)
     }
 }
 
-void firmware_update_handle_command(firmware_update_t* firmware_update,
+void firmware_update_handle_command(file_management_t* firmware_update,
                                     firmware_update_command_t* firmware_update_command)
 {
     /* Sanity check */
@@ -216,7 +216,7 @@ void firmware_update_handle_command(firmware_update_t* firmware_update,
     }
 }
 
-void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* packet, size_t packet_size)
+void firmware_update_handle_packet(file_management_t* firmware_update, uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -241,7 +241,7 @@ void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* 
         firmware_update_packet_request_t packet_request;
         firmware_update_packet_request_init(&packet_request, firmware_update->file_name,
                                             firmware_update->next_chunk_index,
-                                            firmware_update->chunk_size + (2 * FIRMWARE_UPDATE_HASH_SIZE));
+                                            firmware_update->chunk_size + (2 * FILE_MANAGEMENT_HASH_SIZE));
         _listener_on_packet_request(firmware_update, packet_request);
         return;
     }
@@ -252,7 +252,7 @@ void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* 
         firmware_update_packet_request_t packet_request;
         firmware_update_packet_request_init(&packet_request, firmware_update->file_name,
                                             firmware_update->next_chunk_index,
-                                            firmware_update->chunk_size + (2 * FIRMWARE_UPDATE_HASH_SIZE));
+                                            firmware_update->chunk_size + (2 * FILE_MANAGEMENT_HASH_SIZE));
         _listener_on_packet_request(firmware_update, packet_request);
         return;
     }
@@ -274,7 +274,7 @@ void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* 
         firmware_update_packet_request_t packet_request;
         firmware_update_packet_request_init(&packet_request, firmware_update->file_name,
                                             firmware_update->next_chunk_index,
-                                            firmware_update->chunk_size + (2 * FIRMWARE_UPDATE_HASH_SIZE));
+                                            firmware_update->chunk_size + (2 * FILE_MANAGEMENT_HASH_SIZE));
         _listener_on_packet_request(firmware_update, packet_request);
         return;
     }
@@ -291,7 +291,7 @@ void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* 
     _listener_on_status(firmware_update, firmware_update_status_ok(FIRMWARE_UPDATE_STATE_FILE_READY));
 }
 
-const char* firmware_update_get_current_version(firmware_update_t* firmware_update)
+const char* firmware_update_get_current_version(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -299,7 +299,7 @@ const char* firmware_update_get_current_version(firmware_update_t* firmware_upda
     return firmware_update->version;
 }
 
-void firmware_update_process(firmware_update_t* firmware_update)
+void firmware_update_process(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -312,7 +312,7 @@ void firmware_update_process(firmware_update_t* firmware_update)
     _check_url_download(firmware_update);
 }
 
-void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
+void firmware_update_set_on_status_listener(file_management_t* firmware_update,
                                             firmware_update_on_status_listener on_status)
 {
     /* Sanity check */
@@ -322,7 +322,7 @@ void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
     firmware_update->on_status = on_status;
 }
 
-void firmware_update_set_on_packet_request_listener(firmware_update_t* firmware_update,
+void firmware_update_set_on_packet_request_listener(file_management_t* firmware_update,
                                                     firmware_update_on_packet_request_listener on_packet_request)
 {
     /* Sanity check */
@@ -332,7 +332,7 @@ void firmware_update_set_on_packet_request_listener(firmware_update_t* firmware_
     firmware_update->on_packet_request = on_packet_request;
 }
 
-static void _handle_file_upload(firmware_update_t* firmware_update, firmware_update_command_t* command)
+static void _handle_file_upload(file_management_t* firmware_update, firmware_update_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -382,7 +382,7 @@ static void _handle_file_upload(firmware_update_t* firmware_update, firmware_upd
         firmware_update_packet_request_t packet_request;
         firmware_update_packet_request_init(&packet_request, firmware_update->file_name,
                                             firmware_update->next_chunk_index,
-                                            firmware_update->chunk_size + (2 * FIRMWARE_UPDATE_HASH_SIZE));
+                                            firmware_update->chunk_size + (2 * FILE_MANAGEMENT_HASH_SIZE));
         _listener_on_packet_request(firmware_update, packet_request);
         break;
 
@@ -399,7 +399,7 @@ static void _handle_file_upload(firmware_update_t* firmware_update, firmware_upd
     }
 }
 
-static void _handle_url_download(firmware_update_t* firmware_update, firmware_update_command_t* command)
+static void _handle_url_download(file_management_t* firmware_update, firmware_update_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -436,7 +436,7 @@ static void _handle_url_download(firmware_update_t* firmware_update, firmware_up
     }
 }
 
-static void _handle_install(firmware_update_t* firmware_update)
+static void _handle_install(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -474,7 +474,7 @@ static void _handle_install(firmware_update_t* firmware_update)
     }
 }
 
-static void _handle_abort(firmware_update_t* firmware_update)
+static void _handle_abort(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_UNUSED(firmware_update);
@@ -499,7 +499,7 @@ static void _handle_abort(firmware_update_t* firmware_update)
     }
 }
 
-static bool _update_sequence_init(firmware_update_t* firmware_update, const char* file_name, size_t file_size)
+static bool _update_sequence_init(file_management_t* firmware_update, const char* file_name, size_t file_size)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -507,7 +507,7 @@ static bool _update_sequence_init(firmware_update_t* firmware_update, const char
     return firmware_update->start(file_name, file_size);
 }
 
-static bool _write_chunk(firmware_update_t* firmware_update, uint8_t* data, size_t data_size)
+static bool _write_chunk(file_management_t* firmware_update, uint8_t* data, size_t data_size)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -516,7 +516,7 @@ static bool _write_chunk(firmware_update_t* firmware_update, uint8_t* data, size
     return firmware_update->write_chunk(data, data_size);
 }
 
-static size_t _read_chunk(firmware_update_t* firmware_update, size_t index, uint8_t* data, size_t data_size)
+static size_t _read_chunk(file_management_t* firmware_update, size_t index, uint8_t* data, size_t data_size)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -525,7 +525,7 @@ static size_t _read_chunk(firmware_update_t* firmware_update, size_t index, uint
     return firmware_update->read_chunk(index, data, data_size);
 }
 
-static void _update_abort(firmware_update_t* firmware_update)
+static void _update_abort(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -533,7 +533,7 @@ static void _update_abort(firmware_update_t* firmware_update)
     firmware_update->abort();
 }
 
-static void _update_finalize(firmware_update_t* firmware_update)
+static void _update_finalize(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -541,7 +541,7 @@ static void _update_finalize(firmware_update_t* firmware_update)
     firmware_update->finalize();
 }
 
-static void _reset_state(firmware_update_t* firmware_update)
+static void _reset_state(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -556,7 +556,7 @@ static void _reset_state(firmware_update_t* firmware_update)
     firmware_update->file_size = 0;
 }
 
-static bool _is_firmware_file_valid(firmware_update_t* firmware_update)
+static bool _is_firmware_file_valid(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -571,13 +571,13 @@ static bool _is_firmware_file_valid(firmware_update_t* firmware_update)
         sha256_hash(&sha256_ctx, read_data, read_data_size);
     }
 
-    uint8_t calculated_hash[FIRMWARE_UPDATE_HASH_SIZE];
+    uint8_t calculated_hash[FILE_MANAGEMENT_HASH_SIZE];
     sha256_done(&sha256_ctx, calculated_hash);
 
     return memcmp(calculated_hash, firmware_update->file_hash, WOLK_ARRAY_LENGTH(calculated_hash)) == 0;
 }
 
-static void _listener_on_status(firmware_update_t* firmware_update, firmware_update_status_t status)
+static void _listener_on_status(file_management_t* firmware_update, firmware_update_status_t status)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -587,7 +587,7 @@ static void _listener_on_status(firmware_update_t* firmware_update, firmware_upd
     }
 }
 
-static void _listener_on_packet_request(firmware_update_t* firmware_update, firmware_update_packet_request_t request)
+static void _listener_on_packet_request(file_management_t* firmware_update, firmware_update_packet_request_t request)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -597,7 +597,7 @@ static void _listener_on_packet_request(firmware_update_t* firmware_update, firm
     }
 }
 
-static bool _persist_version(firmware_update_t* firmware_update, const char* version)
+static bool _persist_version(file_management_t* firmware_update, const char* version)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -606,7 +606,7 @@ static bool _persist_version(firmware_update_t* firmware_update, const char* ver
     return firmware_update->persist_version(version);
 }
 
-static bool _unpersist_version(firmware_update_t* firmware_update, char* version, size_t version_size)
+static bool _unpersist_version(file_management_t* firmware_update, char* version, size_t version_size)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -615,7 +615,7 @@ static bool _unpersist_version(firmware_update_t* firmware_update, char* version
     return firmware_update->unpersist_version(version, version_size);
 }
 
-static bool _start_url_download(firmware_update_t* firmware_update, const char* url)
+static bool _start_url_download(file_management_t* firmware_update, const char* url)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -624,7 +624,7 @@ static bool _start_url_download(firmware_update_t* firmware_update, const char* 
     return firmware_update->start_url_download(url);
 }
 
-static bool _is_url_download_done(firmware_update_t* firmware_update, bool* success)
+static bool _is_url_download_done(file_management_t* firmware_update, bool* success)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -633,7 +633,7 @@ static bool _is_url_download_done(firmware_update_t* firmware_update, bool* succ
     return firmware_update->is_url_download_done(success);
 }
 
-static bool _has_url_download(firmware_update_t* firmware_update)
+static bool _has_url_download(file_management_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);

@@ -17,7 +17,7 @@
 #include "firmware_implementation.h"
 
 static FILE* firmware_file;
-char firmware_file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
+char firmware_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
 static size_t firmware_file_size = 0;
 
 bool firmware_update_start(const char* file_name, size_t file_size)

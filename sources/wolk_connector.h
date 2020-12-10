@@ -134,7 +134,7 @@ typedef struct wolk_ctx {
 
     persistence_t persistence;
 
-    firmware_update_t firmware_update;
+    file_management_t file_management_update;
 
     const char** actuator_references;
     uint32_t num_actuator_references;

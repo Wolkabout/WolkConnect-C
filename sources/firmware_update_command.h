@@ -39,13 +39,13 @@ typedef enum {
 typedef struct {
     firmware_update_command_type_t type;
 
-    char file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
+    char file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
 
     size_t file_size;
 
-    uint8_t file_hash[FIRMWARE_UPDATE_HASH_SIZE];
+    uint8_t file_hash[FILE_MANAGEMENT_HASH_SIZE];
 
-    char file_url[FIRMWARE_UPDATE_URL_SIZE];
+    char file_url[FILE_MANAGEMENT_URL_SIZE];
 } firmware_update_command_t;
 
 void firmware_update_command_init(firmware_update_command_t* command);

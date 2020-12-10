@@ -553,7 +553,7 @@ bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, 
             }
 
             const size_t output_size = base64_decode(value_buffer, NULL, strlen(value_buffer));
-            if (output_size > FIRMWARE_UPDATE_HASH_SIZE) {
+            if (output_size > FILE_MANAGEMENT_HASH_SIZE) {
                 return false;
             }
             base64_decode(value_buffer, (BYTE*)command->file_hash, strlen(value_buffer));
