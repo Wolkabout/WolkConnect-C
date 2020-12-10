@@ -46,8 +46,6 @@ typedef struct {
     uint8_t file_hash[FIRMWARE_UPDATE_HASH_SIZE];
 
     char file_url[FIRMWARE_UPDATE_URL_SIZE];
-
-    bool auto_install;
 } firmware_update_command_t;
 
 void firmware_update_command_init(firmware_update_command_t* command);
@@ -67,9 +65,6 @@ size_t firmware_update_command_get_file_hash_size(firmware_update_command_t* com
 
 const char* firmware_update_command_get_file_url(firmware_update_command_t* command);
 void firmware_update_command_set_file_url(firmware_update_command_t* command, const char* file_url);
-
-bool firmware_update_command_get_auto_install(firmware_update_command_t* command);
-void firmware_update_command_set_auto_install(firmware_update_command_t* command, bool auto_install);
 
 #ifdef __cplusplus
 }

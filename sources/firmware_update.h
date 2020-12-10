@@ -143,7 +143,6 @@ struct firmware_update {
     char file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
     uint8_t file_hash[FIRMWARE_UPDATE_HASH_SIZE];
     size_t file_size;
-    bool auto_install;
     /* Firmware update request parameters */
 
     /* Listeners */

@@ -33,7 +33,6 @@ void firmware_update_command_init(firmware_update_command_t* command)
     memset(command->file_hash, '\0', WOLK_ARRAY_LENGTH(command->file_hash));
     memset(command->file_url, '\0', WOLK_ARRAY_LENGTH(command->file_url));
     command->file_size = 0;
-    command->auto_install = false;
 }
 
 firmware_update_command_type_t firmware_update_command_get_type(firmware_update_command_t* command)
@@ -128,20 +127,4 @@ void firmware_update_command_set_file_url(firmware_update_command_t* command, co
     WOLK_ASSERT(strlen(file_url) <= FIRMWARE_UPDATE_URL_SIZE);
 
     strncpy(command->file_url, file_url, FIRMWARE_UPDATE_URL_SIZE);
-}
-
-bool firmware_update_command_get_auto_install(firmware_update_command_t* command)
-{
-    /* Sanity check */
-    WOLK_ASSERT(command);
-
-    return command->auto_install;
-}
-
-void firmware_update_command_set_auto_install(firmware_update_command_t* command, bool auto_install)
-{
-    /* Sanity check */
-    WOLK_ASSERT(command);
-
-    command->auto_install = auto_install;
 }

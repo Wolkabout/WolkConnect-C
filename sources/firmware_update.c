@@ -110,7 +110,6 @@ void firmware_update_init(firmware_update_t* firmware_update, const char* device
     memset(firmware_update->file_name, '\0', WOLK_ARRAY_LENGTH(firmware_update->file_name));
     memset(firmware_update->file_hash, 0, WOLK_ARRAY_LENGTH(firmware_update->file_hash));
     firmware_update->file_size = 0;
-    firmware_update->auto_install = false;
 
     firmware_update->wolk_ctx = wolk_ctx;
 
@@ -164,9 +163,6 @@ static void _check_url_download(firmware_update_t* firmware_update)
         firmware_update->state = STATE_FILE_OBTAINED;
         _listener_on_status(firmware_update, firmware_update_status_ok(FIRMWARE_UPDATE_STATE_FILE_READY));
 
-        if (firmware_update->auto_install) {
-            _handle_install(firmware_update);
-        }
         break;
 
     case STATE_IDLE:
@@ -293,10 +289,6 @@ void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* 
 
     firmware_update->state = STATE_FILE_OBTAINED;
     _listener_on_status(firmware_update, firmware_update_status_ok(FIRMWARE_UPDATE_STATE_FILE_READY));
-
-    if (firmware_update->auto_install) {
-        _handle_install(firmware_update);
-    }
 }
 
 const char* firmware_update_get_current_version(firmware_update_t* firmware_update)
@@ -377,8 +369,6 @@ static void _handle_file_upload(firmware_update_t* firmware_update, firmware_upd
 
         firmware_update->file_size = firmware_update_command_get_file_size(command);
 
-        firmware_update->auto_install = firmware_update_command_get_auto_install(command);
-
         firmware_update->state = STATE_PACKET_FILE_TRANSFER;
 
         firmware_update->next_chunk_index = 0;
@@ -429,7 +419,6 @@ static void _handle_url_download(firmware_update_t* firmware_update, firmware_up
             return;
         }
 
-        firmware_update->auto_install = firmware_update_command_get_auto_install(command);
         firmware_update->state = STATE_URL_DOWNLOAD;
         _listener_on_status(firmware_update, firmware_update_status_ok(FIRMWARE_UPDATE_STATE_FILE_TRANSFER));
         break;
@@ -565,7 +554,6 @@ static void _reset_state(firmware_update_t* firmware_update)
     memset(firmware_update->file_name, '\0', WOLK_ARRAY_LENGTH(firmware_update->file_name));
     memset(firmware_update->file_hash, 0, WOLK_ARRAY_LENGTH(firmware_update->file_hash));
     firmware_update->file_size = 0;
-    firmware_update->auto_install = false;
 }
 
 static bool _is_firmware_file_valid(firmware_update_t* firmware_update)

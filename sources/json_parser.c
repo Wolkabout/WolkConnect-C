@@ -558,20 +558,6 @@ bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, 
             }
             base64_decode(value_buffer, (BYTE*)command->file_hash, strlen(value_buffer));
             i++;
-        } else if (json_token_str_equal(buffer, &tokens[i], "autoInstall")) {
-            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
-                         buffer + tokens[i + 1].start)
-                >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
-                return false;
-            }
-
-
-            if (value_buffer[0] == 't') {
-                firmware_update_command_set_auto_install(command, true);
-            } else {
-                firmware_update_command_set_auto_install(command, false);
-            }
-            i++;
         } else if (json_token_str_equal(buffer, &tokens[i], "fileUrl")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
