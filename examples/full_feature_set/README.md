@@ -157,32 +157,32 @@ wolk_init_custom_persistence(&wolk,
 
 For more info on persistence mechanism see `sources/persistence.h` and `sources/in_memory_persistence.h` files.
 
-**Firmware Update:**
+**File Management:**
 
 **THIS FEAT IS WORK IN PROGRESS IN v3.0.0**
 
-WolkAbout C Connector provides mechanism for updating device firmware.
+WolkAbout C Connector provides mechanism for file management.
 
 By default this feature is disabled.
-See code snippet below on how to enable device firmware update.
+See code snippet below on how to enable device file management.
 
 ```c
-wolk_init_firmware_update(&wolk,
-                          "1.0.0",                                      // Current firmware version
-                          128 * 1024 * 1024,                            // Maximum acceptable size of firmware file, in bytes
-                          256,                                          // Size of firmware file transfer chunk, in bytes
-                          firmware_update_start,                        // Prepares device for receiving firmware file
-                          firmware_chunk_write,                         // Writes received firmware file chunk
-                          firmware_chunk_read,                          // Reads requested firmware file chunk
-                          firmware_update_abort,                        // Aborts firmware update sequence
-                          firmware_update_finalize,                     // Reboots device
-                          firmware_update_persist_firmware_version,     // Places given firmware version to persistent storage
-                          firmware_update_unpersist_firmware_version,   // Reads persisted firmware version from persistent storage
+wolk_init_file_management(&wolk,
+                          "1.0.0",                                      // Current file version
+                          128 * 1024 * 1024,                            // Maximum acceptable size of file, in bytes
+                          256,                                          // Size of file transfer chunk, in bytes
+                          file_management_start,                        // Prepares device for receiving file
+                          file_management_write,                        // Writes received file chunk
+                          file_management_chunk_read,                   // Reads requested file chunk
+                          file_management_abort,                        // Aborts file update sequence
+                          file_management_finalize,                     // Reboots device
+                          file_management_persist_firmware_version,     // Places given file version to persistent storage
+                          file_management_unpersist_firmware_version,   // Reads persisted file version from persistent storage
                           NULL,                                         // Optional custom download handler that obtains file from URL
                           NULL)                                         // Reports URL download state (in progress | done), and it's result (success | failure)
 ```
 
-For more info on device firmware update mechanism see `firmware_update.h` file.
+For more info on device File Management mechanism see `file_management.h` file.
 
 **Ping Keep Alive Mechanism:**
 
