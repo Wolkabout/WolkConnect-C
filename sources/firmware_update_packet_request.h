@@ -29,16 +29,16 @@ typedef struct {
     char file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
     size_t chunk_index;
     size_t chunk_size;
-} firmware_update_packet_request_t;
+} file_management_packet_request_t;
 
-void firmware_update_packet_request_init(firmware_update_packet_request_t* request, const char* file_name,
+void file_management_packet_request_init(file_management_packet_request_t* request, const char* file_name,
                                          size_t chunk_index, size_t chunk_size);
 
-const char* firmware_update_packet_request_get_file_name(firmware_update_packet_request_t* request);
+const char* file_management_packet_request_get_file_name(file_management_packet_request_t* request);
 
-size_t firmware_update_packet_request_get_chunk_index(firmware_update_packet_request_t* request);
+size_t file_management_packet_request_get_chunk_index(file_management_packet_request_t* request);
 
-size_t firmware_update_packet_request_get_chunk_size(firmware_update_packet_request_t* request);
+size_t file_management_packet_request_get_chunk_size(file_management_packet_request_t* request);
 
 #ifdef __cplusplus
 }

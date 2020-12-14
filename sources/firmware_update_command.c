@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <string.h>
 
-void firmware_update_command_init(firmware_update_command_t* command)
+void file_management_command_init(file_management_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -35,7 +35,7 @@ void firmware_update_command_init(firmware_update_command_t* command)
     command->file_size = 0;
 }
 
-firmware_update_command_type_t firmware_update_command_get_type(firmware_update_command_t* command)
+file_management_command_type_t file_management_command_get_type(file_management_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -43,7 +43,7 @@ firmware_update_command_type_t firmware_update_command_get_type(firmware_update_
     return command->type;
 }
 
-void firmware_update_command_set_type(firmware_update_command_t* command, firmware_update_command_type_t type)
+void file_management_command_set_type(file_management_command_t* command, file_management_command_type_t type)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -51,7 +51,7 @@ void firmware_update_command_set_type(firmware_update_command_t* command, firmwa
     command->type = type;
 }
 
-const char* firmware_update_command_get_file_name(firmware_update_command_t* command)
+const char* file_management_command_get_file_name(file_management_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -59,7 +59,7 @@ const char* firmware_update_command_get_file_name(firmware_update_command_t* com
     return command->file_name;
 }
 
-void firmware_update_command_set_filename(firmware_update_command_t* command, const char* file_name)
+void file_management_command_set_filename(file_management_command_t* command, const char* file_name)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -69,7 +69,7 @@ void firmware_update_command_set_filename(firmware_update_command_t* command, co
     strncpy(command->file_name, file_name, FILE_MANAGEMENT_FILE_NAME_SIZE);
 }
 
-size_t firmware_update_command_get_file_size(firmware_update_command_t* command)
+size_t file_management_command_get_file_size(file_management_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -77,7 +77,7 @@ size_t firmware_update_command_get_file_size(firmware_update_command_t* command)
     return command->file_size;
 }
 
-void firmware_update_command_set_file_size(firmware_update_command_t* command, size_t file_size)
+void file_management_command_set_file_size(file_management_command_t* command, size_t file_size)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -85,7 +85,7 @@ void firmware_update_command_set_file_size(firmware_update_command_t* command, s
     command->file_size = file_size;
 }
 
-const uint8_t* firmware_update_command_get_file_hash(firmware_update_command_t* command)
+const uint8_t* file_management_command_get_file_hash(file_management_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -93,7 +93,7 @@ const uint8_t* firmware_update_command_get_file_hash(firmware_update_command_t* 
     return command->file_hash;
 }
 
-void firmware_update_command_set_file_hash(firmware_update_command_t* command, const uint8_t* hash, size_t hash_size)
+void file_management_command_set_file_hash(file_management_command_t* command, const uint8_t* hash, size_t hash_size)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -103,7 +103,7 @@ void firmware_update_command_set_file_hash(firmware_update_command_t* command, c
     memcpy((void*)command->file_hash, (const void*)hash, hash_size);
 }
 
-size_t firmware_update_command_get_file_hash_size(firmware_update_command_t* command)
+size_t file_management_command_get_file_hash_size(file_management_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -111,7 +111,7 @@ size_t firmware_update_command_get_file_hash_size(firmware_update_command_t* com
     return WOLK_ARRAY_LENGTH(command->file_hash);
 }
 
-const char* firmware_update_command_get_file_url(firmware_update_command_t* command)
+const char* file_management_command_get_file_url(file_management_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(command);
@@ -119,7 +119,7 @@ const char* firmware_update_command_get_file_url(firmware_update_command_t* comm
     return command->file_url;
 }
 
-void firmware_update_command_set_file_url(firmware_update_command_t* command, const char* file_url)
+void file_management_command_set_file_url(file_management_command_t* command, const char* file_url)
 {
     /* Sanity check */
     WOLK_ASSERT(command);

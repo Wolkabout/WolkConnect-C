@@ -209,7 +209,7 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
                                         persistence_pop_t pop, persistence_is_empty_t is_empty);
 
 /**
- * @brief Initializes firmware update
+ * @brief Initializes File Management
  *
  * @param ctx Context
  * @param version Current firmware version
@@ -223,14 +223,14 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
  *
  * @return Error code.
  */
-WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_t maximum_firmware_size,
-                                     size_t chunk_size, firmware_update_start_t start,
-                                     firmware_update_write_chunk_t write_chunk, firmware_update_read_chunk_t read_chunk,
-                                     firmware_update_abort_t abort, firmware_update_finalize_t finalize,
-                                     firmware_update_persist_firmware_version_t persist_version,
-                                     firmware_update_unpersist_firmware_version_t unpersist_version,
-                                     firmware_update_start_url_download_t start_url_download,
-                                     firmware_update_is_url_download_done_t is_url_download_done);
+WOLK_ERR_T wolk_init_file_management(wolk_ctx_t* ctx, const char* version, size_t maximum_firmware_size,
+                                     size_t chunk_size, file_management_start_t start,
+                                     file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk,
+                                     file_management_abort_t abort, file_management_finalize_t finalize,
+                                     file_management_persist_firmware_version_t persist_version,
+                                     file_management_unpersist_firmware_version_t unpersist_version,
+                                     file_management_start_url_download_t start_url_download,
+                                     file_management_is_url_download_done_t is_url_download_done);
 
 /**
  * @brief Enable internal ping keep alive mechanism.

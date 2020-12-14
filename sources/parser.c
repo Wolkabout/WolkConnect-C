@@ -46,10 +46,10 @@ void parser_init(parser_t* parser, parser_type_t parser_type)
         parser->serialize_configuration = json_serialize_configuration;
         parser->deserialize_configuration_commands = json_deserialize_configuration_command;
 
-        parser->serialize_firmware_update_status = json_serialize_firmware_update_status;
-        parser->deserialize_firmware_update_command = json_deserialize_firmware_update_command;
-        parser->serialize_firmware_update_packet_request = json_serialize_firmware_update_packet_request;
-        parser->serialize_firmware_update_version = json_serialize_firmware_update_version;
+        parser->serialize_file_management_status = json_serialize_file_management_status;
+        parser->deserialize_file_management_command = json_deserialize_file_management_command;
+        parser->serialize_file_management_packet_request = json_serialize_file_management_packet_request;
+        parser->serialize_file_management_version = json_serialize_file_management_version;
 
         parser->serialize_ping_keep_alive_message = json_serialize_ping_keep_alive_message;
         parser->deserialize_pong_keep_alive_message = json_deserialize_pong_keep_alive_message;
@@ -121,7 +121,7 @@ size_t parser_deserialize_configuration_commands(parser_t* parser, char* buffer,
                                                       num_configuration_commands);
 }
 
-bool parser_serialize_firmware_update_status(parser_t* parser, const char* device_key, firmware_update_status_t* status,
+bool parser_serialize_file_management_status(parser_t* parser, const char* device_key, file_management_status_t* status,
                                              outbound_message_t* outbound_message)
 {
     /* Sanity check */
@@ -130,35 +130,35 @@ bool parser_serialize_firmware_update_status(parser_t* parser, const char* devic
     WOLK_ASSERT(status);
     WOLK_ASSERT(outbound_message);
 
-    return parser->serialize_firmware_update_status(device_key, status, outbound_message);
+    return parser->serialize_file_management_status(device_key, status, outbound_message);
 }
 
-bool parser_deserialize_firmware_update_command(parser_t* parser, char* buffer, size_t buffer_size,
-                                                firmware_update_command_t* command)
+bool parser_deserialize_file_management_command(parser_t* parser, char* buffer, size_t buffer_size,
+                                                file_management_command_t* command)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(buffer);
     WOLK_ASSERT(command);
 
-    return parser->deserialize_firmware_update_command(buffer, buffer_size, command);
+    return parser->deserialize_file_management_command(buffer, buffer_size, command);
 }
 
-bool parser_serialize_firmware_update_packet_request(parser_t* parser, const char* device_key,
-                                                     firmware_update_packet_request_t* firmware_update_packet_request,
+bool parser_serialize_file_management_packet_request(parser_t* parser, const char* device_key,
+                                                     file_management_packet_request_t* file_management_packet_request,
                                                      outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
-    WOLK_ASSERT(firmware_update_packet_request);
+    WOLK_ASSERT(file_management_packet_request);
     WOLK_ASSERT(outbound_message);
 
-    return parser->serialize_firmware_update_packet_request(device_key, firmware_update_packet_request,
+    return parser->serialize_file_management_packet_request(device_key, file_management_packet_request,
                                                             outbound_message);
 }
 
-bool parser_serialize_firmware_update_version(parser_t* parser, const char* device_key, const char* version,
+bool parser_serialize_file_management_version(parser_t* parser, const char* device_key, const char* version,
                                               outbound_message_t* outbound_message)
 {
     /* Sanity check */
@@ -166,7 +166,7 @@ bool parser_serialize_firmware_update_version(parser_t* parser, const char* devi
     WOLK_ASSERT(device_key);
     WOLK_ASSERT(version);
 
-    return parser->serialize_firmware_update_version(device_key, version, outbound_message);
+    return parser->serialize_file_management_version(device_key, version, outbound_message);
 }
 
 bool parser_serialize_ping_keep_alive_message(parser_t* parser, const char* device_key,

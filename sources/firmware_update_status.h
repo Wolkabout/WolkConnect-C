@@ -28,7 +28,7 @@ typedef enum {
     FIRMWARE_UPDATE_STATE_COMPLETED,
     FIRMWARE_UPDATE_STATE_ERROR,
     FIRMWARE_UPDATE_STATE_ABORTED
-} firmware_update_state_t;
+} file_management_state_t;
 
 typedef enum {
     FIRMWARE_UPDATE_ERROR_NONE = -1,
@@ -39,19 +39,19 @@ typedef enum {
     FIRMWARE_UPDATE_ERROR_MALFORMED_URL = 4,
     FIRMWARE_UPDATE_ERROR_FILE_SYSTEM = 5,
     FIRMWARE_UPDATE_ERROR_RETRY_COUNT_EXCEEDED = 10
-} firmware_update_error_t;
+} file_management_error_t;
 
 typedef struct {
-    firmware_update_state_t status;
-    firmware_update_error_t error;
-} firmware_update_status_t;
+    file_management_state_t status;
+    file_management_error_t error;
+} file_management_status_t;
 
-firmware_update_status_t firmware_update_status_ok(firmware_update_state_t state);
-firmware_update_status_t firmware_update_status_error(firmware_update_error_t error);
+file_management_status_t file_management_status_ok(file_management_state_t state);
+file_management_status_t file_management_status_error(file_management_error_t error);
 
-firmware_update_state_t firmware_update_status_get_state(firmware_update_status_t* status);
+file_management_state_t file_management_status_get_state(file_management_status_t* status);
 
-firmware_update_error_t firmware_update_status_get_error(firmware_update_status_t* status);
+file_management_error_t file_management_status_get_error(file_management_status_t* status);
 
 #ifdef __cplusplus
 }

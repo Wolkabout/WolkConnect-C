@@ -427,7 +427,7 @@ size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
     return num_deserialized_config_items;
 }
 
-static const char* firmware_update_status_as_str(firmware_update_status_t* status)
+static const char* file_management_status_as_str(file_management_status_t* status)
 {
     /* Sanity check */
     WOLK_ASSERT(status);
@@ -457,7 +457,7 @@ static const char* firmware_update_status_as_str(firmware_update_status_t* statu
     }
 }
 
-bool json_serialize_firmware_update_status(const char* device_key, firmware_update_status_t* status,
+bool json_serialize_file_management_status(const char* device_key, file_management_status_t* status,
                                            outbound_message_t* outbound_message)
 {
     outbound_message_init(outbound_message, "", "");
@@ -470,17 +470,17 @@ bool json_serialize_firmware_update_status(const char* device_key, firmware_upda
     }
 
     /* Serialize payload */
-    const firmware_update_error_t error = firmware_update_status_get_error(status);
+    const file_management_error_t error = file_management_status_get_error(status);
     if (error == FIRMWARE_UPDATE_ERROR_NONE) {
         if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"status\":\"%s\"}",
-                     firmware_update_status_as_str(status))
+                     file_management_status_as_str(status))
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }
     } else {
         if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
-                     "{\"status\":%s,\"error\":%d}", firmware_update_status_as_str(status),
-                     firmware_update_status_get_error(status))
+                     "{\"status\":%s,\"error\":%d}", file_management_status_as_str(status),
+                     file_management_status_get_error(status))
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }
@@ -489,7 +489,7 @@ bool json_serialize_firmware_update_status(const char* device_key, firmware_upda
     return true;
 }
 
-bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, firmware_update_command_t* command)
+bool json_deserialize_file_management_command(char* buffer, size_t buffer_size, file_management_command_t* command)
 {
     jsmn_parser parser;
     jsmntok_t tokens[12]; /* No more than 12 JSON token(s) are expected, check
@@ -502,7 +502,7 @@ bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, 
         return false;
     }
 
-    firmware_update_command_init(command);
+    file_management_command_init(command);
 
     /* Obtain command type and value */
     char value_buffer[COMMAND_ARGUMENT_SIZE];
@@ -516,15 +516,15 @@ bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, 
             }
 
             if (strcmp(value_buffer, "FILE_UPLOAD") == 0) {
-                firmware_update_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_FILE_UPLOAD);
+                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_FILE_UPLOAD);
             } else if (strcmp(value_buffer, "URL_DOWNLOAD") == 0) {
-                firmware_update_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_URL_DOWNLOAD);
+                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_URL_DOWNLOAD);
             } else if (strcmp(value_buffer, "INSTALL") == 0) {
-                firmware_update_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_INSTALL);
+                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_INSTALL);
             } else if (strcmp(value_buffer, "ABORT") == 0) {
-                firmware_update_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_ABORT);
+                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_ABORT);
             } else {
-                firmware_update_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_UNKNOWN);
+                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_UNKNOWN);
             }
             i++;
         } else if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
@@ -534,7 +534,7 @@ bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, 
                 return false;
             }
 
-            firmware_update_command_set_filename(command, value_buffer);
+            file_management_command_set_filename(command, value_buffer);
             i++;
         } else if (json_token_str_equal(buffer, &tokens[i], "fileSize")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
@@ -543,7 +543,7 @@ bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, 
                 return false;
             }
 
-            firmware_update_command_set_file_size(command, (size_t)atoi(value_buffer));
+            file_management_command_set_file_size(command, (size_t)atoi(value_buffer));
             i++;
         } else if (json_token_str_equal(buffer, &tokens[i], "fileHash")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
@@ -565,7 +565,7 @@ bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, 
                 return false;
             }
 
-            firmware_update_command_set_file_url(command, value_buffer);
+            file_management_command_set_file_url(command, value_buffer);
             i++;
         } else {
             return false;
@@ -574,8 +574,8 @@ bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, 
     return true;
 }
 
-bool json_serialize_firmware_update_packet_request(const char* device_key,
-                                                   firmware_update_packet_request_t* firmware_update_packet_request,
+bool json_serialize_file_management_packet_request(const char* device_key,
+                                                   file_management_packet_request_t* file_management_packet_request,
                                                    outbound_message_t* outbound_message)
 {
     outbound_message_init(outbound_message, "", "");
@@ -590,9 +590,9 @@ bool json_serialize_firmware_update_packet_request(const char* device_key,
     /* Serialize payload */
     if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
                  "{\"fileName\":\"%s\",\"chunkIndex\":%llu,\"chunkSize\":%llu}",
-                 firmware_update_packet_request_get_file_name(firmware_update_packet_request),
-                 (unsigned long long int)firmware_update_packet_request_get_chunk_index(firmware_update_packet_request),
-                 (unsigned long long int)firmware_update_packet_request_get_chunk_size(firmware_update_packet_request))
+                 file_management_packet_request_get_file_name(file_management_packet_request),
+                 (unsigned long long int)file_management_packet_request_get_chunk_index(file_management_packet_request),
+                 (unsigned long long int)file_management_packet_request_get_chunk_size(file_management_packet_request))
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
         return false;
     }
@@ -600,7 +600,7 @@ bool json_serialize_firmware_update_packet_request(const char* device_key,
     return true;
 }
 
-bool json_serialize_firmware_update_version(const char* device_key, const char* version,
+bool json_serialize_file_management_version(const char* device_key, const char* version,
                                             outbound_message_t* outbound_message)
 {
     outbound_message_init(outbound_message, "", "");

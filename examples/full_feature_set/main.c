@@ -261,16 +261,17 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init_firmware_update(&wolk, FIRMWARE_VERSION, 128 * 1024 * 1024, 256, firmware_update_start,
-                                  firmware_chunk_write, firmware_chunk_read, firmware_update_abort,
-                                  firmware_update_finalize, firmware_update_persist_firmware_version,
-                                  firmware_update_unpersist_firmware_version, firmware_update_start_url_download,
-                                  firmware_update_is_url_download_done)
+    if (wolk_init_file_management(&wolk, FIRMWARE_VERSION, 128 * 1024 * 1024, 256, file_management_start,
+                                  file_management_chunk_write, file_management_chunk_read, file_management_abort,
+                                  file_management_finalize, file_management_persist_file_version,
+                                  file_management_unpersist_file_version, file_management_start_url_download,
+                                  file_management_is_url_download_done)
         != W_FALSE) {
-        printf("Error initializing firmware update");
+        printf("Error initializing File Management");
         return 1;
     }
 
+    // TODO: separate init for firmware_installation()
     update_default_device_configuration_values(&device_configuration_values, DEFAULT_PUBLISH_PERIOD_SECONDS);
 
     printf("Wolk client - Connecting to server\n");

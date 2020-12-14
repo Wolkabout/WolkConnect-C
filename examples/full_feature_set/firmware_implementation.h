@@ -26,14 +26,14 @@
 
 #define FIRMWARE_VERSION "1.0.0"
 
-bool firmware_update_start(const char* file_name, size_t file_size);
-bool firmware_chunk_write(uint8_t* data, size_t data_size);
-size_t firmware_chunk_read(size_t index, uint8_t* data, size_t data_size);
-void firmware_update_abort(void);
-void firmware_update_finalize(void);
-bool firmware_update_persist_firmware_version(const char* version);
-bool firmware_update_unpersist_firmware_version(char* version, size_t version_size);
-bool firmware_update_start_url_download(const char* url);
-bool firmware_update_is_url_download_done(bool* success);
+bool file_management_start(const char* file_name, size_t file_size);
+bool file_management_chunk_write(uint8_t* data, size_t data_size);
+size_t file_management_chunk_read(size_t index, uint8_t* data, size_t data_size);
+void file_management_abort(void);
+void file_management_finalize(void);
+bool file_management_persist_file_version(const char* version);
+bool file_management_unpersist_file_version(char* version, size_t version_size);
+bool file_management_start_url_download(const char* url);
+bool file_management_is_url_download_done(bool* success);
 
 #endif // WOLKCONNECTOR_C_FIRMWARE_IMPLEMENTATION_H
