@@ -27,7 +27,7 @@ void file_management_command_init(file_management_command_t* command)
     /* Sanity check */
     WOLK_ASSERT(command);
 
-    command->type = FIRMWARE_UPDATE_COMMAND_TYPE_UNKNOWN;
+    command->type = FILE_MANAGEMENT_COMMAND_TYPE_UNKNOWN;
 
     memset(command->file_name, '\0', WOLK_ARRAY_LENGTH(command->file_name));
     memset(command->file_hash, '\0', WOLK_ARRAY_LENGTH(command->file_hash));

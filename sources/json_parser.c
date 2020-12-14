@@ -433,22 +433,22 @@ static const char* file_management_status_as_str(file_management_status_t* statu
     WOLK_ASSERT(status);
 
     switch (status->status) {
-    case FIRMWARE_UPDATE_STATE_FILE_TRANSFER:
+    case FILE_MANAGEMENT_STATE_FILE_TRANSFER:
         return "FILE_TRANSFER";
 
-    case FIRMWARE_UPDATE_STATE_FILE_READY:
+    case FILE_MANAGEMENT_STATE_FILE_READY:
         return "FILE_READY";
 
-    case FIRMWARE_UPDATE_STATE_INSTALLATION:
+    case FILE_MANAGEMENT_STATE_INSTALLATION:
         return "INSTALLATION";
 
-    case FIRMWARE_UPDATE_STATE_COMPLETED:
+    case FILE_MANAGEMENT_STATE_COMPLETED:
         return "COMPLETED";
 
-    case FIRMWARE_UPDATE_STATE_ERROR:
+    case FILE_MANAGEMENT_STATE_ERROR:
         return "ERROR";
 
-    case FIRMWARE_UPDATE_STATE_ABORTED:
+    case FILE_MANAGEMENT_STATE_ABORTED:
         return "ABORTED";
 
     default:
@@ -471,7 +471,7 @@ bool json_serialize_file_management_status(const char* device_key, file_manageme
 
     /* Serialize payload */
     const file_management_error_t error = file_management_status_get_error(status);
-    if (error == FIRMWARE_UPDATE_ERROR_NONE) {
+    if (error == FILE_MANAGEMENT_ERROR_NONE) {
         if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"status\":\"%s\"}",
                      file_management_status_as_str(status))
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
@@ -516,15 +516,15 @@ bool json_deserialize_file_management_command(char* buffer, size_t buffer_size, 
             }
 
             if (strcmp(value_buffer, "FILE_UPLOAD") == 0) {
-                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_FILE_UPLOAD);
+                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_FILE_UPLOAD);
             } else if (strcmp(value_buffer, "URL_DOWNLOAD") == 0) {
-                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_URL_DOWNLOAD);
+                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_URL_DOWNLOAD);
             } else if (strcmp(value_buffer, "INSTALL") == 0) {
-                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_INSTALL);
+                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_INSTALL);
             } else if (strcmp(value_buffer, "ABORT") == 0) {
-                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_ABORT);
+                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_ABORT);
             } else {
-                file_management_command_set_type(command, FIRMWARE_UPDATE_COMMAND_TYPE_UNKNOWN);
+                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_UNKNOWN);
             }
             i++;
         } else if (json_token_str_equal(buffer, &tokens[i], "fileName")) {

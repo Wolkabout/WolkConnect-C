@@ -27,14 +27,14 @@
 extern "C" {
 #endif
 
-bool firmware_update_packet_is_valid(uint8_t* packet, size_t packet_size);
+bool file_management_packet_is_valid(uint8_t* packet, size_t packet_size);
 
-uint8_t* firmware_update_packet_get_hash(uint8_t* packet, size_t packet_size);
+uint8_t* file_management_packet_get_hash(uint8_t* packet, size_t packet_size);
 
-uint8_t* firmware_update_packet_get_previous_packet_hash(uint8_t* packet, size_t packet_size);
+uint8_t* file_management_packet_get_previous_packet_hash(uint8_t* packet, size_t packet_size);
 
-uint8_t* firmware_update_packet_get_data(uint8_t* packet, size_t packet_size);
-size_t firmware_update_packet_get_data_size(uint8_t* packet, size_t packet_size);
+uint8_t* file_management_packet_get_data(uint8_t* packet, size_t packet_size);
+size_t file_management_packet_get_data_size(uint8_t* packet, size_t packet_size);
 
 #ifdef __cplusplus
 }
