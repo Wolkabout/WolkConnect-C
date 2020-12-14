@@ -18,7 +18,7 @@
 #define OUTBOUND_MESSAGE_FACTORY_H
 
 #include "actuator_status.h"
-#include "firmware_update_status.h"
+#include "file_management_status.h"
 #include "outbound_message.h"
 #include "parser.h"
 #include "reading.h"

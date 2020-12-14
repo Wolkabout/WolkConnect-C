@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-#ifndef FIRMWARE_UPDATE_H
-#define FIRMWARE_UPDATE_H
+#ifndef FILE_MANAGEMENT_H
+#define FILE_MANAGEMENT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "firmware_update_command.h"
-#include "firmware_update_packet_request.h"
-#include "firmware_update_status.h"
+#include "file_management_command.h"
+#include "file_management_packet_request.h"
+#include "file_management_status.h"
 #include "size_definitions.h"
 
 #include <stdbool.h>

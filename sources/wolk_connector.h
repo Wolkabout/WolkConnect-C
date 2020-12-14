@@ -30,7 +30,7 @@ extern "C" {
 #include "MQTTPacket.h"
 #include "actuator_status.h"
 #include "data_transmission.h"
-#include "firmware_update.h"
+#include "file_management.h"
 #include "parser.h"
 #include "persistence.h"
 #include "size_definitions.h"
@@ -215,11 +215,11 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
  * @param version Current firmware version
  * @param maximum_firmware_size Maximum acceptable size of firmware file, in bytes
  * @param chunk_size Firmware file is transfered in chunks of size 'chunk_size'
- * @param start Function pointer to 'firmware_update_start' implementation
- * @param write_chunk Function pointer to 'firmware_update_write_chunk' implementation
- * @param read_chunk Function pointer to 'firmware_update_read_chunk' implementation
- * @param abort Function pointer to 'firmware_update_abort' implementation
- * @param finalize Function pointer to 'firmware_update_finalize' implementation
+ * @param start Function pointer to 'file_management_start' implementation
+ * @param write_chunk Function pointer to 'file_management_write_chunk' implementation
+ * @param read_chunk Function pointer to 'file_management_read_chunk' implementation
+ * @param abort Function pointer to 'file_management_abort' implementation
+ * @param finalize Function pointer to 'file_management_finalize' implementation
  *
  * @return Error code.
  */

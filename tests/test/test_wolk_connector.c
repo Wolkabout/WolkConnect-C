@@ -35,11 +35,11 @@ TEST_FILE("MQTTSubscribeClient.c")
 #include "persistence.h"
 #include "in_memory_persistence.h"
 
-#include "firmware_update.h"
-#include "firmware_update_packet.h"
-#include "firmware_update_command.h"
-#include "firmware_update_status.h"
-#include "firmware_update_packet_request.h"
+#include "file_management.h"
+#include "file_management_packet.h"
+#include "file_management_command.h"
+#include "file_management_status.h"
+#include "file_management_packet_request.h"
 
 
 void setUp(void)

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FIRMWARE_UPDATE_COMMAND_H
-#define FIRMWARE_UPDATE_COMMAND_H
+#ifndef FILE_MANAGEMENT_COMMAND_H
+#define FILE_MANAGEMENT_COMMAND_H
 
 #include "size_definitions.h"
 

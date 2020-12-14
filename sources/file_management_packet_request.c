@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "firmware_update_packet_request.h"
+#include "file_management_packet_request.h"
 #include "wolk_utils.h"
 
 #include <stddef.h>
@@ -26,7 +26,7 @@ void file_management_packet_request_init(file_management_packet_request_t* reque
     /* Sanity check */
     WOLK_ASSERT(request);
     WOLK_ASSERT(file_name);
-    WOLK_ASSERT(strlen(file_name) <= FIRMWARE_UPDATE_FILE_NAME_SIZE);
+    WOLK_ASSERT(strlen(file_name) <= FILE_MANAGEMENT_FILE_NAME_SIZE);
 
     strcpy(request->file_name, file_name);
     request->chunk_index = chunk_index;

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FIRMWARE_UPDATE_STATUS_H
-#define FIRMWARE_UPDATE_STATUS_H
+#ifndef FILE_MANAGEMENT_STATUS_H
+#define FILE_MANAGEMENT_STATUS_H
 
 #ifdef __cplusplus
 extern "C" {

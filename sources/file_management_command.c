@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "firmware_update_command.h"
+#include "file_management_command.h"
 #include "wolk_utils.h"
 
 #include <stdbool.h>
@@ -64,7 +64,7 @@ void file_management_command_set_filename(file_management_command_t* command, co
     /* Sanity check */
     WOLK_ASSERT(command);
     WOLK_ASSERT(file_name);
-    WOLK_ASSERT(strlen(file_name) <= FIRMWARE_UPDATE_FILE_NAME_SIZE);
+    WOLK_ASSERT(strlen(file_name) <= FILE_MANAGEMENT_FILE_NAME_SIZE);
 
     strncpy(command->file_name, file_name, FILE_MANAGEMENT_FILE_NAME_SIZE);
 }
@@ -98,7 +98,7 @@ void file_management_command_set_file_hash(file_management_command_t* command, c
     /* Sanity check */
     WOLK_ASSERT(command);
     WOLK_ASSERT(hash);
-    WOLK_ASSERT(hash_size <= FIRMWARE_UPDATE_HASH_SIZE);
+    WOLK_ASSERT(hash_size <= FILE_MANAGEMENT_HASH_SIZE);
 
     memcpy((void*)command->file_hash, (const void*)hash, hash_size);
 }
@@ -124,7 +124,7 @@ void file_management_command_set_file_url(file_management_command_t* command, co
     /* Sanity check */
     WOLK_ASSERT(command);
     WOLK_ASSERT(file_url);
-    WOLK_ASSERT(strlen(file_url) <= FIRMWARE_UPDATE_URL_SIZE);
+    WOLK_ASSERT(strlen(file_url) <= FILE_MANAGEMENT_URL_SIZE);
 
     strncpy(command->file_url, file_url, FILE_MANAGEMENT_URL_SIZE);
 }

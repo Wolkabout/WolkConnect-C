@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "firmware_update_status.h"
+#include "file_management_status.h"
 #include "wolk_utils.h"
 
 file_management_status_t file_management_status_ok(file_management_state_t state)

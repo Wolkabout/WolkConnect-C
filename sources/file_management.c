@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "firmware_update.h"
-#include "firmware_update_command.h"
-#include "firmware_update_packet.h"
+#include "file_management.h"
+#include "file_management_command.h"
+#include "file_management_packet.h"
 #include "sha256.h"
 #include "size_definitions.h"
 #include "wolk_connector.h"

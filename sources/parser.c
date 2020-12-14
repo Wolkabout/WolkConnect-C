@@ -17,8 +17,8 @@
 #include "parser.h"
 #include "actuator_command.h"
 #include "configuration_item.h"
-#include "firmware_update_command.h"
-#include "firmware_update_status.h"
+#include "file_management_command.h"
+#include "file_management_status.h"
 #include "json_parser.h"
 #include "wolk_utils.h"
 
