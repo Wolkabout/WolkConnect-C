@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "firmware_implementation.h"
+#include "file_management_implementation.h"
 
 static FILE* file_management_file;
 char file_management_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
