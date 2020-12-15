@@ -168,7 +168,6 @@ See code snippet below on how to enable device file management.
 
 ```c
 wolk_init_file_management(&wolk,
-                          "1.0.0",                                      // Current file version
                           128 * 1024 * 1024,                            // Maximum acceptable size of file, in bytes
                           256,                                          // Size of file transfer chunk, in bytes
                           file_management_start,                        // Prepares device for receiving file
@@ -176,8 +175,6 @@ wolk_init_file_management(&wolk,
                           file_management_chunk_read,                   // Reads requested file chunk
                           file_management_abort,                        // Aborts file update sequence
                           file_management_finalize,                     // Reboots device
-                          file_management_persist_firmware_version,     // Places given file version to persistent storage
-                          file_management_unpersist_firmware_version,   // Reads persisted file version from persistent storage
                           NULL,                                         // Optional custom download handler that obtains file from URL
                           NULL)                                         // Reports URL download state (in progress | done), and it's result (success | failure)
 ```

@@ -51,9 +51,6 @@ bool outbound_message_make_from_file_management_packet_request(
     parser_t* parser, const char* device_key, file_management_packet_request_t* file_management_packet_request,
     outbound_message_t* outbound_message);
 
-bool outbound_message_make_from_firmware_version(parser_t* parser, const char* device_key, const char* version,
-                                                 outbound_message_t* outbound_message);
-
 bool outbound_message_make_from_keep_alive_message(parser_t* parser, const char* device_key,
                                                    outbound_message_t* outbound_message);
 

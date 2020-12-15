@@ -463,6 +463,7 @@ bool json_serialize_file_management_status(const char* device_key, file_manageme
     outbound_message_init(outbound_message, "", "");
 
     /* Serialize topic */
+    //TODO: status update: "d2p/file_upload_status/"
     if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "service/status/firmware/%s",
                  device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
@@ -593,26 +594,6 @@ bool json_serialize_file_management_packet_request(const char* device_key,
                  file_management_packet_request_get_file_name(file_management_packet_request),
                  (unsigned long long int)file_management_packet_request_get_chunk_index(file_management_packet_request),
                  (unsigned long long int)file_management_packet_request_get_chunk_size(file_management_packet_request))
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
-        return false;
-    }
-
-    return true;
-}
-
-bool json_serialize_file_management_version(const char* device_key, const char* version,
-                                            outbound_message_t* outbound_message)
-{
-    outbound_message_init(outbound_message, "", "");
-
-    /* Serialize topic */
-    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "firmware/version/%s", device_key)
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
-        return false;
-    }
-
-    /* Serialize payload */
-    if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload), "%s", version)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
         return false;
     }

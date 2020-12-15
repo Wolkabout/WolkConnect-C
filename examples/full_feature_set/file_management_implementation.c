@@ -80,41 +80,6 @@ void file_management_finalize(void)
     exit(0);
 }
 
-bool file_management_persist_file_version(const char* version)
-{
-    // TODO: remove firmware version
-    //    FILE* firmware_version = fopen(".file_version", "w");
-    //    if (firmware_version == NULL) {
-    //        return false;
-    //    }
-    //
-    //    if (fputs(version, firmware_version) <= 0) {
-    //        fclose(firmware_version);
-    //        return false;
-    //    }
-    //
-    //    fclose(firmware_version);
-    return true;
-}
-
-bool file_management_unpersist_file_version(char* version, size_t version_size)
-{
-    // TODO: remove firmware version
-    //    FILE* firmware_version = fopen(".file_version", "r");
-    //    if (firmware_version == NULL) {
-    //        return false;
-    //    }
-    //
-    //    if (fgets(version, (int)version_size, firmware_version) == NULL) {
-    //        fclose(firmware_version);
-    //        return false;
-    //    }
-    //
-    //    fclose(firmware_version);
-    //    remove(".firmware_version");
-    return true;
-}
-
 bool file_management_start_url_download(const char* url)
 {
     /* Dummy file downloader */

@@ -50,9 +50,6 @@ static size_t _read_chunk(file_management_t* file_management, size_t index, uint
 static void _update_abort(file_management_t* file_management);
 static void _update_finalize(file_management_t* file_management);
 
-static bool _persist_version(file_management_t* file_management, const char* version);
-static bool _unpersist_version(file_management_t* file_management, char* version, size_t version_size);
-
 static bool _start_url_download(file_management_t* file_management, const char* url);
 static bool _is_url_download_done(file_management_t* file_management, bool* success);
 static bool _has_url_download(file_management_t* file_management);
@@ -67,22 +64,16 @@ static bool _is_file_valid(file_management_t* file_management);
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request);
 
-void file_management_init(file_management_t* file_management, const char* device_key, const char* version,
-                          size_t maximum_file_size, size_t chunk_size, file_management_start_t start,
-                          file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk,
-                          file_management_abort_t abort, file_management_finalize_t finalize,
-                          file_management_persist_firmware_version_t persist_version,
-                          file_management_unpersist_firmware_version_t unpersist_version,
-                          file_management_start_url_download_t start_url_download,
+void file_management_init(file_management_t* file_management, const char* device_key, size_t maximum_file_size,
+                          size_t chunk_size, file_management_start_t start, file_management_write_chunk_t write_chunk,
+                          file_management_read_chunk_t read_chunk, file_management_abort_t abort,
+                          file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
                           file_management_is_url_download_done_t is_url_download_done, void* wolk_ctx)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(device_key);
-    WOLK_ASSERT(version);
     WOLK_ASSERT(wolk_ctx);
-
-    strcpy(file_management->version, version);
 
     file_management->device_key = device_key;
 
@@ -94,9 +85,6 @@ void file_management_init(file_management_t* file_management, const char* device
     file_management->read_chunk = read_chunk;
     file_management->abort = abort;
     file_management->finalize = finalize;
-
-    file_management->persist_version = persist_version;
-    file_management->unpersist_version = unpersist_version;
 
     file_management->start_url_download = start_url_download;
     file_management->is_url_download_done = is_url_download_done;
@@ -114,9 +102,8 @@ void file_management_init(file_management_t* file_management, const char* device
     file_management->wolk_ctx = wolk_ctx;
 
     file_management->has_valid_configuration = true;
-    if (device_key == NULL || version == NULL || maximum_file_size == 0 || chunk_size == 0 || start == NULL
-        || write_chunk == NULL || read_chunk == NULL || abort == NULL || finalize == NULL || persist_version == NULL
-        || unpersist_version == NULL || wolk_ctx == NULL) {
+    if (device_key == NULL || maximum_file_size == 0 || chunk_size == 0 || start == NULL || write_chunk == NULL
+        || read_chunk == NULL || abort == NULL || finalize == NULL || wolk_ctx == NULL) {
         file_management->has_valid_configuration = false;
     }
 }
@@ -125,17 +112,8 @@ static void _report_result(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
-
-    char persisted_version[FILE_MANAGEMENT_FILE_NAME_SIZE];
-    if (!_unpersist_version(file_management, persisted_version, WOLK_ARRAY_LENGTH(persisted_version))) {
-        return;
-    }
-
-    if (strcmp(persisted_version, file_management->version) != 0) {
-        _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_COMPLETED));
-    } else {
-        _listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_INSTALLATION_FAILED));
-    }
+    // TODO: questionable
+    _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_COMPLETED));
 }
 
 static void _check_url_download(file_management_t* file_management)
@@ -291,14 +269,6 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
     _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
 }
 
-const char* file_management_get_current_version(file_management_t* file_management)
-{
-    /* Sanity check */
-    WOLK_ASSERT(file_management);
-
-    return file_management->version;
-}
-
 void file_management_process(file_management_t* file_management)
 {
     /* Sanity check */
@@ -444,21 +414,8 @@ static void _handle_install(file_management_t* file_management)
     switch (file_management->state) {
     case STATE_FILE_OBTAINED:
         _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_INSTALLATION));
-        if (!_persist_version(file_management, file_management->version)) {
-            _update_abort(file_management);
-            _reset_state(file_management);
-            _listener_on_status(file_management,
-                                file_management_status_error(FILE_MANAGEMENT_ERROR_INSTALLATION_FAILED));
-            return;
-        }
-
         _update_finalize(file_management);
         break;
-
-        //    /* Firmware installation already started */
-        //    case STATE_INSTALL:
-        //        /* Ignore install command */
-        //        break;
 
     /* File not ready - Ignore command */
     case STATE_IDLE:
@@ -594,24 +551,6 @@ static void _listener_on_packet_request(file_management_t* file_management, file
     if (file_management->on_packet_request != NULL) {
         file_management->on_packet_request(file_management, request);
     }
-}
-
-static bool _persist_version(file_management_t* file_management, const char* version)
-{
-    /* Sanity check */
-    WOLK_ASSERT(file_management);
-    WOLK_ASSERT(version);
-
-    return file_management->persist_version(version);
-}
-
-static bool _unpersist_version(file_management_t* file_management, char* version, size_t version_size)
-{
-    /* Sanity check */
-    WOLK_ASSERT(file_management);
-    WOLK_ASSERT(version);
-
-    return file_management->unpersist_version(version, version_size);
 }
 
 static bool _start_url_download(file_management_t* file_management, const char* url)

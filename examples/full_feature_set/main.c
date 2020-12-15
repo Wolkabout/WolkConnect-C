@@ -261,11 +261,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init_file_management(&wolk, FIRMWARE_VERSION, 128 * 1024 * 1024, 256, file_management_start,
-                                  file_management_chunk_write, file_management_chunk_read, file_management_abort,
-                                  file_management_finalize, file_management_persist_file_version,
-                                  file_management_unpersist_file_version, file_management_start_url_download,
-                                  file_management_is_url_download_done)
+    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 256, file_management_start, file_management_chunk_write,
+                                  file_management_chunk_read, file_management_abort, file_management_finalize,
+                                  file_management_start_url_download, file_management_is_url_download_done)
         != W_FALSE) {
         printf("Error initializing File Management");
         return 1;

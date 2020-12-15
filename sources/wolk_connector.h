@@ -212,23 +212,23 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
  * @brief Initializes File Management
  *
  * @param ctx Context
- * @param version Current firmware version
- * @param maximum_firmware_size Maximum acceptable size of firmware file, in bytes
- * @param chunk_size Firmware file is transfered in chunks of size 'chunk_size'
+ * @param maximum_file_size Maximum acceptable size of file, in bytes
+ * @param chunk_size file is transferred in chunks of size 'chunk_size'
  * @param start Function pointer to 'file_management_start' implementation
  * @param write_chunk Function pointer to 'file_management_write_chunk' implementation
  * @param read_chunk Function pointer to 'file_management_read_chunk' implementation
  * @param abort Function pointer to 'file_management_abort' implementation
  * @param finalize Function pointer to 'file_management_finalize' implementation
+ * @param start_url_download Function pointer to 'file_management_start_url_download' implementation
+ * @param is_url_download_done Function pointer to 'file_management_is_url_download_done' implementation
+ *
  *
  * @return Error code.
  */
-WOLK_ERR_T wolk_init_file_management(wolk_ctx_t* ctx, const char* version, size_t maximum_firmware_size,
-                                     size_t chunk_size, file_management_start_t start,
-                                     file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk,
-                                     file_management_abort_t abort, file_management_finalize_t finalize,
-                                     file_management_persist_firmware_version_t persist_version,
-                                     file_management_unpersist_firmware_version_t unpersist_version,
+WOLK_ERR_T wolk_init_file_management(wolk_ctx_t* ctx, size_t maximum_file_size, size_t chunk_size,
+                                     file_management_start_t start, file_management_write_chunk_t write_chunk,
+                                     file_management_read_chunk_t read_chunk, file_management_abort_t abort,
+                                     file_management_finalize_t finalize,
                                      file_management_start_url_download_t start_url_download,
                                      file_management_is_url_download_done_t is_url_download_done);
 

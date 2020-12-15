@@ -23,7 +23,7 @@
 #include <stddef.h>
 #include <string.h>
 
-/*  Firmware update packet:               */
+/*  File Management packet:               */
 /*  32 bytes   - Previous packet SHA-256  */
 /*  N  byte(s) - Data                     */
 /*  32 bytes   - Packet SHA-256           */

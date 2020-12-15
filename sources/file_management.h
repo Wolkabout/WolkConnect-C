@@ -72,25 +72,6 @@ typedef void (*file_management_abort_t)(void);
 typedef void (*file_management_finalize_t)(void);
 
 /**
- * @brief file_management_persist_firmware_version signature.
- * Saves given 'version' to persistent storage.
- *
- * @return true if file version was successfully persisted, false otherwise
- */
-typedef bool (*file_management_persist_firmware_version_t)(const char* version);
-
-/**
- * @brief file_management_read_firmware_version signature.
- * Reads 'version' from persistent storage.
- *
- * Saved 'version' can be unpersisted only once, eg.
- * after unpersisting 'version' successfully call will return false, until next 'version' is persisted.
- *
- * @return true if file version was successfully unpersisted, false otherwise
- */
-typedef bool (*file_management_unpersist_firmware_version_t)(char* version, size_t version_size);
-
-/**
  * @brief file_management_start_url_download signature.
  * Starts download of file from given URL, in background.
  *
@@ -115,8 +96,6 @@ typedef void (*file_management_on_packet_request_listener)(file_management_t* fi
 struct file_management_update {
     const char* device_key;
 
-    char version[FILE_MANAGEMENT_VERSION_SIZE];
-
     size_t maximum_file_size;
     size_t chunk_size;
 
@@ -125,9 +104,6 @@ struct file_management_update {
     file_management_read_chunk_t read_chunk;
     file_management_abort_t abort;
     file_management_finalize_t finalize;
-
-    file_management_persist_firmware_version_t persist_version;
-    file_management_unpersist_firmware_version_t unpersist_version;
 
     file_management_start_url_download_t start_url_download;
     file_management_is_url_download_done_t is_url_download_done;
@@ -155,21 +131,16 @@ struct file_management_update {
     bool has_valid_configuration;
 };
 
-void file_management_init(file_management_t* file_management, const char* device_key, const char* version,
-                          size_t maximum_file_size, size_t chunk_size, file_management_start_t start,
-                          file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk,
-                          file_management_abort_t abort, file_management_finalize_t finalize,
-                          file_management_persist_firmware_version_t persist_version,
-                          file_management_unpersist_firmware_version_t unpersist_version,
-                          file_management_start_url_download_t start_url_download,
+void file_management_init(file_management_t* file_management, const char* device_key, size_t maximum_file_size,
+                          size_t chunk_size, file_management_start_t start, file_management_write_chunk_t write_chunk,
+                          file_management_read_chunk_t read_chunk, file_management_abort_t abort,
+                          file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
                           file_management_is_url_download_done_t is_url_download_done, void* wolk_ctx);
 
 void file_management_handle_command(file_management_t* file_management,
                                     file_management_command_t* file_management_command);
 
 void file_management_handle_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
-
-const char* file_management_get_current_version(file_management_t* file_management);
 
 void file_management_process(file_management_t* file_management);
 
