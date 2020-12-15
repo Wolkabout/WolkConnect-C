@@ -89,6 +89,7 @@ set(TEST_FILES "${CMAKE_SOURCE_DIR}/tests")
 
 add_custom_target(tests
         WORKING_DIRECTORY "${TEST_FILES}"
+        COMMAND ceedling clean
         COMMAND ceedling test:all
         COMMENT "[Run Unit tests]"
         VERBATIM)
