@@ -39,7 +39,9 @@
 
 static const char* ACTUATOR_COMMANDS_TOPIC = "p2d/actuator_set/d/";
 
+static const char* FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC_JSON = "p2d/file_upload_initiate/";
 static const char* FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC_JSON = "p2d/file_binary_response/";
+static const char* FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC_JSON = "p2d/file_upload_abort/";
 
 static const char* CONFIGURATION_COMMANDS = "p2d/configuration_set/d/";
 
@@ -205,6 +207,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     char buf[MQTT_PACKET_SIZE];
     char topic_buf[TOPIC_SIZE];
 
+    /* Setup and Connect to MQTT */
     char lastwill_topic[TOPIC_SIZE];
     MQTTString lastwill_topic_string = MQTTString_initializer;
     MQTTString lastwill_message_string = MQTTString_initializer;
@@ -225,6 +228,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
+    /* Subscribe to PONG */
     memset(topic_buf, '\0', sizeof(topic_buf));
     strcpy(&topic_buf[0], PONG_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
@@ -233,18 +237,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC_JSON);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
+    /* Subscribe to CONFIGURATION */
     memset(topic_buf, '\0', sizeof(topic_buf));
     strcpy(&topic_buf[0], CONFIGURATION_COMMANDS);
     strcat(&topic_buf[0], ctx->device_key);
@@ -253,6 +246,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
+    /* Subscribe to ACTUATORS */
     for (i = 0; i < ctx->num_actuator_references; ++i) {
         const char* reference = ctx->actuator_references[i];
         memset(topic_buf, '\0', sizeof(topic_buf));
@@ -267,6 +261,32 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         }
     }
 
+    /* Subscribe to FILE MANAGEMENT */
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC_JSON);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC_JSON);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC_JSON);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    /* Publish initial values */
     for (i = 0; i < ctx->num_actuator_references; ++i) {
         const char* reference = ctx->actuator_references[i];
 
@@ -862,7 +882,7 @@ static void _listener_on_status(file_management_t* file_management, file_managem
     /* Sanity check */
     WOLK_ASSERT(file_management);
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
-
+    // TODO: status msg here
     outbound_message_t outbound_message;
     outbound_message_make_from_file_management_status(&wolk_ctx->parser, wolk_ctx->device_key, &status,
                                                       &outbound_message);
