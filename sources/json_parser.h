@@ -20,8 +20,8 @@
 #include "actuator_command.h"
 #include "configuration_command.h"
 #include "configuration_item.h"
-#include "file_management_command.h"
 #include "file_management_packet_request.h"
+#include "file_management_parameter.h"
 #include "file_management_status.h"
 #include "outbound_message.h"
 #include "reading.h"
@@ -53,7 +53,8 @@ size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
 bool json_serialize_file_management_status(const char* device_key, file_management_status_t* status,
                                            outbound_message_t* outbound_message);
 
-bool json_deserialize_file_management_command(char* buffer, size_t buffer_size, file_management_command_t* command);
+bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size,
+                                                file_management_parameter_t* parameter);
 
 bool json_serialize_file_management_packet_request(const char* device_key,
                                                    file_management_packet_request_t* file_management_packet_request,

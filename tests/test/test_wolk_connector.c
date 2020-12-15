@@ -37,7 +37,7 @@ TEST_FILE("MQTTSubscribeClient.c")
 
 #include "file_management.h"
 #include "file_management_packet.h"
-#include "file_management_command.h"
+#include "file_management_parameter.h"
 #include "file_management_status.h"
 #include "file_management_packet_request.h"
 

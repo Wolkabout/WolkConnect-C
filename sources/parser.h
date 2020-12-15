@@ -20,8 +20,8 @@
 #include "actuator_command.h"
 #include "configuration_command.h"
 #include "configuration_item.h"
-#include "file_management_command.h"
 #include "file_management_packet_request.h"
+#include "file_management_parameter.h"
 #include "file_management_status.h"
 #include "outbound_message.h"
 #include "reading.h"
@@ -57,8 +57,8 @@ typedef struct {
 
     bool (*serialize_file_management_status)(const char* device_key, file_management_status_t* status,
                                              outbound_message_t* outbound_message);
-    bool (*deserialize_file_management_command)(char* buffer, size_t buffer_size,
-                                                file_management_command_type_t* command);
+    bool (*deserialize_file_management_parameter)(char* buffer, size_t buffer_size,
+                                                  file_management_parameter_t* parameter); // TODO: has to be modified
     bool (*serialize_file_management_packet_request)(const char* device_key,
                                                      file_management_packet_request_t* file_management_packet_request,
                                                      outbound_message_t* outbound_message);
@@ -99,8 +99,8 @@ size_t parser_deserialize_configuration_commands(parser_t* parser, char* buffer,
 bool parser_serialize_file_management_status(parser_t* parser, const char* device_key, file_management_status_t* status,
                                              outbound_message_t* outbound_message);
 
-bool parser_deserialize_file_management_command(parser_t* parser, char* buffer, size_t buffer_size,
-                                                file_management_command_t* command);
+bool parser_deserialize_file_management_parameter(parser_t* parser, char* buffer, size_t buffer_size,
+                                                  file_management_parameter_t* parameter);
 
 bool parser_serialize_file_management_packet_request(parser_t* parser, const char* device_key,
                                                      file_management_packet_request_t* file_management_packet_request,

@@ -18,10 +18,7 @@
 #include "size_definitions.h"
 #include "wolk_utils.h"
 
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 void manifest_item_init(manifest_item_t* item, const char* reference, reading_type_t reading_type,

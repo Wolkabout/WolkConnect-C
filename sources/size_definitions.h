@@ -72,6 +72,9 @@ enum {
 
     /* Size of hash used for file management file transfer (SHA-256) */
     FILE_MANAGEMENT_HASH_SIZE = 32,
+
+    /* Size of hash used for file management file transfer (SHA-256) */
+    FILE_MANAGEMENT_FILE_LIST_SIZE = 32,
 };
 
 #ifdef __cplusplus

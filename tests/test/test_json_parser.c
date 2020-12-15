@@ -3,7 +3,7 @@
 #include "json_parser.h"
 #include "actuator_command.h"
 #include "base64.h"
-#include "file_management_command.h"
+#include "file_management_parameter.h"
 #include "file_management_packet_request.h"
 #include "file_management_status.h"
 #include "jsmn.h"

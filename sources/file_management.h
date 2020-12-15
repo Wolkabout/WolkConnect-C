@@ -21,8 +21,8 @@
 extern "C" {
 #endif
 
-#include "file_management_command.h"
 #include "file_management_packet_request.h"
+#include "file_management_parameter.h"
 #include "file_management_status.h"
 #include "size_definitions.h"
 
@@ -137,8 +137,8 @@ void file_management_init(file_management_t* file_management, const char* device
                           file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
                           file_management_is_url_download_done_t is_url_download_done, void* wolk_ctx);
 
-void file_management_handle_command(file_management_t* file_management,
-                                    file_management_command_t* file_management_command);
+void file_management_handle_parameter(file_management_t* file_management,
+                                      file_management_parameter_t* file_management_parameter);
 
 void file_management_handle_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
 

@@ -15,11 +15,10 @@
  */
 
 #include "file_management.h"
-#include "file_management_command.h"
 #include "file_management_packet.h"
+#include "file_management_parameter.h"
 #include "sha256.h"
 #include "size_definitions.h"
-#include "wolk_connector.h"
 #include "wolk_utils.h"
 
 #include <stdbool.h>
@@ -39,8 +38,8 @@ enum { MAX_RETRIES = 3 };
 
 enum { FILE_VERIFICATION_CHUNK_SIZE = 1024 };
 
-static void _handle_file_upload(file_management_t* file_management, file_management_command_t* command);
-static void _handle_url_download(file_management_t* file_management, file_management_command_t* command);
+static void _handle_file_upload(file_management_t* file_management, file_management_parameter_t* parameter);
+static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
 static void _handle_install(file_management_t* file_management);
 static void _handle_abort(file_management_t* file_management);
 
@@ -155,43 +154,18 @@ static void _check_url_download(file_management_t* file_management)
     }
 }
 
-void file_management_handle_command(file_management_t* file_management,
-                                    file_management_command_t* file_management_command)
+void file_management_handle_parameter(file_management_t* file_management,
+                                      file_management_parameter_t* file_management_parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
-    WOLK_ASSERT(file_management_command);
+    WOLK_ASSERT(file_management_parameter);
 
     if (!file_management->has_valid_configuration) {
         _listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_FILE_UPLOAD_DISABLED));
         return;
     }
-
-    switch (file_management_command_get_type(file_management_command)) {
-    case FILE_MANAGEMENT_COMMAND_TYPE_FILE_UPLOAD:
-        _handle_file_upload(file_management, file_management_command);
-        break;
-
-    case FILE_MANAGEMENT_COMMAND_TYPE_URL_DOWNLOAD:
-        _handle_url_download(file_management, file_management_command);
-        break;
-
-    case FILE_MANAGEMENT_COMMAND_TYPE_INSTALL:
-        _handle_install(file_management);
-        break;
-
-    case FILE_MANAGEMENT_COMMAND_TYPE_ABORT:
-        _handle_abort(file_management);
-        break;
-
-    case FILE_MANAGEMENT_COMMAND_TYPE_UNKNOWN:
-        /* Ignore */
-        break;
-
-    default:
-        /* Sanity check */
-        WOLK_ASSERT(false);
-    }
+    // TODO: handle something else
 }
 
 void file_management_handle_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size)
@@ -302,11 +276,11 @@ void file_management_set_on_packet_request_listener(file_management_t* file_mana
     file_management->on_packet_request = on_packet_request;
 }
 
-static void _handle_file_upload(file_management_t* file_management, file_management_command_t* command)
+static void _handle_file_upload(file_management_t* file_management, file_management_parameter_t* parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
-    WOLK_ASSERT(command);
+    WOLK_ASSERT(parameter);
 
     switch (file_management->state) {
     case STATE_IDLE:
@@ -316,35 +290,35 @@ static void _handle_file_upload(file_management_t* file_management, file_managem
             return;
         }
 
-        if (file_management->maximum_file_size < file_management_command_get_file_size(command)) {
+        if (file_management->maximum_file_size < file_management_parameter_get_file_size(parameter)) {
             _listener_on_status(file_management,
                                 file_management_status_error(FILE_MANAGEMENT_ERROR_UNSUPPORTED_FILE_SIZE));
             return;
         }
 
-        if (!_update_sequence_init(file_management, file_management_command_get_file_name(command),
-                                   file_management_command_get_file_size(command))) {
+        if (!_update_sequence_init(file_management, file_management_parameter_get_file_name(parameter),
+                                   file_management_parameter_get_file_size(parameter))) {
             _listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
             return;
         }
 
         WOLK_ASSERT(strlen(file_management_command_get_file_name(command))
                     <= WOLK_ARRAY_LENGTH(file_management->file_name));
-        strcpy(file_management->file_name, file_management_command_get_file_name(command));
+        strcpy(file_management->file_name, file_management_parameter_get_file_name(parameter));
 
         WOLK_ASSERT(file_management_command_get_file_hash_size(command)
                     <= WOLK_ARRAY_LENGTH(file_management->file_hash));
-        memcpy(file_management->file_hash, file_management_command_get_file_hash(command),
-               file_management_command_get_file_hash_size(command));
+        memcpy(file_management->file_hash, file_management_parameter_get_file_hash(parameter),
+               file_management_parameter_get_file_hash_size(parameter));
 
-        file_management->file_size = file_management_command_get_file_size(command);
+        file_management->file_size = file_management_parameter_get_file_size(parameter);
 
         file_management->state = STATE_PACKET_FILE_TRANSFER;
 
         file_management->next_chunk_index = 0;
 
         file_management->expected_number_of_chunks =
-            (size_t)WOLK_CEIL((double)file_management_command_get_file_size(command) / file_management->chunk_size);
+            (size_t)WOLK_CEIL((double)file_management_parameter_get_file_size(parameter) / file_management->chunk_size);
         file_management->retry_count = 0;
 
         _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
@@ -369,11 +343,11 @@ static void _handle_file_upload(file_management_t* file_management, file_managem
     }
 }
 
-static void _handle_url_download(file_management_t* file_management, file_management_command_t* command)
+static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
-    WOLK_ASSERT(command);
+    WOLK_ASSERT(parameter);
 
     switch (file_management->state) {
     case STATE_IDLE:
@@ -384,7 +358,7 @@ static void _handle_url_download(file_management_t* file_management, file_manage
             return;
         }
 
-        if (!_start_url_download(file_management, file_management_command_get_file_url(command))) {
+        if (!_start_url_download(file_management, file_management_parameter_get_file_url(parameter))) {
             _listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
             return;
         }
@@ -393,36 +367,11 @@ static void _handle_url_download(file_management_t* file_management, file_manage
         _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
         break;
 
-    /* File Management already in progress - Ignore command */
+    /* File Management already in progress - Ignore */
     case STATE_PACKET_FILE_TRANSFER:
     case STATE_URL_DOWNLOAD:
     case STATE_FILE_OBTAINED:
     case STATE_INSTALL:
-        break;
-
-    default:
-        /* Sanity check */
-        WOLK_ASSERT(false);
-    }
-}
-
-static void _handle_install(file_management_t* file_management)
-{
-    /* Sanity check */
-    WOLK_ASSERT(file_management);
-
-    switch (file_management->state) {
-    case STATE_FILE_OBTAINED:
-        _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_INSTALLATION));
-        _update_finalize(file_management);
-        break;
-
-    /* File not ready - Ignore command */
-    case STATE_IDLE:
-    case STATE_PACKET_FILE_TRANSFER:
-    case STATE_URL_DOWNLOAD:
-        _reset_state(file_management);
-        _listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
         break;
 
     default:

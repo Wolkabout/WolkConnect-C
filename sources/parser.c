@@ -16,17 +16,14 @@
 
 #include "parser.h"
 #include "actuator_command.h"
-#include "configuration_item.h"
-#include "file_management_command.h"
+#include "file_management_parameter.h"
 #include "file_management_status.h"
 #include "json_parser.h"
 #include "wolk_utils.h"
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+
 
 void parser_init(parser_t* parser, parser_type_t parser_type)
 {
@@ -47,7 +44,7 @@ void parser_init(parser_t* parser, parser_type_t parser_type)
         parser->deserialize_configuration_commands = json_deserialize_configuration_command;
 
         parser->serialize_file_management_status = json_serialize_file_management_status;
-        parser->deserialize_file_management_command = json_deserialize_file_management_command;
+        parser->deserialize_file_management_parameter = json_deserialize_file_management_parameter;
         parser->serialize_file_management_packet_request = json_serialize_file_management_packet_request;
 
         parser->serialize_ping_keep_alive_message = json_serialize_ping_keep_alive_message;
@@ -132,15 +129,15 @@ bool parser_serialize_file_management_status(parser_t* parser, const char* devic
     return parser->serialize_file_management_status(device_key, status, outbound_message);
 }
 
-bool parser_deserialize_file_management_command(parser_t* parser, char* buffer, size_t buffer_size,
-                                                file_management_command_t* command)
+bool parser_deserialize_file_management_parameter(parser_t* parser, char* buffer, size_t buffer_size,
+                                                  file_management_parameter_t* parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(buffer);
-    WOLK_ASSERT(command);
+    WOLK_ASSERT(parameter);
 
-    return parser->deserialize_file_management_command(buffer, buffer_size, command);
+    return parser->deserialize_file_management_parameter(buffer, buffer_size, parameter);
 }
 
 bool parser_serialize_file_management_packet_request(parser_t* parser, const char* device_key,

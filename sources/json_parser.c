@@ -17,8 +17,8 @@
 #include "json_parser.h"
 #include "actuator_command.h"
 #include "base64.h"
-#include "file_management_command.h"
 #include "file_management_packet_request.h"
+#include "file_management_parameter.h"
 #include "file_management_status.h"
 #include "jsmn.h"
 #include "reading.h"
@@ -463,7 +463,7 @@ bool json_serialize_file_management_status(const char* device_key, file_manageme
     outbound_message_init(outbound_message, "", "");
 
     /* Serialize topic */
-    //TODO: status update: "d2p/file_upload_status/"
+    // TODO: status update: "d2p/file_upload_status/"
     if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "service/status/firmware/%s",
                  device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
@@ -490,7 +490,8 @@ bool json_serialize_file_management_status(const char* device_key, file_manageme
     return true;
 }
 
-bool json_deserialize_file_management_command(char* buffer, size_t buffer_size, file_management_command_t* command)
+bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size,
+                                                file_management_parameter_t* parameter)
 {
     jsmn_parser parser;
     jsmntok_t tokens[12]; /* No more than 12 JSON token(s) are expected, check
@@ -503,39 +504,20 @@ bool json_deserialize_file_management_command(char* buffer, size_t buffer_size, 
         return false;
     }
 
-    file_management_command_init(command);
+    file_management_parameter_init(parameter);
 
     /* Obtain command type and value */
     char value_buffer[COMMAND_ARGUMENT_SIZE];
 
     for (int i = 1; i < parser_result; i++) {
-        if (json_token_str_equal(buffer, &tokens[i], "command")) {
+        if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
                 >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
                 return false;
             }
 
-            if (strcmp(value_buffer, "FILE_UPLOAD") == 0) {
-                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_FILE_UPLOAD);
-            } else if (strcmp(value_buffer, "URL_DOWNLOAD") == 0) {
-                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_URL_DOWNLOAD);
-            } else if (strcmp(value_buffer, "INSTALL") == 0) {
-                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_INSTALL);
-            } else if (strcmp(value_buffer, "ABORT") == 0) {
-                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_ABORT);
-            } else {
-                file_management_command_set_type(command, FILE_MANAGEMENT_COMMAND_TYPE_UNKNOWN);
-            }
-            i++;
-        } else if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
-            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
-                         buffer + tokens[i + 1].start)
-                >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
-                return false;
-            }
-
-            file_management_command_set_filename(command, value_buffer);
+            file_management_parameter_set_filename(parameter, value_buffer);
             i++;
         } else if (json_token_str_equal(buffer, &tokens[i], "fileSize")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
@@ -544,7 +526,7 @@ bool json_deserialize_file_management_command(char* buffer, size_t buffer_size, 
                 return false;
             }
 
-            file_management_command_set_file_size(command, (size_t)atoi(value_buffer));
+            file_management_parameter_set_file_size(parameter, (size_t)atoi(value_buffer));
             i++;
         } else if (json_token_str_equal(buffer, &tokens[i], "fileHash")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
@@ -557,7 +539,7 @@ bool json_deserialize_file_management_command(char* buffer, size_t buffer_size, 
             if (output_size > FILE_MANAGEMENT_HASH_SIZE) {
                 return false;
             }
-            base64_decode(value_buffer, (BYTE*)command->file_hash, strlen(value_buffer));
+            base64_decode(value_buffer, (BYTE*)parameter->file_hash, strlen(value_buffer));
             i++;
         } else if (json_token_str_equal(buffer, &tokens[i], "fileUrl")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
@@ -566,7 +548,16 @@ bool json_deserialize_file_management_command(char* buffer, size_t buffer_size, 
                 return false;
             }
 
-            file_management_command_set_file_url(command, value_buffer);
+            file_management_parameter_set_file_url(parameter, value_buffer);
+            i++;
+        } else if (json_token_str_equal(buffer, &tokens[i], "result")) {
+            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
+                         buffer + tokens[i + 1].start)
+                >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
+                return false;
+            }
+
+            //            file_management_command_set_file_url(command, value_buffer);
             i++;
         } else {
             return false;
