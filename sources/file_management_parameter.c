@@ -32,23 +32,6 @@ void file_management_parameter_init(file_management_parameter_t* parameter)
     parameter->file_size = 0;
     memset(parameter->file_list, '\0', WOLK_ARRAY_LENGTH(parameter->file_list));
 }
-//
-// file_management_parameter_type_t file_management_parameter_get_type(file_management_parameter_t* parameter)
-//{
-//    /* Sanity check */
-//    WOLK_ASSERT(parameter);
-//
-//    return parameter->type;
-//}
-//
-// void file_management_parameter_set_type(file_management_parameter_t* parameter, file_management_parameter_type_t
-// type)
-//{
-//    /* Sanity check */
-//    WOLK_ASSERT(parameter);
-//
-//    parameter->type = type;
-//}
 
 const char* file_management_parameter_get_file_name(file_management_parameter_t* parameter)
 {
@@ -136,4 +119,22 @@ void file_management_parameter_file_list_confirm(file_management_parameter_t* pa
     WOLK_ASSERT(file_list);
     // TODO: implement file list
     //    strncpy(parameter->file_url, file_url, FILE_MANAGEMENT_URL_SIZE);
+}
+
+const char* file_management_parameter_get_result(file_management_parameter_t* parameter)
+{
+    /* Sanity check */
+    WOLK_ASSERT(parameter);
+
+    return parameter->result;
+}
+
+void file_management_parameter_set_result(file_management_parameter_t* parameter, const char* result)
+{
+    /* Sanity check */
+    WOLK_ASSERT(parameter);
+    WOLK_ASSERT(result);
+    WOLK_ASSERT(strlen(file_name) <= FILE_MANAGEMENT_FILE_NAME_SIZE);
+
+    strncpy(parameter->result, result, FILE_MANAGEMENT_FILE_NAME_SIZE);
 }

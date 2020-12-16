@@ -101,6 +101,7 @@ bool outbound_message_make_from_configuration(parser_t* parser, const char* devi
 }
 
 bool outbound_message_make_from_file_management_status(parser_t* parser, const char* device_key,
+                                                       file_management_packet_request_t* file_management_packet_request,
                                                        file_management_status_t* file_management_status,
                                                        outbound_message_t* outbound_message)
 {
@@ -110,7 +111,8 @@ bool outbound_message_make_from_file_management_status(parser_t* parser, const c
     WOLK_ASSERT(file_management_status);
     WOLK_ASSERT(outbound_message);
 
-    return parser_serialize_file_management_status(parser, device_key, file_management_status, outbound_message);
+    return parser_serialize_file_management_status(parser, device_key, file_management_packet_request,
+                                                   file_management_status, outbound_message);
 }
 
 bool outbound_message_make_from_file_management_packet_request(

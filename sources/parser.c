@@ -117,8 +117,9 @@ size_t parser_deserialize_configuration_commands(parser_t* parser, char* buffer,
                                                       num_configuration_commands);
 }
 
-bool parser_serialize_file_management_status(parser_t* parser, const char* device_key, file_management_status_t* status,
-                                             outbound_message_t* outbound_message)
+bool parser_serialize_file_management_status(parser_t* parser, const char* device_key,
+                                             file_management_packet_request_t* file_management_packet_request,
+                                             file_management_status_t* status, outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
@@ -126,7 +127,8 @@ bool parser_serialize_file_management_status(parser_t* parser, const char* devic
     WOLK_ASSERT(status);
     WOLK_ASSERT(outbound_message);
 
-    return parser->serialize_file_management_status(device_key, status, outbound_message);
+    return parser->serialize_file_management_status(device_key, file_management_packet_request, status,
+                                                    outbound_message);
 }
 
 bool parser_deserialize_file_management_parameter(parser_t* parser, char* buffer, size_t buffer_size,

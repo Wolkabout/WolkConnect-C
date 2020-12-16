@@ -50,8 +50,9 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
 size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
                                               configuration_command_t* commands_buffer, size_t commands_buffer_size);
 
-bool json_serialize_file_management_status(const char* device_key, file_management_status_t* status,
-                                           outbound_message_t* outbound_message);
+bool json_serialize_file_management_status(const char* device_key,
+                                           file_management_packet_request_t* file_management_packet_request,
+                                           file_management_status_t* status, outbound_message_t* outbound_message);
 
 bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size,
                                                 file_management_parameter_t* parameter);

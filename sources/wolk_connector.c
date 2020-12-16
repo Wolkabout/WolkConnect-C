@@ -689,11 +689,15 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
-            //            if (num_deserialized_parameter != 0) {
-            //                //TODO: something else, not packet, this is packet setup
-            //                _handle_file_management_packet(&ctx->file_management_update, (uint8_t*)payload,
-            //                (size_t)payload_len);
-            //            }
+            if (num_deserialized_parameter != 0) {
+                // TODO:
+                //   - I know that I have name
+                _handle_file_management_parameter(&ctx->file_management_update, &file_management_parameter);
+                //                _listener_on_status(&ctx->file_management_update,
+                //                                    file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
+                //                _handle_file_management_packet(&ctx->file_management_update, (uint8_t*)payload,
+                //                (size_t)payload_len);
+            }
         } else if (strstr(topic_str, FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC_JSON)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
@@ -895,10 +899,9 @@ static void _listener_on_status(file_management_t* file_management, file_managem
     /* Sanity check */
     WOLK_ASSERT(file_management);
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
-    // TODO: status msg here
     outbound_message_t outbound_message;
-    outbound_message_make_from_file_management_status(&wolk_ctx->parser, wolk_ctx->device_key, &status,
-                                                      &outbound_message);
+    outbound_message_make_from_file_management_status(&wolk_ctx->parser, wolk_ctx->device_key,
+                                                      file_management->file_name, &status, &outbound_message);
 
     _publish(wolk_ctx, &outbound_message);
 }

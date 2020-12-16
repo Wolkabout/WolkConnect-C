@@ -32,11 +32,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char* READINGS_TOPIC = "d2p/sensor_reading/d/";
-static const char* ACTUATORS_STATUS_TOPIC = "d2p/actuator_status/d/";
-static const char* EVENTS_TOPIC = "d2p/events/d/";
-static const char* CONFIGURATION_GET_TOPIC = "d2p/configuration_get/d/";
 static const char* PING_TOPIC = "ping/";
+static const char* READINGS_TOPIC = "d2p/sensor_reading/d/";
+
+static const char* ACTUATORS_STATUS_TOPIC = "d2p/actuator_status/d/";
+
+static const char* EVENTS_TOPIC = "d2p/events/d/";
+
+static const char* CONFIGURATION_GET_TOPIC = "d2p/configuration_get/d/";
+
+static const char* FILE_MANAGEMENT_UPLOAD_STATUS = "d2p/file_upload_status/d/";
+static const char* FILE_MANAGEMENT_PACKET_REQUEST = "d2p/file_binary_request/d/";
 
 
 static bool all_readings_have_equal_rtc(reading_t* first_reading, size_t num_readings)
@@ -439,12 +445,6 @@ static const char* file_management_status_as_str(file_management_status_t* statu
     case FILE_MANAGEMENT_STATE_FILE_READY:
         return "FILE_READY";
 
-    case FILE_MANAGEMENT_STATE_INSTALLATION:
-        return "INSTALLATION";
-
-    case FILE_MANAGEMENT_STATE_COMPLETED:
-        return "COMPLETED";
-
     case FILE_MANAGEMENT_STATE_ERROR:
         return "ERROR";
 
@@ -457,31 +457,33 @@ static const char* file_management_status_as_str(file_management_status_t* statu
     }
 }
 
-bool json_serialize_file_management_status(const char* device_key, file_management_status_t* status,
-                                           outbound_message_t* outbound_message)
+bool json_serialize_file_management_status(const char* device_key,
+                                           file_management_packet_request_t* file_management_packet_request,
+                                           file_management_status_t* status, outbound_message_t* outbound_message)
 {
     outbound_message_init(outbound_message, "", "");
 
     /* Serialize topic */
-    // TODO: status update: "d2p/file_upload_status/"
-    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "service/status/firmware/%s",
-                 device_key)
+    strncpy(outbound_message->topic, FILE_MANAGEMENT_UPLOAD_STATUS, strlen(FILE_MANAGEMENT_UPLOAD_STATUS));
+    if (snprintf(outbound_message->topic + strlen(FILE_MANAGEMENT_UPLOAD_STATUS),
+                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return false;
     }
 
     /* Serialize payload */
-    const file_management_error_t error = file_management_status_get_error(status);
-    if (error == FILE_MANAGEMENT_ERROR_NONE) {
-        if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"status\":\"%s\"}",
-                     file_management_status_as_str(status))
-            >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
-            return false;
-        }
-    } else {
-        if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
-                     "{\"status\":%s,\"error\":%d}", file_management_status_as_str(status),
-                     file_management_status_get_error(status))
+    if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
+                 "{\"fileName\": \"%s\", \"status\": \"%s\"}",
+                 file_management_packet_request_get_file_name(file_management_packet_request),
+                 file_management_status_as_str(status), file_management_status_get_error(status))
+        >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
+        return false;
+    }
+    // TODO: replace strlen with WOLK_ARRAY_LENGTH
+    file_management_error_t error = file_management_status_get_error(status);
+    if (error >= 0) {
+        if (snprintf(outbound_message->payload + strlen(outbound_message->payload) - 1,
+                     WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"error\":%d}", error)
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }
@@ -556,8 +558,7 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
                 >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
                 return false;
             }
-
-            //            file_management_command_set_file_url(command, value_buffer);
+            file_management_parameter_set_result(parameter, value_buffer);
             i++;
         } else {
             return false;
@@ -573,15 +574,16 @@ bool json_serialize_file_management_packet_request(const char* device_key,
     outbound_message_init(outbound_message, "", "");
 
     /* Serialize topic */
-    if (snprintf(outbound_message->topic, WOLK_ARRAY_LENGTH(outbound_message->topic), "service/status/file/%s",
-                 device_key)
+    strncpy(outbound_message->topic, FILE_MANAGEMENT_PACKET_REQUEST, strlen(FILE_MANAGEMENT_PACKET_REQUEST));
+    if (snprintf(outbound_message->topic + strlen(FILE_MANAGEMENT_PACKET_REQUEST),
+                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return false;
     }
 
     /* Serialize payload */
     if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
-                 "{\"fileName\":\"%s\",\"chunkIndex\":%llu,\"chunkSize\":%llu}",
+                 "{\"fileName\": \"%s\", \"chunkIndex\":%llu, \"chunkSize\":%llu}",
                  file_management_packet_request_get_file_name(file_management_packet_request),
                  (unsigned long long int)file_management_packet_request_get_chunk_index(file_management_packet_request),
                  (unsigned long long int)file_management_packet_request_get_chunk_size(file_management_packet_request))

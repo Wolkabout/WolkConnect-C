@@ -37,6 +37,7 @@ typedef struct {
     char file_url[FILE_MANAGEMENT_URL_SIZE];
 
     char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE];
+    char result[FILE_MANAGEMENT_FILE_NAME_SIZE];
 } file_management_parameter_t;
 
 void file_management_parameter_init(file_management_parameter_t* parameter);
@@ -54,6 +55,9 @@ size_t file_management_parameter_get_file_hash_size(file_management_parameter_t*
 
 const char* file_management_parameter_get_file_url(file_management_parameter_t* parameter);
 void file_management_parameter_set_file_url(file_management_parameter_t* parameter, const char* file_url);
+
+const char* file_management_parameter_get_result(file_management_parameter_t* parameter);
+void file_management_parameter_set_result(file_management_parameter_t* parameter, const char* result);
 
 #ifdef __cplusplus
 }

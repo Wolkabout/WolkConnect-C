@@ -61,9 +61,6 @@ enum {
     /* Parser internal buffer size, should be at least READING_SIZE  big */
     PARSER_INTERNAL_BUFFER_SIZE = READING_SIZE,
 
-    /* Maximum number of characters in version string */
-    FILE_MANAGEMENT_VERSION_SIZE = 8,
-
     /* Maximum number of characters in file management filename */
     FILE_MANAGEMENT_FILE_NAME_SIZE = 32,
 

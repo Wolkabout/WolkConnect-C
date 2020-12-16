@@ -38,7 +38,7 @@ enum { MAX_RETRIES = 3 };
 
 enum { FILE_VERIFICATION_CHUNK_SIZE = 1024 };
 
-static void _handle_file_upload(file_management_t* file_management, file_management_parameter_t* parameter);
+static void _handle_file_management(file_management_t* file_management, file_management_parameter_t* parameter);
 static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
 static void _handle_install(file_management_t* file_management);
 static void _handle_abort(file_management_t* file_management);
@@ -112,7 +112,9 @@ static void _report_result(file_management_t* file_management)
     /* Sanity check */
     WOLK_ASSERT(file_management);
     // TODO: questionable
-    _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_COMPLETED));
+    //    if file exists on file system return file list
+    //    else report error
+    //    _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
 }
 
 static void _check_url_download(file_management_t* file_management)
@@ -162,10 +164,12 @@ void file_management_handle_parameter(file_management_t* file_management,
     WOLK_ASSERT(file_management_parameter);
 
     if (!file_management->has_valid_configuration) {
-        _listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_FILE_UPLOAD_DISABLED));
+        _listener_on_status(file_management,
+                            file_management_status_error(FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED));
         return;
     }
-    // TODO: handle something else
+
+    _handle_file_management(file_management, file_management_parameter);
 }
 
 void file_management_handle_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size)
@@ -175,7 +179,8 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
     WOLK_ASSERT(packet);
 
     if (!file_management->has_valid_configuration) {
-        _listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_FILE_UPLOAD_DISABLED));
+        _listener_on_status(file_management,
+                            file_management_status_error(FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED));
         return;
     }
 
@@ -241,6 +246,7 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
 
     file_management->state = STATE_FILE_OBTAINED;
     _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
+    // TODO: here is a place for file_list update
 }
 
 void file_management_process(file_management_t* file_management)
@@ -276,7 +282,7 @@ void file_management_set_on_packet_request_listener(file_management_t* file_mana
     file_management->on_packet_request = on_packet_request;
 }
 
-static void _handle_file_upload(file_management_t* file_management, file_management_parameter_t* parameter)
+static void _handle_file_management(file_management_t* file_management, file_management_parameter_t* parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
@@ -286,7 +292,7 @@ static void _handle_file_upload(file_management_t* file_management, file_managem
     case STATE_IDLE:
         if (file_management->maximum_file_size == 0 || file_management->chunk_size == 0) {
             _listener_on_status(file_management,
-                                file_management_status_error(FILE_MANAGEMENT_ERROR_FILE_UPLOAD_DISABLED));
+                                file_management_status_error(FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED));
             return;
         }
 
@@ -354,7 +360,7 @@ static void _handle_url_download(file_management_t* file_management, file_manage
 
         if (!_has_url_download(file_management)) {
             _listener_on_status(file_management,
-                                file_management_status_error(FILE_MANAGEMENT_ERROR_FILE_UPLOAD_DISABLED));
+                                file_management_status_error(FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED));
             return;
         }
 

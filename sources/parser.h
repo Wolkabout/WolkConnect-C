@@ -55,8 +55,9 @@ typedef struct {
                                                  configuration_command_t* first_configuration_command,
                                                  size_t num_config_items);
 
-    bool (*serialize_file_management_status)(const char* device_key, file_management_status_t* status,
-                                             outbound_message_t* outbound_message);
+    bool (*serialize_file_management_status)(const char* device_key,
+                                             file_management_packet_request_t* file_management_packet_request,
+                                             file_management_status_t* status, outbound_message_t* outbound_message);
     bool (*deserialize_file_management_parameter)(char* buffer, size_t buffer_size,
                                                   file_management_parameter_t* parameter); // TODO: has to be modified
     bool (*serialize_file_management_packet_request)(const char* device_key,
@@ -96,8 +97,9 @@ size_t parser_deserialize_configuration_commands(parser_t* parser, char* buffer,
 /**** Configuration ****/
 
 /**** File Management ****/
-bool parser_serialize_file_management_status(parser_t* parser, const char* device_key, file_management_status_t* status,
-                                             outbound_message_t* outbound_message);
+bool parser_serialize_file_management_status(parser_t* parser, const char* device_key,
+                                             file_management_packet_request_t* file_management_packet_request,
+                                             file_management_status_t* status, outbound_message_t* outbound_message);
 
 bool parser_deserialize_file_management_parameter(parser_t* parser, char* buffer, size_t buffer_size,
                                                   file_management_parameter_t* parameter);
