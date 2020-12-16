@@ -25,7 +25,12 @@ bool file_management_start(const char* file_name, size_t file_size)
     printf("Starting File Management. File name: %s. File size:%zu\n", file_name, file_size);
     file_management_file_size = file_size;
 
-    file_management_file = fopen(file_name, "w+b");
+    char file_location[FILE_MANAGEMENT_FILE_NAME_SIZE];
+    if (snprintf(file_location, FILE_MANAGEMENT_FILE_NAME_SIZE, "files/%s", file_name)
+        >= (int)FILE_MANAGEMENT_FILE_NAME_SIZE) {
+        return false;
+    }
+    file_management_file = fopen(file_location, "w+b");
 
     if (file_management_file == NULL) {
         return false;

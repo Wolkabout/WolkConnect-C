@@ -690,21 +690,10 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized_parameter != 0) {
-                // TODO:
-                //   - I know that I have name
                 _handle_file_management_parameter(&ctx->file_management_update, &file_management_parameter);
-                //                _listener_on_status(&ctx->file_management_update,
-                //                                    file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
-                //                _handle_file_management_packet(&ctx->file_management_update, (uint8_t*)payload,
-                //                (size_t)payload_len);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC_JSON)) {
-            file_management_parameter_t file_management_parameter;
-            const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
-                &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
-            if (num_deserialized_parameter != 0) {
-                _handle_file_management_packet(&ctx->file_management_update, (uint8_t*)payload, (size_t)payload_len);
-            }
+            _handle_file_management_packet(&ctx->file_management_update, (uint8_t*)payload, (size_t)payload_len);
         }
     }
 
