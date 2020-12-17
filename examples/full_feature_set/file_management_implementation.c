@@ -91,8 +91,6 @@ void file_management_finalize(void)
     if (file_management_file != NULL) {
         fclose(file_management_file);
     }
-
-    exit(0);
 }
 
 bool file_management_start_url_download(const char* url)

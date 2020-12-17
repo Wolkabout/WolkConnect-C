@@ -239,7 +239,7 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
 
     file_management->state = STATE_FILE_OBTAINED;
     _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
-
+    _update_finalize(file_management);
     _reset_state(file_management);
 }
 
