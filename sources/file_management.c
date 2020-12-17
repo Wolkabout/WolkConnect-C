@@ -34,6 +34,7 @@ enum { FILE_VERIFICATION_CHUNK_SIZE = 1024 };
 
 static void _handle_file_management(file_management_t* file_management, file_management_parameter_t* parameter);
 static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
+
 static void _handle_abort(file_management_t* file_management);
 
 static bool _update_sequence_init(file_management_t* file_management, const char* file_name, size_t file_size);
@@ -238,8 +239,20 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
 
     file_management->state = STATE_FILE_OBTAINED;
     _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
-    // TODO: here is a place for file_list update
+
     _reset_state(file_management);
+}
+
+void handle_abort(file_management_t* file_management)
+{
+    /* Sanity check */
+    WOLK_ASSERT(file_management);
+
+    if (!file_management->has_valid_configuration) {
+        return;
+    }
+
+    _handle_abort(file_management);
 }
 
 void file_management_process(file_management_t* file_management)
@@ -386,15 +399,11 @@ static void _handle_abort(file_management_t* file_management)
     switch (file_management->state) {
     case STATE_FILE_OBTAINED:
     case STATE_PACKET_FILE_TRANSFER:
+    case STATE_IDLE:
     case STATE_URL_DOWNLOAD:
         _update_abort(file_management);
-        _reset_state(file_management);
         _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
-        break;
-
-    /* File Management not in progress - Ignore command */
-    case STATE_IDLE:
-        _listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+        _reset_state(file_management);
         break;
     default:
         /* Sanity check */

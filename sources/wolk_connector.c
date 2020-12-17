@@ -68,6 +68,8 @@ static void _handle_file_management_parameter(file_management_t* file_management
                                               file_management_parameter_t* file_management_parameter);
 static void _handle_file_management_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
 
+static void _handle_abort(file_management_t* file_management);
+
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request);
 
@@ -698,6 +700,13 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC_JSON)) {
             _handle_file_management_packet(&ctx->file_management_update, (uint8_t*)payload, (size_t)payload_len);
+        } else if (strstr(topic_str, FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC_JSON)) {
+            file_management_parameter_t file_management_parameter;
+            const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
+                &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
+            if (num_deserialized_parameter != 0) {
+                _handle_abort(&ctx->file_management_update);
+            }
         }
     }
 
@@ -885,6 +894,14 @@ static void _handle_file_management_packet(file_management_t* file_management, u
     WOLK_ASSERT(packet);
 
     file_management_handle_packet(file_management, packet, packet_size);
+}
+
+static void _handle_abort(file_management_t* file_management)
+{
+    /* Sanity check */
+    WOLK_ASSERT(file_management);
+
+    handle_abort(file_management);
 }
 
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status)

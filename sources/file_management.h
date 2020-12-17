@@ -142,6 +142,8 @@ void file_management_handle_parameter(file_management_t* file_management,
 
 void file_management_handle_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
 
+void handle_abort(file_management_t* file_management);
+
 void file_management_process(file_management_t* file_management);
 
 void file_management_set_on_status_listener(file_management_t* file_management,
