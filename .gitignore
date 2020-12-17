@@ -51,7 +51,6 @@ cmake-build-debug
 
 # Out directory
 out
-!out/bin/files
 
 # Docs directories
 docs/html/
