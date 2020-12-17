@@ -26,13 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 
-typedef enum {
-    STATE_IDLE = 0,
-    STATE_PACKET_FILE_TRANSFER,
-    STATE_URL_DOWNLOAD,
-    STATE_FILE_OBTAINED,
-    STATE_INSTALL
-} state_t;
+typedef enum { STATE_IDLE = 0, STATE_PACKET_FILE_TRANSFER, STATE_URL_DOWNLOAD, STATE_FILE_OBTAINED } state_t;
 
 enum { MAX_RETRIES = 3 };
 
@@ -146,7 +140,6 @@ static void _check_url_download(file_management_t* file_management)
     case STATE_IDLE:
     case STATE_PACKET_FILE_TRANSFER:
     case STATE_FILE_OBTAINED:
-    case STATE_INSTALL:
         break;
 
     default:
@@ -334,13 +327,13 @@ static void _handle_file_management(file_management_t* file_management, file_man
                                             file_management->next_chunk_index,
                                             file_management->chunk_size + (2 * FILE_MANAGEMENT_HASH_SIZE));
         _listener_on_packet_request(file_management, packet_request);
+
         break;
 
     /* File Management already in progress - Ignore command */
     case STATE_PACKET_FILE_TRANSFER:
     case STATE_URL_DOWNLOAD:
     case STATE_FILE_OBTAINED:
-    case STATE_INSTALL:
         break;
 
     default:
@@ -377,7 +370,6 @@ static void _handle_url_download(file_management_t* file_management, file_manage
     case STATE_PACKET_FILE_TRANSFER:
     case STATE_URL_DOWNLOAD:
     case STATE_FILE_OBTAINED:
-    case STATE_INSTALL:
         break;
 
     default:
@@ -395,7 +387,6 @@ static void _handle_abort(file_management_t* file_management)
     case STATE_FILE_OBTAINED:
     case STATE_PACKET_FILE_TRANSFER:
     case STATE_URL_DOWNLOAD:
-    case STATE_INSTALL:
         _update_abort(file_management);
         _reset_state(file_management);
         _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));

@@ -479,7 +479,7 @@ bool json_serialize_file_management_status(const char* device_key,
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
         return false;
     }
-    // TODO: replace strlen with WOLK_ARRAY_LENGTH
+
     file_management_error_t error = file_management_status_get_error(status);
     if (error >= 0) {
         if (snprintf(outbound_message->payload + strlen(outbound_message->payload) - 1,

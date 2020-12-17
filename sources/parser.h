@@ -59,7 +59,7 @@ typedef struct {
                                              file_management_packet_request_t* file_management_packet_request,
                                              file_management_status_t* status, outbound_message_t* outbound_message);
     bool (*deserialize_file_management_parameter)(char* buffer, size_t buffer_size,
-                                                  file_management_parameter_t* parameter); // TODO: has to be modified
+                                                  file_management_parameter_t* parameter);
     bool (*serialize_file_management_packet_request)(const char* device_key,
                                                      file_management_packet_request_t* file_management_packet_request,
                                                      outbound_message_t* outbound_message);
