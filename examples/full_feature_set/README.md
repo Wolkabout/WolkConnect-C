@@ -169,7 +169,7 @@ See code snippet below on how to enable device file management.
 ```c
 wolk_init_file_management(&wolk,
                           128 * 1024 * 1024,                            // Maximum acceptable size of file, in bytes
-                          256,                                          // Size of file transfer chunk, in bytes
+                          256,                                          // Size of file transfer chunk, in bytes, can't be higher that MQTT_PACKET_SIZE
                           file_management_start,                        // Prepares device for receiving file
                           file_management_write,                        // Writes received file chunk
                           file_management_chunk_read,                   // Reads requested file chunk
