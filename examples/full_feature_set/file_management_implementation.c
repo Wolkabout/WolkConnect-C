@@ -23,15 +23,25 @@ static size_t file_management_file_size = 0;
 bool file_management_start(const char* file_name, size_t file_size)
 {
     printf("Starting File Management. File name: %s. File size:%zu\n", file_name, file_size);
+
     file_management_file_size = file_size;
 
-    char file_location[FILE_MANAGEMENT_FILE_NAME_SIZE];
-    if (snprintf(file_location, FILE_MANAGEMENT_FILE_NAME_SIZE, "files/%s", file_name)
-        >= (int)FILE_MANAGEMENT_FILE_NAME_SIZE) {
+    char* directory_name = "files";
+    int FILE_LOCATION_NAME_SIZE = FILE_MANAGEMENT_FILE_NAME_SIZE + strlen(directory_name) + 1;
+    char file_location[FILE_LOCATION_NAME_SIZE];
+    struct stat st = {0};
+
+    if (stat(directory_name, &st) == -1) {
+        if (mkdir(directory_name, 0777) == -1) {
+            return false;
+        }
+    }
+
+    if (snprintf(file_location, FILE_LOCATION_NAME_SIZE, "files/%s", file_name) >= (int)FILE_LOCATION_NAME_SIZE) {
         return false;
     }
-    file_management_file = fopen(file_location, "w+b");
 
+    file_management_file = fopen(file_location, "w+b");
     if (file_management_file == NULL) {
         return false;
     }
