@@ -48,6 +48,11 @@ bool outbound_message_make_from_file_management_status(parser_t* parser, const c
                                                        file_management_status_t* file_management_status,
                                                        outbound_message_t* outbound_message);
 
+bool outbound_message_make_from_file_management_url_download_status(parser_t* parser, const char* device_key,
+                                                                    file_management_parameter_t* parameter,
+                                                                    file_management_status_t* status,
+                                                                    outbound_message_t* outbound_message);
+
 bool outbound_message_make_from_file_management_packet_request(
     parser_t* parser, const char* device_key, file_management_packet_request_t* file_management_packet_request,
     outbound_message_t* outbound_message);

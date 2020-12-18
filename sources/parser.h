@@ -63,6 +63,10 @@ typedef struct {
     bool (*serialize_file_management_packet_request)(const char* device_key,
                                                      file_management_packet_request_t* file_management_packet_request,
                                                      outbound_message_t* outbound_message);
+    bool (*serialize_file_management_url_download_status)(const char* device_key,
+                                                          file_management_parameter_t* parameter,
+                                                          file_management_status_t* status,
+                                                          outbound_message_t* outbound_message);
 
     bool (*serialize_ping_keep_alive_message)(const char* device_key, outbound_message_t* outbound_message);
     bool (*deserialize_pong_keep_alive_message)(char* buffer, size_t buffer_size, utc_command_t* utc);
@@ -107,6 +111,11 @@ bool parser_deserialize_file_management_parameter(parser_t* parser, char* buffer
 bool parser_serialize_file_management_packet_request(parser_t* parser, const char* device_key,
                                                      file_management_packet_request_t* file_management_packet_request,
                                                      outbound_message_t* outbound_message);
+
+bool parser_serialize_file_management_url_download(parser_t* parser, const char* device_key,
+                                                   file_management_parameter_t* parameter,
+                                                   file_management_status_t* status,
+                                                   outbound_message_t* outbound_message);
 /**** File Management ****/
 
 /**** PING keep alive ****/

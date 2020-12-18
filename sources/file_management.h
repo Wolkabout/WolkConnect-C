@@ -92,7 +92,11 @@ typedef struct file_management_update file_management_t;
 typedef void (*file_management_on_status_listener)(file_management_t* file_management, file_management_status_t status);
 typedef void (*file_management_on_packet_request_listener)(file_management_t* file_management,
                                                            file_management_packet_request_t request);
+typedef void (*file_management_on_url_download_status_listener)(file_management_t* file_management,
+                                                                file_management_parameter_t* parameter,
+                                                                file_management_status_t status);
 
+// TODO: rename into file_management
 struct file_management_update {
     const char* device_key;
 
@@ -119,11 +123,16 @@ struct file_management_update {
     char file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
     uint8_t file_hash[FILE_MANAGEMENT_HASH_SIZE];
     size_t file_size;
-    /* File Management  request parameters */
+    /* File Management request parameters */
+
+    /* File Management URL */
+    char file_url[FILE_MANAGEMENT_URL_SIZE];
+    /* File Management URL */
 
     /* Listeners */
     file_management_on_status_listener on_status;
     file_management_on_packet_request_listener on_packet_request;
+    file_management_on_url_download_status_listener on_url_download_status;
     /* Listeners */
 
     void* wolk_ctx;
@@ -144,12 +153,16 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
 
 void handle_abort(file_management_t* file_management);
 
+void handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
+
 void file_management_process(file_management_t* file_management);
 
 void file_management_set_on_status_listener(file_management_t* file_management,
                                             file_management_on_status_listener on_status);
 void file_management_set_on_packet_request_listener(file_management_t* file_management,
                                                     file_management_on_packet_request_listener on_packet_request);
+void file_management_set_on_url_download_status_listener(file_management_t* file_management,
+                                                         file_management_on_status_listener on_status);
 
 #ifdef __cplusplus
 }

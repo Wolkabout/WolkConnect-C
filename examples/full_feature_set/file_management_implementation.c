@@ -97,11 +97,13 @@ bool file_management_start_url_download(const char* url)
 {
     /* Dummy file downloader */
     printf("Starting file download from url %s\n", url);
+    // TODO: implement "wget"
     return true;
 }
 
 bool file_management_is_url_download_done(bool* success)
 {
+    printf("File download from url done.\n");
     *success = true;
     return true;
 }
