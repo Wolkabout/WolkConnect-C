@@ -393,6 +393,11 @@ static void _handle_url_download(file_management_t* file_management, file_manage
 
     switch (file_management->state) {
     case STATE_IDLE:
+        if ((strlen(parameter->file_url) >= FILE_MANAGEMENT_URL_SIZE) || (strlen(parameter->file_url) == 0)) {
+            _listener_on_url_download_status(file_management, parameter,
+                                             file_management_status_error(FILE_MANAGEMENT_ERROR_MALFORMED_URL));
+            return;
+        }
         strcpy(file_management->file_url, file_management_parameter_get_file_url(parameter));
 
         if (!_has_url_download(file_management)) {

@@ -109,6 +109,10 @@ void file_management_parameter_set_file_url(file_management_parameter_t* paramet
     WOLK_ASSERT(file_url);
     WOLK_ASSERT(strlen(file_url) <= FILE_MANAGEMENT_URL_SIZE);
 
+    if (strlen(file_url) >= FILE_MANAGEMENT_URL_SIZE) {
+        memset(parameter->file_url, '\0', FILE_MANAGEMENT_URL_SIZE);
+    }
+
     strncpy(parameter->file_url, file_url, FILE_MANAGEMENT_URL_SIZE);
 }
 
