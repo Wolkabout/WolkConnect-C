@@ -56,8 +56,7 @@ static bool _is_file_valid(file_management_t* file_management);
 
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request);
-static void _listener_on_url_download_status(file_management_t* file_management, file_management_parameter_t* parameter,
-                                             file_management_status_t status);
+static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
 
 void file_management_init(file_management_t* file_management, const char* device_key, size_t maximum_file_size,
                           size_t chunk_size, file_management_start_t start, file_management_write_chunk_t write_chunk,
@@ -117,40 +116,42 @@ static void _check_url_download(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
-
     if (!_has_url_download(file_management)) {
         return;
     }
 
     bool success;
     switch (file_management->state) {
+    case STATE_IDLE:
+    case STATE_PACKET_FILE_TRANSFER:
+        break;
     case STATE_URL_DOWNLOAD:
-        if (!_is_url_download_done(file_management, &success)) {
-            return;
-        }
-
-        file_management_parameter_t file_management_parameter;
-        file_management_parameter_set_file_url(&file_management_parameter, file_management->file_url);
-
-        if (!success) {
-            _reset_state(file_management);
-            _listener_on_url_download_status(file_management, &file_management_parameter,
+        _listener_on_url_download_status(file_management,
+                                         file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
+        if (!_start_url_download(file_management, file_management->file_url)) {
+            _listener_on_url_download_status(file_management,
                                              file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+
+            _reset_state(file_management);
             return;
         }
 
         file_management->state = STATE_FILE_OBTAINED;
-
-        _listener_on_url_download_status(file_management, &file_management_parameter,
-                                         file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
-
-        break;
-
-    case STATE_IDLE:
-    case STATE_PACKET_FILE_TRANSFER:
         break;
 
     case STATE_FILE_OBTAINED:
+        if (!_is_url_download_done(file_management, &success)) {
+            return;
+        }
+
+        if (!success) {
+            _reset_state(file_management);
+            _listener_on_url_download_status(file_management,
+                                             file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+            return;
+        }
+
+        _listener_on_url_download_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
         file_management->state = STATE_IDLE;
         break;
 
@@ -284,7 +285,7 @@ void file_management_process(file_management_t* file_management)
         return;
     }
 
-    _report_result(file_management);
+    //    _report_result(file_management);
     _check_url_download(file_management);
 }
 
@@ -394,34 +395,27 @@ static void _handle_url_download(file_management_t* file_management, file_manage
     switch (file_management->state) {
     case STATE_IDLE:
         if ((strlen(parameter->file_url) >= FILE_MANAGEMENT_URL_SIZE) || (strlen(parameter->file_url) == 0)) {
-            _listener_on_url_download_status(file_management, parameter,
+            _listener_on_url_download_status(file_management,
                                              file_management_status_error(FILE_MANAGEMENT_ERROR_MALFORMED_URL));
             return;
         }
         strcpy(file_management->file_url, file_management_parameter_get_file_url(parameter));
+        memset(file_management->file_name, '\0', sizeof(file_management->file_name));
 
         if (!_has_url_download(file_management)) {
             _listener_on_url_download_status(
-                file_management, parameter,
-                file_management_status_error(FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED));
-            return;
-        }
-
-        if (!_start_url_download(file_management, file_management_parameter_get_file_url(parameter))) {
-            _listener_on_url_download_status(file_management, parameter,
-                                             file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+                file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED));
             return;
         }
 
         file_management->state = STATE_URL_DOWNLOAD;
-        _listener_on_url_download_status(file_management, parameter,
-                                         file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
         break;
 
     /* File Management already in progress - Ignore */
     case STATE_PACKET_FILE_TRANSFER:
     case STATE_URL_DOWNLOAD:
     case STATE_FILE_OBTAINED:
+        file_management->state = STATE_IDLE;
         break;
 
     default:
@@ -439,9 +433,15 @@ static void _handle_abort(file_management_t* file_management)
     case STATE_FILE_OBTAINED:
     case STATE_PACKET_FILE_TRANSFER:
     case STATE_IDLE:
-    case STATE_URL_DOWNLOAD: // TODO: separate URL download ABORT from regular
         _update_abort(file_management);
         _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
+        _reset_state(file_management);
+        break;
+    case STATE_URL_DOWNLOAD:
+        _update_abort(file_management);
+        file_management_parameter_t file_management_parameter;
+        file_management_parameter_set_file_url(&file_management_parameter, file_management->file_url);
+        _listener_on_url_download_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
         _reset_state(file_management);
         break;
     default:
@@ -573,13 +573,12 @@ static bool _has_url_download(file_management_t* file_management)
     return file_management->start_url_download != NULL;
 }
 
-static void _listener_on_url_download_status(file_management_t* file_management, file_management_parameter_t* parameter,
-                                             file_management_status_t status)
+static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
     if (file_management->on_url_download_status != NULL) {
-        file_management->on_url_download_status(file_management, parameter, status);
+        file_management->on_url_download_status(file_management, status);
     }
 }

@@ -45,12 +45,12 @@ static const char* ACTUATOR_COMMANDS_TOPIC = "p2d/actuator_set/d/";
 
 static const char* CONFIGURATION_COMMANDS = "p2d/configuration_set/d/";
 
-static const char* FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC_JSON = "p2d/file_upload_initiate/d/";
-static const char* FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC_JSON = "p2d/file_binary_response/d/";
-static const char* FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC_JSON = "p2d/file_upload_abort/d/";
+static const char* FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC = "p2d/file_upload_initiate/d/";
+static const char* FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC = "p2d/file_binary_response/d/";
+static const char* FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC = "p2d/file_upload_abort/d/";
 
-static const char* FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE = "p2d/file_url_download_initiate/d/";
-static const char* FILE_MANAGEMENT_URL_DOWNLOAD_ABORT = "p2d/file_url_download_abort/d/";
+static const char* FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC = "p2d/file_url_download_initiate/d/";
+static const char* FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC = "p2d/file_url_download_abort/d/";
 
 
 static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
@@ -76,8 +76,7 @@ static void _handle_abort(file_management_t* file_management);
 
 static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
 
-static void _listener_on_url_download_status(file_management_t* file_management, file_management_parameter_t* parameter,
-                                             file_management_status_t status);
+static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request);
 
@@ -277,7 +276,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 
     /* Subscribe to FILE MANAGEMENT */
     memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC_JSON);
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
     if (_subscribe(ctx, topic_buf) != W_FALSE) {
@@ -285,7 +284,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     }
 
     memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC_JSON);
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
     if (_subscribe(ctx, topic_buf) != W_FALSE) {
@@ -293,7 +292,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     }
 
     memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC_JSON);
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
     if (_subscribe(ctx, topic_buf) != W_FALSE) {
@@ -301,7 +300,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     }
 
     memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE);
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
     if (_subscribe(ctx, topic_buf) != W_FALSE) {
@@ -309,7 +308,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     }
 
     memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_URL_DOWNLOAD_ABORT);
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
     if (_subscribe(ctx, topic_buf) != W_FALSE) {
@@ -717,23 +716,24 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             if (num_deserialized_commands != 0) {
                 _handle_configuration_command(ctx, &configuration_command);
             }
-        } else if (strstr(topic_str, FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC_JSON)) {
+        } else if (strstr(topic_str, FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized_parameter != 0) {
                 _handle_file_management_parameter(&ctx->file_management_update, &file_management_parameter);
             }
-        } else if (strstr(topic_str, FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC_JSON)) {
+        } else if (strstr(topic_str, FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC)) {
             _handle_file_management_packet(&ctx->file_management_update, (uint8_t*)payload, (size_t)payload_len);
-        } else if (strstr(topic_str, FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC_JSON)) {
+        } else if ((strstr(topic_str, FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC))
+                   || (strstr(topic_str, FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC))) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized_parameter != 0) {
                 _handle_abort(&ctx->file_management_update);
             }
-        } else if (strstr(topic_str, FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE)) {
+        } else if (strstr(topic_str, FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
@@ -971,16 +971,21 @@ static void _listener_on_packet_request(file_management_t* file_management, file
     _publish(wolk_ctx, &outbound_message);
 }
 
-static void _listener_on_url_download_status(file_management_t* file_management, file_management_parameter_t* parameter,
-                                             file_management_status_t status)
+static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
+    WOLK_ASSERT(status);
+
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
     outbound_message_t outbound_message;
+    file_management_parameter_t file_management_parameter;
 
-    outbound_message_make_from_file_management_url_download_status(&wolk_ctx->parser, wolk_ctx->device_key, parameter,
-                                                                   &status, &outbound_message);
+    file_management_parameter_set_file_url(&file_management_parameter, file_management->file_url);
+    file_management_parameter_set_filename(&file_management_parameter, file_management->file_name);
+
+    outbound_message_make_from_file_management_url_download_status(
+        &wolk_ctx->parser, wolk_ctx->device_key, &file_management_parameter, &status, &outbound_message);
 
     _publish(wolk_ctx, &outbound_message);
 }

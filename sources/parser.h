@@ -64,7 +64,7 @@ typedef struct {
                                                      file_management_packet_request_t* file_management_packet_request,
                                                      outbound_message_t* outbound_message);
     bool (*serialize_file_management_url_download_status)(const char* device_key,
-                                                          file_management_parameter_t* parameter,
+                                                          file_management_parameter_t* file_management_parameter,
                                                           file_management_status_t* status,
                                                           outbound_message_t* outbound_message);
 
@@ -116,6 +116,7 @@ bool parser_serialize_file_management_url_download(parser_t* parser, const char*
                                                    file_management_parameter_t* parameter,
                                                    file_management_status_t* status,
                                                    outbound_message_t* outbound_message);
+
 /**** File Management ****/
 
 /**** PING keep alive ****/

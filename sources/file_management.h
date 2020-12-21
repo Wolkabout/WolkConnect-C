@@ -93,7 +93,6 @@ typedef void (*file_management_on_status_listener)(file_management_t* file_manag
 typedef void (*file_management_on_packet_request_listener)(file_management_t* file_management,
                                                            file_management_packet_request_t request);
 typedef void (*file_management_on_url_download_status_listener)(file_management_t* file_management,
-                                                                file_management_parameter_t* parameter,
                                                                 file_management_status_t status);
 
 // TODO: rename into file_management

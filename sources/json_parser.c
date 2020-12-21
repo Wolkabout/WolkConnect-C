@@ -41,8 +41,8 @@ static const char* EVENTS_TOPIC = "d2p/events/d/";
 
 static const char* CONFIGURATION_GET_TOPIC = "d2p/configuration_get/d/";
 
-static const char* FILE_MANAGEMENT_UPLOAD_STATUS = "d2p/file_upload_status/d/";
-static const char* FILE_MANAGEMENT_PACKET_REQUEST = "d2p/file_binary_request/d/";
+static const char* FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC = "d2p/file_upload_status/d/";
+static const char* FILE_MANAGEMENT_PACKET_REQUEST_TOPIC = "d2p/file_binary_request/d/";
 
 static const char* FILE_MANAGEMENT_URL_DOWNLOAD_STATUS = "d2p/file_url_download_status/d/";
 
@@ -465,8 +465,8 @@ bool json_serialize_file_management_status(const char* device_key,
     outbound_message_init(outbound_message, "", "");
 
     /* Serialize topic */
-    strncpy(outbound_message->topic, FILE_MANAGEMENT_UPLOAD_STATUS, strlen(FILE_MANAGEMENT_UPLOAD_STATUS));
-    if (snprintf(outbound_message->topic + strlen(FILE_MANAGEMENT_UPLOAD_STATUS),
+    strncpy(outbound_message->topic, FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC, strlen(FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC));
+    if (snprintf(outbound_message->topic + strlen(FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC),
                  WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return false;
@@ -575,8 +575,9 @@ bool json_serialize_file_management_packet_request(const char* device_key,
     outbound_message_init(outbound_message, "", "");
 
     /* Serialize topic */
-    strncpy(outbound_message->topic, FILE_MANAGEMENT_PACKET_REQUEST, strlen(FILE_MANAGEMENT_PACKET_REQUEST));
-    if (snprintf(outbound_message->topic + strlen(FILE_MANAGEMENT_PACKET_REQUEST),
+    strncpy(outbound_message->topic, FILE_MANAGEMENT_PACKET_REQUEST_TOPIC,
+            strlen(FILE_MANAGEMENT_PACKET_REQUEST_TOPIC));
+    if (snprintf(outbound_message->topic + strlen(FILE_MANAGEMENT_PACKET_REQUEST_TOPIC),
                  WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return false;
@@ -651,7 +652,8 @@ bool json_deserialize_pong_keep_alive_message(char* buffer, size_t buffer_size, 
     return true;
 }
 
-bool json_serialize_file_management_url_download_status(const char* device_key, file_management_parameter_t* parameter,
+bool json_serialize_file_management_url_download_status(const char* device_key,
+                                                        file_management_parameter_t* file_management_parameter,
                                                         file_management_status_t* status,
                                                         outbound_message_t* outbound_message)
 {
@@ -667,7 +669,8 @@ bool json_serialize_file_management_url_download_status(const char* device_key, 
 
     /* Serialize payload */
     if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
-                 "{\"fileUrl\": \"%s\", \"status\": \"%s\"}", file_management_parameter_get_file_url(parameter),
+                 "{\"fileUrl\": \"%s\", \"status\": \"%s\"}",
+                 file_management_parameter_get_file_url(file_management_parameter),
                  file_management_status_as_str(status))
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
         return false;
@@ -686,7 +689,7 @@ bool json_serialize_file_management_url_download_status(const char* device_key, 
     if (state == FILE_MANAGEMENT_STATE_FILE_READY) {
         if (snprintf(outbound_message->payload + strlen(outbound_message->payload) - 1,
                      WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"fileName\":\"%s\"}",
-                     file_management_packet_request_get_file_name(parameter))
+                     file_management_packet_request_get_file_name(file_management_parameter))
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }

@@ -158,17 +158,19 @@ bool parser_serialize_file_management_packet_request(parser_t* parser, const cha
 }
 
 bool parser_serialize_file_management_url_download(parser_t* parser, const char* device_key,
-                                                   file_management_parameter_t* parameter,
+                                                   file_management_parameter_t* file_management_parameter,
                                                    file_management_status_t* status,
                                                    outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
-    WOLK_ASSERT(file_management_packet_request);
+    WOLK_ASSERT(file_management_parameter);
+    WOLK_ASSERT(status);
     WOLK_ASSERT(outbound_message);
 
-    return parser->serialize_file_management_url_download_status(device_key, parameter, status, outbound_message);
+    return parser->serialize_file_management_url_download_status(device_key, file_management_parameter, status,
+                                                                 outbound_message);
 }
 
 bool parser_serialize_ping_keep_alive_message(parser_t* parser, const char* device_key,
