@@ -19,36 +19,13 @@
 #include <dirent.h>
 #include <unistd.h>
 
+enum { DIRECTORY_NAME_SIZE = 6 };
+
 static FILE* file_management_file;
-char file_management_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
+static char* directory_name = "files/";
+char file_management_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE];
 static size_t file_management_file_size = 0;
 
-
-int8_t get_file_list_from_dir(char* directory_file_list[])
-{
-    struct dirent* de;
-
-    DIR* dr = opendir("files/");
-
-    if (dr == NULL) {
-        printf("Could not open current directory");
-        return false;
-    }
-    int count = 0;
-    while ((de = readdir(dr)) != NULL) {
-        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) {
-            continue;
-        } else {
-            strncpy(&directory_file_list[count] + strlen(&directory_file_list[count]), "de->d_name",
-                    strlen("de->d_name"));
-            printf("%s\n", de->d_name);
-            count++;
-        }
-    }
-
-    closedir(dr);
-    return count;
-}
 
 bool file_management_start(const char* file_name, size_t file_size)
 {
@@ -56,9 +33,6 @@ bool file_management_start(const char* file_name, size_t file_size)
 
     file_management_file_size = file_size;
 
-    char* directory_name = "files";
-    int FILE_LOCATION_NAME_SIZE = FILE_MANAGEMENT_FILE_NAME_SIZE + strlen(directory_name) + 1;
-    char file_location[FILE_LOCATION_NAME_SIZE];
     struct stat st = {0};
 
     if (stat(directory_name, &st) == -1) {
@@ -67,16 +41,17 @@ bool file_management_start(const char* file_name, size_t file_size)
         }
     }
 
-    if (snprintf(file_location, FILE_LOCATION_NAME_SIZE, "files/%s", file_name) >= (int)FILE_LOCATION_NAME_SIZE) {
+    if (snprintf(file_management_file_name, FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE, "%s%s",
+                 directory_name, file_name)
+        >= (int)(FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE)) {
         return false;
     }
 
-    file_management_file = fopen(file_location, "w+b");
+    file_management_file = fopen(file_management_file_name, "w+b");
     if (file_management_file == NULL) {
         return false;
     }
 
-    strcpy(file_management_file_name, file_name);
     return true;
 }
 
@@ -105,13 +80,15 @@ size_t file_management_chunk_read(size_t index, uint8_t* data, size_t data_size)
 
 void file_management_abort(void)
 {
-    printf("Aborting File Management\n");
+    printf("Aborting File Management\nFile with name: %s", file_management_file_name);
 
     if (file_management_file != NULL) {
         fclose(file_management_file);
     }
 
-    remove(file_management_file_name);
+    if (remove(file_management_file_name) != 0) {
+        printf("File can't be removed for FS");
+    }
 }
 
 void file_management_finalize(void)
@@ -144,7 +121,7 @@ int8_t file_management_get_file_list(char* file_list[])
 {
     struct dirent* de;
 
-    DIR* dr = opendir("files/");
+    DIR* dr = opendir(directory_name);
 
     if (dr == NULL) {
         printf("Could not open current directory");
