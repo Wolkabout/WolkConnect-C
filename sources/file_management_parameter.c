@@ -116,15 +116,6 @@ void file_management_parameter_set_file_url(file_management_parameter_t* paramet
     strncpy(parameter->file_url, file_url, FILE_MANAGEMENT_URL_SIZE);
 }
 
-void file_management_parameter_file_list_confirm(file_management_parameter_t* parameter, const char* file_list)
-{
-    /* Sanity check */
-    WOLK_ASSERT(parameter);
-    WOLK_ASSERT(file_list);
-    // TODO: implement file list
-    //    strncpy(parameter->file_url, file_url, FILE_MANAGEMENT_URL_SIZE);
-}
-
 const char* file_management_parameter_get_result(file_management_parameter_t* parameter)
 {
     /* Sanity check */

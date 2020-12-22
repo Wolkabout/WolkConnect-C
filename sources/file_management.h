@@ -87,16 +87,34 @@ typedef bool (*file_management_start_url_download_t)(const char* url);
  */
 typedef bool (*file_management_is_url_download_done_t)(bool* success);
 
-typedef struct file_management_update file_management_t;
+/**
+ * @brief file_management_get_file_list_t signature.
+ * Get file list in "file_list" as string array followed with number of files in "file_list_size"
+ *
+ * @return number of file presented in the list
+ */
+typedef int8_t (*file_management_get_file_list_t)(char* file_list[]);
+
+/**
+ * @brief file_management_remove_file_t signature.
+ * Remove specific file
+ *
+ * @return True on success, false on failure
+ */
+typedef bool (*file_management_remove_file_t)(const char* file_name);
+
+typedef struct file_management file_management_t;
 
 typedef void (*file_management_on_status_listener)(file_management_t* file_management, file_management_status_t status);
 typedef void (*file_management_on_packet_request_listener)(file_management_t* file_management,
                                                            file_management_packet_request_t request);
 typedef void (*file_management_on_url_download_status_listener)(file_management_t* file_management,
                                                                 file_management_status_t status);
+typedef void (*file_management_on_file_list_listener)(file_management_t* file_management,
+                                                      file_management_get_file_list_t file_list,
+                                                      int8_t file_list_items);
 
-// TODO: rename into file_management
-struct file_management_update {
+struct file_management {
     const char* device_key;
 
     size_t maximum_file_size;
@@ -110,6 +128,9 @@ struct file_management_update {
 
     file_management_start_url_download_t start_url_download;
     file_management_is_url_download_done_t is_url_download_done;
+
+    file_management_get_file_list_t get_file_list;
+    file_management_remove_file_t remove_file;
 
     uint8_t state;
     uint8_t last_packet_hash[FILE_MANAGEMENT_HASH_SIZE];
@@ -132,6 +153,7 @@ struct file_management_update {
     file_management_on_status_listener on_status;
     file_management_on_packet_request_listener on_packet_request;
     file_management_on_url_download_status_listener on_url_download_status;
+    file_management_on_file_list_listener on_file_list;
     /* Listeners */
 
     void* wolk_ctx;
@@ -143,7 +165,9 @@ void file_management_init(file_management_t* file_management, const char* device
                           size_t chunk_size, file_management_start_t start, file_management_write_chunk_t write_chunk,
                           file_management_read_chunk_t read_chunk, file_management_abort_t abort,
                           file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
-                          file_management_is_url_download_done_t is_url_download_done, void* wolk_ctx);
+                          file_management_is_url_download_done_t is_url_download_done,
+                          file_management_get_file_list_t get_file_list, file_management_remove_file_t remove_file,
+                          void* wolk_ctx);
 
 void file_management_handle_parameter(file_management_t* file_management,
                                       file_management_parameter_t* file_management_parameter);
@@ -162,6 +186,8 @@ void file_management_set_on_packet_request_listener(file_management_t* file_mana
                                                     file_management_on_packet_request_listener on_packet_request);
 void file_management_set_on_url_download_status_listener(file_management_t* file_management,
                                                          file_management_on_status_listener on_status);
+void file_management_set_on_file_list_listener(file_management_t* file_management,
+                                               file_management_on_file_list_listener file_list);
 
 #ifdef __cplusplus
 }

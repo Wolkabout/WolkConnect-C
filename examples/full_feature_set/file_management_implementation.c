@@ -16,9 +16,39 @@
 
 #include "file_management_implementation.h"
 
+#include <dirent.h>
+#include <unistd.h>
+
 static FILE* file_management_file;
 char file_management_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
 static size_t file_management_file_size = 0;
+
+
+int8_t get_file_list_from_dir(char* directory_file_list[])
+{
+    struct dirent* de;
+
+    DIR* dr = opendir("files/");
+
+    if (dr == NULL) {
+        printf("Could not open current directory");
+        return false;
+    }
+    int count = 0;
+    while ((de = readdir(dr)) != NULL) {
+        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) {
+            continue;
+        } else {
+            strncpy(&directory_file_list[count] + strlen(&directory_file_list[count]), "de->d_name",
+                    strlen("de->d_name"));
+            printf("%s\n", de->d_name);
+            count++;
+        }
+    }
+
+    closedir(dr);
+    return count;
+}
 
 bool file_management_start(const char* file_name, size_t file_size)
 {
@@ -98,6 +128,7 @@ bool file_management_start_url_download(const char* url)
     /* Dummy file downloader */
     printf("Starting file download from url %s\n", url);
     // TODO: implement "wget"
+    sleep(3);
     return true;
 }
 
@@ -105,5 +136,35 @@ bool file_management_is_url_download_done(bool* success)
 {
     printf("File download from url done.\n");
     *success = true;
+    // TODO: set_file name
     return true;
+}
+
+int8_t file_management_get_file_list(char* file_list[])
+{
+    struct dirent* de;
+
+    DIR* dr = opendir("files/");
+
+    if (dr == NULL) {
+        printf("Could not open current directory");
+        return false;
+    }
+    int file_list_items = 0;
+    while ((de = readdir(dr)) != NULL) {
+        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) { // Ignore unix hidden files
+            continue;
+        } else {
+            file_list[file_list_items] = de->d_name;
+            file_list_items++;
+        }
+    }
+
+    closedir(dr);
+    return file_list_items;
+}
+
+bool file_management_remove_file(const char* file_name)
+{
+    return remove(file_name) == 0 ? false : true;
 }

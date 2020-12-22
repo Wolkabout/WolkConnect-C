@@ -46,6 +46,8 @@ static const char* FILE_MANAGEMENT_PACKET_REQUEST_TOPIC = "d2p/file_binary_reque
 
 static const char* FILE_MANAGEMENT_URL_DOWNLOAD_STATUS = "d2p/file_url_download_status/d/";
 
+static const char* FILE_MANAGEMENT_FILE_LIST_UPDATE = "d2p/file_list_update/d/";
+
 static bool all_readings_have_equal_rtc(reading_t* first_reading, size_t num_readings)
 {
     reading_t* current_reading = first_reading;
@@ -694,6 +696,37 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
             return false;
         }
     }
+
+    return true;
+}
+
+bool json_serialize_file_management_file_list_update(const char* device_key, char* file_list[], int8_t file_list_items,
+                                                     outbound_message_t* outbound_message)
+{
+    outbound_message_init(outbound_message, "", "");
+    memset(outbound_message->topic, '\0', TOPIC_SIZE);
+    memset(outbound_message->payload, '\0', PAYLOAD_SIZE);
+
+    /* Serialize topic */
+    strncpy(outbound_message->topic, FILE_MANAGEMENT_FILE_LIST_UPDATE, strlen(FILE_MANAGEMENT_FILE_LIST_UPDATE));
+    if (snprintf(outbound_message->topic + strlen(FILE_MANAGEMENT_FILE_LIST_UPDATE),
+                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
+        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
+        return false;
+    }
+
+    /* Serialize payload */
+    strncpy(outbound_message->payload, "[", strlen("["));
+    for (int i = 0; i < file_list_items; i++) {
+        if (snprintf(outbound_message->payload + strlen(outbound_message->payload),
+                     WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"fileName\":\"%s\"},", (const char*)file_list[i])
+            >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
+            return false;
+        }
+    }
+
+    file_list_items == 0 ? strncpy(outbound_message->payload + strlen(outbound_message->payload), "]", strlen("]"))
+                         : strncpy(outbound_message->payload + strlen(outbound_message->payload) - 1, "]", strlen("]"));
 
     return true;
 }

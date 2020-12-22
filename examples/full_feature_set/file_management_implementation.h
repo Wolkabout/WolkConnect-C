@@ -32,5 +32,7 @@ void file_management_abort(void);
 void file_management_finalize(void);
 bool file_management_start_url_download(const char* url);
 bool file_management_is_url_download_done(bool* success);
+int8_t file_management_get_file_list(char* file_list[]);
+bool file_management_remove_file(const char* file_name);
 
 #endif // FILE_MANAGEMENT_IMPLEMENTATION_H

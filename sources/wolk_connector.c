@@ -79,6 +79,8 @@ static void _handle_url_download(file_management_t* file_management, file_manage
 static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request);
+static void _listener_on_file_list_status(file_management_t* file_management, char* file_list[],
+                                          int8_t file_list_items);
 
 WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler,
                      actuator_status_provider_t actuator_status_provider, configuration_handler_t configuration_handler,
@@ -152,7 +154,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
 
     ctx->is_initialized = true;
 
-    wolk_init_file_management(ctx, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    wolk_init_file_management(ctx, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     return W_FALSE;
 }
 
@@ -178,18 +180,22 @@ WOLK_ERR_T wolk_init_file_management(wolk_ctx_t* ctx, size_t maximum_file_size, 
                                      file_management_read_chunk_t read_chunk, file_management_abort_t abort,
                                      file_management_finalize_t finalize,
                                      file_management_start_url_download_t start_url_download,
-                                     file_management_is_url_download_done_t is_url_download_done)
+                                     file_management_is_url_download_done_t is_url_download_done,
+                                     file_management_get_file_list_t get_file_list,
+                                     file_management_remove_file_t remove_file)
 {
     if (chunk_size > (MQTT_PACKET_SIZE - (4 * FILE_MANAGEMENT_HASH_SIZE))) {
         chunk_size = MQTT_PACKET_SIZE - (4 * FILE_MANAGEMENT_HASH_SIZE);
     }
 
     file_management_init(&ctx->file_management_update, ctx->device_key, maximum_file_size, chunk_size, start,
-                         write_chunk, read_chunk, abort, finalize, start_url_download, is_url_download_done, ctx);
+                         write_chunk, read_chunk, abort, finalize, start_url_download, is_url_download_done,
+                         get_file_list, remove_file, ctx);
 
     file_management_set_on_status_listener(&ctx->file_management_update, _listener_on_status);
     file_management_set_on_packet_request_listener(&ctx->file_management_update, _listener_on_packet_request);
     file_management_set_on_url_download_status_listener(&ctx->file_management_update, _listener_on_url_download_status);
+    file_management_set_on_file_list_listener(&ctx->file_management_update, _listener_on_file_list_status);
     return W_FALSE;
 }
 
@@ -986,6 +992,21 @@ static void _listener_on_url_download_status(file_management_t* file_management,
 
     outbound_message_make_from_file_management_url_download_status(
         &wolk_ctx->parser, wolk_ctx->device_key, &file_management_parameter, &status, &outbound_message);
+
+    _publish(wolk_ctx, &outbound_message);
+}
+
+static void _listener_on_file_list_status(file_management_t* file_management, char* file_list[], int8_t file_list_items)
+{
+    WOLK_ASSERT(file_management);
+    WOLK_ASSERT(file_list);
+
+    wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
+    outbound_message_t outbound_message;
+    file_management_parameter_t file_management_parameter;
+
+    outbound_message_make_from_file_management_file_list(&wolk_ctx->parser, wolk_ctx->device_key, file_list,
+                                                         file_list_items, &outbound_message);
 
     _publish(wolk_ctx, &outbound_message);
 }

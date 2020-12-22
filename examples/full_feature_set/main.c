@@ -30,14 +30,14 @@
 #include "file_management_implementation.h"
 #include "sensor_readings.h"
 
-#define DEFAULT_PUBLISH_PERIOD_SECONDS 15
+#define DEFAULT_PUBLISH_PERIOD_SECONDS 155
 
 static SSL_CTX* ctx;
 static BIO* sockfd;
 
 /* WolkAbout Platform device connection parameters */
 static const char* device_key = "WolkConnect-C-FMFU";
-static const char* device_password = "O0E4TUIHKS";
+static const char* device_password = "Y2ZN6QTQTD";
 static const char* hostname = "integration5.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
@@ -261,9 +261,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 256, file_management_start, file_management_chunk_write,
+    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 500, file_management_start, file_management_chunk_write,
                                   file_management_chunk_read, file_management_abort, file_management_finalize,
-                                  file_management_start_url_download, file_management_is_url_download_done)
+                                  file_management_start_url_download, file_management_is_url_download_done,
+                                  file_management_get_file_list, file_management_remove_file)
         != W_FALSE) {
         printf("Error initializing File Management");
         return 1;

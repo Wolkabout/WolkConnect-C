@@ -153,3 +153,15 @@ bool outbound_message_make_from_keep_alive_message(parser_t* parser, const char*
 
     return parser_serialize_ping_keep_alive_message(parser, device_key, outbound_message);
 }
+
+bool outbound_message_make_from_file_management_file_list(parser_t* parser, const char* device_key, char* file_list[],
+                                                          int8_t file_list_items, outbound_message_t* outbound_message)
+{
+    /* Sanity check */
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+    WOLK_ASSERT(file_list);
+    WOLK_ASSERT(outbound_message);
+
+    return parser_serialize_file_management_file_list(parser, device_key, file_list, file_list_items, outbound_message);
+}

@@ -47,6 +47,7 @@ void parser_init(parser_t* parser, parser_type_t parser_type)
         parser->deserialize_file_management_parameter = json_deserialize_file_management_parameter;
         parser->serialize_file_management_packet_request = json_serialize_file_management_packet_request;
         parser->serialize_file_management_url_download_status = json_serialize_file_management_url_download_status;
+        parser->serialize_file_management_file_list = json_serialize_file_management_file_list_update;
 
         parser->serialize_ping_keep_alive_message = json_serialize_ping_keep_alive_message;
         parser->deserialize_pong_keep_alive_message = json_deserialize_pong_keep_alive_message;
@@ -171,6 +172,19 @@ bool parser_serialize_file_management_url_download(parser_t* parser, const char*
 
     return parser->serialize_file_management_url_download_status(device_key, file_management_parameter, status,
                                                                  outbound_message);
+}
+
+bool parser_serialize_file_management_file_list(parser_t* parser, const char* device_key, char* file_list[],
+                                                int8_t file_list_items, outbound_message_t* outbound_message)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+    WOLK_ASSERT(file_list);
+    WOLK_ASSERT(file_list_items);
+    WOLK_ASSERT(outbound_message);
+
+    return parser->serialize_file_management_file_list(device_key, file_list, file_list_items, outbound_message);
 }
 
 bool parser_serialize_ping_keep_alive_message(parser_t* parser, const char* device_key,
