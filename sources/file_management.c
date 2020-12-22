@@ -453,6 +453,7 @@ static void _handle_abort(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_UNUSED(file_management);
+    char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
 
     switch (file_management->state) {
     case STATE_FILE_OBTAINED:
@@ -460,6 +461,9 @@ static void _handle_abort(file_management_t* file_management)
     case STATE_IDLE:
         _update_abort(file_management);
         _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
+
+        _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
+
         _reset_state(file_management);
         break;
     case STATE_URL_DOWNLOAD:
@@ -467,6 +471,9 @@ static void _handle_abort(file_management_t* file_management)
         file_management_parameter_t file_management_parameter;
         file_management_parameter_set_file_url(&file_management_parameter, file_management->file_url);
         _listener_on_url_download_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
+
+        _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
+
         _reset_state(file_management);
         break;
     default:
