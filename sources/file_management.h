@@ -103,6 +103,14 @@ typedef int8_t (*file_management_get_file_list_t)(char* file_list[]);
  */
 typedef bool (*file_management_remove_file_t)(const char* file_name);
 
+/**
+ * @brief file_management_purge_files_t signature.
+ * Remove all files
+ *
+ * @return True on success, false on failure
+ */
+typedef bool (*file_management_purge_files_t)(void);
+
 typedef struct file_management file_management_t;
 
 typedef void (*file_management_on_status_listener)(file_management_t* file_management, file_management_status_t status);
@@ -131,6 +139,7 @@ struct file_management {
 
     file_management_get_file_list_t get_file_list;
     file_management_remove_file_t remove_file;
+    file_management_purge_files_t purge_files;
 
     uint8_t state;
     uint8_t last_packet_hash[FILE_MANAGEMENT_HASH_SIZE];
@@ -167,7 +176,7 @@ void file_management_init(file_management_t* file_management, const char* device
                           file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
                           file_management_is_url_download_done_t is_url_download_done,
                           file_management_get_file_list_t get_file_list, file_management_remove_file_t remove_file,
-                          void* wolk_ctx);
+                          file_management_purge_files_t purge_files, void* wolk_ctx);
 
 void file_management_handle_parameter(file_management_t* file_management,
                                       file_management_parameter_t* file_management_parameter);
@@ -177,6 +186,9 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
 void handle_abort(file_management_t* file_management);
 
 void handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
+
+void handle_file_delete(file_management_t* file_management, file_management_t* parameter);
+void handle_file_purge(file_management_t* file_management);
 
 void file_management_process(file_management_t* file_management);
 

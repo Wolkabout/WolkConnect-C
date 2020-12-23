@@ -80,7 +80,7 @@ size_t file_management_chunk_read(size_t index, uint8_t* data, size_t data_size)
 
 void file_management_abort(void)
 {
-    printf("Aborting File Management\nFile with name: %s", file_management_file_name);
+    printf("Aborting File Management\nFile with name: %s\n", file_management_file_name);
 
     if (file_management_file != NULL) {
         fclose(file_management_file);
@@ -122,11 +122,11 @@ int8_t file_management_get_file_list(char* file_list[])
     struct dirent* de;
 
     DIR* dr = opendir(directory_name);
-
     if (dr == NULL) {
         printf("Could not open current directory");
         return false;
     }
+
     int file_list_items = 0;
     while ((de = readdir(dr)) != NULL) {
         if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) { // Ignore unix hidden files
@@ -143,5 +143,41 @@ int8_t file_management_get_file_list(char* file_list[])
 
 bool file_management_remove_file(const char* file_name)
 {
-    return remove(file_name) == 0 ? false : true;
+    if (snprintf(file_management_file_name, FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE, "%s%s",
+                 directory_name, file_name)
+        >= (int)(FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE)) {
+        return false;
+    }
+
+    return remove(file_management_file_name) == 0 ? true : false;
+}
+
+bool file_management_purge_files(void)
+{
+    struct dirent* de;
+
+    DIR* dr = opendir(directory_name);
+    if (dr == NULL) {
+        printf("Could not open current directory");
+        return false;
+    }
+
+    while ((de = readdir(dr)) != NULL) {
+        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) { // Ignore unix hidden files
+            continue;
+        } else {
+            if (snprintf(file_management_file_name, FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE, "%s%s",
+                         directory_name, de->d_name)
+                >= (int)(FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE)) {
+                return false;
+            }
+
+            if (remove(file_management_file_name) != 0) {
+                return false;
+            }
+        }
+    }
+
+    closedir(dr);
+    return true;
 }

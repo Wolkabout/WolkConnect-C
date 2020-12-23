@@ -52,6 +52,8 @@ static const char* FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC = "p2d/file_upload_abort/d
 static const char* FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC = "p2d/file_url_download_initiate/d/";
 static const char* FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC = "p2d/file_url_download_abort/d/";
 
+static const char* FILE_MANAGEMENT_FILE_DELETE_TOPIC = "p2d/file_delete/d/";
+static const char* FILE_MANAGEMENT_FILE_PURGE_TOPIC = "p2d/file_purge/d/";
 
 static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
 static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
@@ -75,6 +77,9 @@ static void _handle_file_management_packet(file_management_t* file_management, u
 static void _handle_abort(file_management_t* file_management);
 
 static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
+
+static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter);
+static void _handle_file_purge(file_management_t* file_management);
 
 static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
@@ -154,7 +159,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
 
     ctx->is_initialized = true;
 
-    wolk_init_file_management(ctx, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    wolk_init_file_management(ctx, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     return W_FALSE;
 }
 
@@ -175,14 +180,12 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_init_file_management(wolk_ctx_t* ctx, size_t maximum_file_size, size_t chunk_size,
-                                     file_management_start_t start, file_management_write_chunk_t write_chunk,
-                                     file_management_read_chunk_t read_chunk, file_management_abort_t abort,
-                                     file_management_finalize_t finalize,
-                                     file_management_start_url_download_t start_url_download,
-                                     file_management_is_url_download_done_t is_url_download_done,
-                                     file_management_get_file_list_t get_file_list,
-                                     file_management_remove_file_t remove_file)
+WOLK_ERR_T wolk_init_file_management(
+    wolk_ctx_t* ctx, size_t maximum_file_size, size_t chunk_size, file_management_start_t start,
+    file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk, file_management_abort_t abort,
+    file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
+    file_management_is_url_download_done_t is_url_download_done, file_management_get_file_list_t get_file_list,
+    file_management_remove_file_t remove_file, file_management_purge_files_t purge_files)
 {
     if (chunk_size > (MQTT_PACKET_SIZE - (4 * FILE_MANAGEMENT_HASH_SIZE))) {
         chunk_size = MQTT_PACKET_SIZE - (4 * FILE_MANAGEMENT_HASH_SIZE);
@@ -190,7 +193,7 @@ WOLK_ERR_T wolk_init_file_management(wolk_ctx_t* ctx, size_t maximum_file_size, 
 
     file_management_init(&ctx->file_management_update, ctx->device_key, maximum_file_size, chunk_size, start,
                          write_chunk, read_chunk, abort, finalize, start_url_download, is_url_download_done,
-                         get_file_list, remove_file, ctx);
+                         get_file_list, remove_file, purge_files, ctx);
 
     file_management_set_on_status_listener(&ctx->file_management_update, _listener_on_status);
     file_management_set_on_packet_request_listener(&ctx->file_management_update, _listener_on_packet_request);
@@ -321,6 +324,22 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_FILE_DELETE_TOPIC);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], FILE_MANAGEMENT_FILE_PURGE_TOPIC);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
     /* Publish initial values */
     for (i = 0; i < ctx->num_actuator_references; ++i) {
         const char* reference = ctx->actuator_references[i];
@@ -340,7 +359,9 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     configuration_command_t configuration_command;
     configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_GET);
     _handle_configuration_command(ctx, &configuration_command);
-    // TODO: send file list
+    char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
+    _listener_on_file_list_status(&ctx->file_management_update, file_list,
+                                  ctx->file_management_update.get_file_list(file_list));
 
     return W_FALSE;
 }
@@ -746,6 +767,15 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             if (num_deserialized != 0) {
                 _handle_url_download(&ctx->file_management_update, &file_management_parameter);
             }
+        } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_DELETE_TOPIC)) {
+            file_management_parameter_t file_management_parameter;
+            const size_t num_deserialized = parser_deserialize_file_management_parameter(
+                &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
+            if (num_deserialized != 0) {
+                _handle_file_delete(&ctx->file_management_update, &file_management_parameter);
+            }
+        } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_PURGE_TOPIC)) {
+            _handle_file_purge(&ctx->file_management_update);
         }
     }
 
@@ -950,6 +980,23 @@ static void _handle_url_download(file_management_t* file_management, file_manage
     WOLK_ASSERT(parameter);
 
     handle_url_download(file_management, parameter);
+}
+
+static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter)
+{
+    /* Sanity Check*/
+    WOLK_ASSERT(file_management);
+    WOLK_ASSERT(parameter);
+
+    handle_file_delete(file_management, parameter);
+}
+
+static void _handle_file_purge(file_management_t* file_management)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(file_management);
+
+    handle_file_purge(file_management);
 }
 
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status)

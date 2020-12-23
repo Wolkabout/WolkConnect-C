@@ -47,9 +47,15 @@ static bool _start_url_download(file_management_t* file_management, const char* 
 static bool _is_url_download_done(file_management_t* file_management, bool* success);
 static bool _has_url_download(file_management_t* file_management);
 
+static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter);
+static void _handle_file_purge(file_management_t* file_management);
+
 static void _report_result(file_management_t* file_management);
 static void _check_url_download(file_management_t* file_management);
+
 static uint8_t _get_file_list(file_management_t* file_management, char* file_list[]);
+static bool _remove_file(file_management_t* file_management, char* file_name);
+static bool _purge_files(file_management_t* file_management);
 
 static void _reset_state(file_management_t* file_management);
 
@@ -67,7 +73,7 @@ void file_management_init(file_management_t* file_management, const char* device
                           file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
                           file_management_is_url_download_done_t is_url_download_done,
                           file_management_get_file_list_t get_file_list, file_management_remove_file_t remove_file,
-                          void* wolk_ctx)
+                          file_management_purge_files_t purge_files, void* wolk_ctx)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
@@ -90,6 +96,7 @@ void file_management_init(file_management_t* file_management, const char* device
 
     file_management->get_file_list = get_file_list;
     file_management->remove_file = remove_file;
+    file_management->purge_files = purge_files;
 
     file_management->state = STATE_IDLE;
     memset(file_management->last_packet_hash, 0, WOLK_ARRAY_LENGTH(file_management->last_packet_hash));
@@ -291,6 +298,23 @@ void handle_url_download(file_management_t* file_management, file_management_par
     _handle_url_download(file_management, parameter);
 }
 
+void handle_file_delete(file_management_t* file_management, file_management_t* parameter)
+{
+    /* Sanity Check*/
+    WOLK_ASSERT(file_management);
+    WOLK_ASSERT(parameter);
+
+    _handle_file_delete(file_management, parameter);
+}
+
+void handle_file_purge(file_management_t* file_management)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(file_management);
+
+    _handle_file_purge(file_management);
+}
+
 void file_management_process(file_management_t* file_management)
 {
     /* Sanity check */
@@ -482,6 +506,27 @@ static void _handle_abort(file_management_t* file_management)
     }
 }
 
+static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(file_management);
+    WOLK_ASSERT(parameter);
+
+    _remove_file(file_management, parameter->file_name);
+
+    char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
+    _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
+}
+
+static void _handle_file_purge(file_management_t* file_management)
+{
+    WOLK_ASSERT(file_management);
+    _purge_files(file_management);
+
+    char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
+    _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
+}
+
 static bool _update_sequence_init(file_management_t* file_management, const char* file_name, size_t file_size)
 {
     /* Sanity check */
@@ -612,6 +657,23 @@ static uint8_t _get_file_list(file_management_t* file_management, char* file_lis
     WOLK_ASSERT(file_list);
 
     return file_management->get_file_list(file_list);
+}
+
+static bool _remove_file(file_management_t* file_management, char* file_name)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(file_management);
+    WOLK_ASSERT(file_name);
+
+    return file_management->remove_file(file_name);
+}
+
+static bool _purge_files(file_management_t* file_management)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(file_management);
+
+    return file_management->purge_files();
 }
 
 static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status)
