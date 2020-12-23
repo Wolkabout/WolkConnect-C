@@ -37,6 +37,7 @@
     - ../sources/**
     - ../dependencies/pahomqttembeddedc/MQTTPacket/src/**
     - src/**
+    - ../examples/full_feature_set/**
   :support:
     - test/support
   :libraries: []
