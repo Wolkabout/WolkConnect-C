@@ -30,15 +30,15 @@
 #include "file_management_implementation.h"
 #include "sensor_readings.h"
 
-#define DEFAULT_PUBLISH_PERIOD_SECONDS 155
+#define DEFAULT_PUBLISH_PERIOD_SECONDS 15
 
 static SSL_CTX* ctx;
 static BIO* sockfd;
 
 /* WolkAbout Platform device connection parameters */
-static const char* device_key = "WolkConnect-C-FMFU";
-static const char* device_password = "Y2ZN6QTQTD";
-static const char* hostname = "integration5.wolkabout.com";
+static const char* device_key = "some_key";
+static const char* device_password = "some_password";
+static const char* hostname = "api-demo.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
 
