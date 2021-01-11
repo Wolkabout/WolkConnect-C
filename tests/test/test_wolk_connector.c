@@ -119,12 +119,12 @@ void test_wolk_connector_wolk_connect(void)
     void file_management_finalize(void){};
     bool file_management_start_url_download(const char* url){};
     bool file_management_is_url_download_done(bool* success){};
-    int8_t file_management_get_file_list(char* file_list[]){};
+    int8_t file_management_get_file_list(char* file_list[]){return 0;};
     bool file_management_remove_file(const char* file_name){};
     bool file_management_purge_files(void){};
 
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider, configuration_handler, configuration_provider, "device_key", "device_password", PROTOCOL_WOLKABOUT, actuator_references, num_actuator_references));
-    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_file_management(&wolk, 128 * 1024 * 1024, 500, file_management_start, file_management_chunk_write, file_management_chunk_read, file_management_abort, file_management_finalize, file_management_start_url_download, file_management_is_url_download_done, file_management_get_file_list, file_management_remove_file, file_management_purge_files));
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_file_management(&wolk, true, 128 * 1024 * 1024, 500, file_management_start, file_management_chunk_write, file_management_chunk_read, file_management_abort, file_management_finalize, file_management_start_url_download, file_management_is_url_download_done, file_management_get_file_list, file_management_remove_file, file_management_purge_files));
 
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_connect(&wolk));
 }
@@ -335,18 +335,18 @@ void test_wolkconnector_wolk_publish_actuator_status(void)
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_publish_actuator_status(&wolk, actuator_references[0]));
 }
 
-//void test_wolkconnector_wolk_publish(void)
-//{
-//    wolk_ctx_t wolk;
-//    int send_buffer(unsigned char* buffer, unsigned int len){return 1;}
-//    int receive_buffer(unsigned char* buffer, unsigned int max_bytes){return 1;}
-//    uint8_t persistence_storage[1024 * 1024];
-//    static outbound_message_t outbound_message;
-//
-//    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init(&wolk, send_buffer, receive_buffer, NULL, NULL, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0));
-//    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false));
-//
-//    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_connect(&wolk));
-//
-//    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_publish(&wolk));
-//}
+void test_wolkconnector_wolk_publish(void)
+{
+    wolk_ctx_t wolk;
+    int send_buffer(unsigned char* buffer, unsigned int len){return 1;}
+    int receive_buffer(unsigned char* buffer, unsigned int max_bytes){return 1;}
+    uint8_t persistence_storage[1024 * 1024];
+    static outbound_message_t outbound_message;
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init(&wolk, send_buffer, receive_buffer, NULL, NULL, NULL, NULL, "device_key", "device_password", PROTOCOL_WOLKABOUT, NULL, 0));
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false));
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_connect(&wolk));
+
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_publish(&wolk));
+}

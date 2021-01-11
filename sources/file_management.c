@@ -66,10 +66,11 @@ static void _listener_on_url_download_status(file_management_t* file_management,
 static void _listener_on_file_list_status(file_management_t* file_management, char* file_list[],
                                           int8_t* file_list_size);
 
-void file_management_init(file_management_t* file_management, const char* device_key, size_t maximum_file_size,
-                          size_t chunk_size, file_management_start_t start, file_management_write_chunk_t write_chunk,
-                          file_management_read_chunk_t read_chunk, file_management_abort_t abort,
-                          file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
+void file_management_init(file_management_t* file_management, bool is_file_management_enabled, const char* device_key,
+                          size_t maximum_file_size, size_t chunk_size, file_management_start_t start,
+                          file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk,
+                          file_management_abort_t abort, file_management_finalize_t finalize,
+                          file_management_start_url_download_t start_url_download,
                           file_management_is_url_download_done_t is_url_download_done,
                           file_management_get_file_list_t get_file_list, file_management_remove_file_t remove_file,
                           file_management_purge_files_t purge_files, void* wolk_ctx)
@@ -79,6 +80,7 @@ void file_management_init(file_management_t* file_management, const char* device
     WOLK_ASSERT(device_key);
     WOLK_ASSERT(wolk_ctx);
 
+    file_management->is_file_management_enabled = is_file_management_enabled;
     file_management->device_key = device_key;
 
     file_management->maximum_file_size = maximum_file_size;

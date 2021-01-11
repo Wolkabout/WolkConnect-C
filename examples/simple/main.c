@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
 
 
     while (keep_running) {
-        // MANDATORY: sleep(currently 200us) and number of tick(currently 5) when are multiplied needs to give 1ms.
+        // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
         // you can change this parameters, but keep it's multiplication
         usleep(1000);
         wolk_process(&wolk, 1);

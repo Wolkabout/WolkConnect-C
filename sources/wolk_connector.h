@@ -225,12 +225,15 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
  *
  * @return Error code.
  */
-WOLK_ERR_T wolk_init_file_management(
-    wolk_ctx_t* ctx, size_t maximum_file_size, size_t chunk_size, file_management_start_t start,
-    file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk, file_management_abort_t abort,
-    file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
-    file_management_is_url_download_done_t is_url_download_done, file_management_get_file_list_t get_file_list,
-    file_management_remove_file_t remove_file, file_management_purge_files_t purge_files);
+WOLK_ERR_T wolk_init_file_management(wolk_ctx_t* ctx, bool is_file_management_enabled, size_t maximum_file_size,
+                                     size_t chunk_size, file_management_start_t start,
+                                     file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk,
+                                     file_management_abort_t abort, file_management_finalize_t finalize,
+                                     file_management_start_url_download_t start_url_download,
+                                     file_management_is_url_download_done_t is_url_download_done,
+                                     file_management_get_file_list_t get_file_list,
+                                     file_management_remove_file_t remove_file,
+                                     file_management_purge_files_t purge_files);
 
 /**
  * @brief Enable internal ping keep alive mechanism.

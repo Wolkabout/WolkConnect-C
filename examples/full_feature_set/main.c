@@ -36,7 +36,7 @@ static SSL_CTX* ctx;
 static BIO* sockfd;
 
 /* WolkAbout Platform device connection parameters */
-static const char* device_key = "some_key";
+static const char* device_key = "device_key";
 static const char* device_password = "some_password";
 static const char* hostname = "api-demo.wolkabout.com";
 static int portno = 8883;
@@ -261,17 +261,16 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 500, file_management_start, file_management_chunk_write,
-                                  file_management_chunk_read, file_management_abort, file_management_finalize,
-                                  file_management_start_url_download, file_management_is_url_download_done,
-                                  file_management_get_file_list, file_management_remove_file,
-                                  file_management_purge_files)
+    if (wolk_init_file_management(&wolk, true, 128 * 1024 * 1024, 500, file_management_start,
+                                  file_management_chunk_write, file_management_chunk_read, file_management_abort,
+                                  file_management_finalize, file_management_start_url_download,
+                                  file_management_is_url_download_done, file_management_get_file_list,
+                                  file_management_remove_file, file_management_purge_files)
         != W_FALSE) {
         printf("Error initializing File Management");
         return 1;
     }
 
-    // TODO: separate init for firmware_installation()
     update_default_device_configuration_values(&device_configuration_values, DEFAULT_PUBLISH_PERIOD_SECONDS);
 
     printf("Wolk client - Connecting to server\n");
