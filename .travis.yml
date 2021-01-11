@@ -10,9 +10,6 @@ jobs:
           packages:
             - cmake
             - gcc
-            - g++
-            - wget
-            - libz-dev
             - libssl-dev
             - clang-format
             - ruby
@@ -21,7 +18,7 @@ jobs:
       script:
         - ./configure
         - pushd build
-        - make all -j$(nproc)
+        - make -j$(nproc)
     - stage: tests
       dist: bionic
       language: c
