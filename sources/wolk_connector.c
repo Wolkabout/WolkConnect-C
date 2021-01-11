@@ -159,7 +159,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
 
     ctx->is_initialized = true;
 
-    wolk_init_file_management(ctx, false, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    wolk_init_file_management(ctx, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     return W_FALSE;
 }
 
@@ -180,23 +180,20 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_init_file_management(wolk_ctx_t* ctx, bool is_file_management_enabled, size_t maximum_file_size,
-                                     size_t chunk_size, file_management_start_t start,
-                                     file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk,
-                                     file_management_abort_t abort, file_management_finalize_t finalize,
-                                     file_management_start_url_download_t start_url_download,
-                                     file_management_is_url_download_done_t is_url_download_done,
-                                     file_management_get_file_list_t get_file_list,
-                                     file_management_remove_file_t remove_file,
-                                     file_management_purge_files_t purge_files)
+WOLK_ERR_T wolk_init_file_management(
+    wolk_ctx_t* ctx, size_t maximum_file_size, size_t chunk_size, file_management_start_t start,
+    file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk, file_management_abort_t abort,
+    file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
+    file_management_is_url_download_done_t is_url_download_done, file_management_get_file_list_t get_file_list,
+    file_management_remove_file_t remove_file, file_management_purge_files_t purge_files)
 {
     if (chunk_size > (MQTT_PACKET_SIZE - (4 * FILE_MANAGEMENT_HASH_SIZE))) {
         chunk_size = MQTT_PACKET_SIZE - (4 * FILE_MANAGEMENT_HASH_SIZE);
     }
 
-    file_management_init(&ctx->file_management_update, is_file_management_enabled, ctx->device_key, maximum_file_size,
-                         chunk_size, start, write_chunk, read_chunk, abort, finalize, start_url_download,
-                         is_url_download_done, get_file_list, remove_file, purge_files, ctx);
+    file_management_init(&ctx->file_management_update, ctx->device_key, maximum_file_size, chunk_size, start,
+                         write_chunk, read_chunk, abort, finalize, start_url_download, is_url_download_done,
+                         get_file_list, remove_file, purge_files, ctx);
 
     file_management_set_on_status_listener(&ctx->file_management_update, _listener_on_status);
     file_management_set_on_packet_request_listener(&ctx->file_management_update, _listener_on_packet_request);
@@ -363,7 +360,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_GET);
     _handle_configuration_command(ctx, &configuration_command);
 
-    if (ctx->file_management_update.is_file_management_enabled) {
+    if (ctx->file_management_update.has_valid_configuration) {
         char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
         _listener_on_file_list_status(&ctx->file_management_update, file_list,
                                       ctx->file_management_update.get_file_list(file_list));

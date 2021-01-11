@@ -124,7 +124,7 @@ void test_wolk_connector_wolk_connect(void)
     bool file_management_purge_files(void){};
 
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider, configuration_handler, configuration_provider, "device_key", "device_password", PROTOCOL_WOLKABOUT, actuator_references, num_actuator_references));
-    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_file_management(&wolk, true, 128 * 1024 * 1024, 500, file_management_start, file_management_chunk_write, file_management_chunk_read, file_management_abort, file_management_finalize, file_management_start_url_download, file_management_is_url_download_done, file_management_get_file_list, file_management_remove_file, file_management_purge_files));
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_file_management(&wolk, 128 * 1024 * 1024, 500, file_management_start, file_management_chunk_write, file_management_chunk_read, file_management_abort, file_management_finalize, file_management_start_url_download, file_management_is_url_download_done, file_management_get_file_list, file_management_remove_file, file_management_purge_files));
 
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_connect(&wolk));
 }
