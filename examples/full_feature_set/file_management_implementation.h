@@ -17,13 +17,12 @@
 #ifndef FILE_MANAGEMENT_IMPLEMENTATION_H
 #define FILE_MANAGEMENT_IMPLEMENTATION_H
 
+#include "wolk_connector.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-
-#include "wolk_connector.h"
 
 bool file_management_start(const char* file_name, size_t file_size);
 bool file_management_chunk_write(uint8_t* data, size_t data_size);

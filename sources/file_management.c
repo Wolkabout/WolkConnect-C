@@ -50,7 +50,6 @@ static bool _has_url_download(file_management_t* file_management);
 static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter);
 static void _handle_file_purge(file_management_t* file_management);
 
-static void _report_result(file_management_t* file_management);
 static void _check_url_download(file_management_t* file_management);
 
 static uint8_t _get_file_list(file_management_t* file_management, char* file_list[]);
@@ -115,16 +114,6 @@ void file_management_init(file_management_t* file_management, const char* device
         || read_chunk == NULL || abort == NULL || finalize == NULL || wolk_ctx == NULL) {
         file_management->has_valid_configuration = false;
     }
-}
-
-static void _report_result(file_management_t* file_management)
-{
-    /* Sanity check */
-    WOLK_ASSERT(file_management);
-    // TODO: questionable. IF YOU WILL NOT FIND IT USEFUL REMOVE IT, or saved for firmware installation.
-    //    if file exists on file system return file list
-    //    else report error
-    //    _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
 }
 
 static void _check_url_download(file_management_t* file_management)
@@ -324,7 +313,6 @@ void file_management_process(file_management_t* file_management)
         return;
     }
 
-    //    _report_result(file_management);
     _check_url_download(file_management);
 }
 

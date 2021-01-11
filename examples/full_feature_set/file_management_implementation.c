@@ -18,7 +18,6 @@
 
 #include <dirent.h>
 #include <stdio.h>
-#include <unistd.h>
 
 enum { DIRECTORY_NAME_SIZE = 6 };
 
@@ -26,7 +25,7 @@ static FILE* file_management_file;
 static char* directory_name = "files/";
 char file_management_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE];
 static size_t file_management_file_size = 0;
-
+static size_t file_management_current_number_of_files = 0;
 
 bool file_management_start(const char* file_name, size_t file_size)
 {
@@ -106,8 +105,10 @@ bool file_management_start_url_download(const char* url)
     /* Dummy file downloader */
     printf("Starting file download from url %s\n", url);
     memset(file_management_file_name, '\0', FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE);
+    char* dummy_file_list[FILE_MANAGEMENT_FILE_LIST_SIZE];
+    file_management_current_number_of_files = file_management_get_file_list(dummy_file_list);
 
-    // NOTE: ssytem() works only on UNIX systems, for bare-metal implementation this is irrelevant
+    /* NOTE: system() works only on UNIX systems, for bare-metal implementation this is irrelevant */
     int8_t WGET_COMMAND_LENGTH = 9;
     char web_address[FILE_MANAGEMENT_URL_SIZE + DIRECTORY_NAME_SIZE + WGET_COMMAND_LENGTH];
     if (snprintf(web_address, FILE_MANAGEMENT_URL_SIZE + DIRECTORY_NAME_SIZE + WGET_COMMAND_LENGTH, "wget -P files/ %s",
@@ -126,7 +127,13 @@ bool file_management_start_url_download(const char* url)
 bool file_management_is_url_download_done(bool* success)
 {
     printf("File download from url done.\n");
-    *success = true;
+    char* dummy_file_list[FILE_MANAGEMENT_FILE_LIST_SIZE];
+
+    if ((file_management_get_file_list(dummy_file_list) - file_management_current_number_of_files) > 0) {
+        *success = true;
+    } else {
+        *success = false;
+    }
 
     return true;
 }

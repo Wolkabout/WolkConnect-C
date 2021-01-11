@@ -374,7 +374,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
 
-    // lastwill message
+    /* lastwill message */
     MQTTString lastwill_topic_string = MQTTString_initializer;
     MQTTString lastwill_message_string = MQTTString_initializer;
 
@@ -395,7 +395,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
 
     memset(buf, 0, MQTT_PACKET_SIZE);
 
-    // disconnect message
+    /* disconnect message */
     len = MQTTSerialize_disconnect(buf, sizeof(buf));
     if (transmission_buffer(ctx->sock, buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
