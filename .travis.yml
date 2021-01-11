@@ -10,6 +10,9 @@ jobs:
           packages:
             - cmake
             - gcc
+            - g++
+            - wget
+            - libz-dev
             - libssl-dev
             - clang-format
             - ruby
