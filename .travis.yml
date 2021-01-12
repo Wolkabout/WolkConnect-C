@@ -18,7 +18,7 @@ jobs:
       script:
         - ./configure
         - pushd build
-        - make -j$(nproc)
+        - make all -j$(nproc)
     - stage: tests
       dist: bionic
       language: c

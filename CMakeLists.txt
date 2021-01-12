@@ -75,7 +75,7 @@ set_target_properties(${LIBRARY_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 add_dependencies(${LIBRARY_NAME} pahomqttembeddedc)
 
 # Format code
-add_custom_target(format
+add_custom_target(format ALL
                   COMMAND "clang-format" -i -sort-includes -style=file
                   ${HEADER_FILES} ${SOURCE_FILES}
                   ${FULL_EXAMPLE_HEADER_FILES} ${FULL_EXAMPLE_SOURCE_FILES}
@@ -87,14 +87,13 @@ add_custom_target(format
 # Run Unit tests
 set(TEST_FILES "${CMAKE_SOURCE_DIR}/tests")
 
-add_custom_target(tests
+add_custom_target(tests ALL
         WORKING_DIRECTORY "${TEST_FILES}"
+        DEPENDS pahomqttembeddedc
         COMMAND ceedling clean
         COMMAND ceedling test:all
         COMMENT "[Run Unit tests]"
         VERBATIM)
-
-add_dependencies(${LIBRARY_NAME} format tests)
 
 # Examples
 add_subdirectory(examples/simple)
