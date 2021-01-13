@@ -61,6 +61,9 @@ enum {
     /* Parser internal buffer size, should be at least READING_SIZE  big */
     PARSER_INTERNAL_BUFFER_SIZE = READING_SIZE,
 
+    /* Maximum number of files in list */
+    FILE_MANAGEMENT_FILE_LIST_SIZE = 32,
+
     /* Maximum number of characters in file management filename */
     FILE_MANAGEMENT_FILE_NAME_SIZE = 32,
 
@@ -69,9 +72,6 @@ enum {
 
     /* Size of hash used for file management file transfer (SHA-256) */
     FILE_MANAGEMENT_HASH_SIZE = 32,
-
-    /* Size of hash used for file management file transfer (SHA-256) */
-    FILE_MANAGEMENT_FILE_LIST_SIZE = 32,
 };
 
 #ifdef __cplusplus

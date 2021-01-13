@@ -82,10 +82,11 @@ typedef bool (*file_management_start_url_download_t)(const char* url);
 /**
  * @brief file_management_is_url_download_done signature.
  * Sets 'success' argument to true if file download successfully completed, false otherwise
+ * Sets name of the downloaded file
  *
  * @return ture if file url download is completed, false otherwise
  */
-typedef bool (*file_management_is_url_download_done_t)(bool* success);
+typedef bool (*file_management_is_url_download_done_t)(bool* success, char* downloaded_file_name);
 
 /**
  * @brief file_management_get_file_list_t signature.
@@ -93,7 +94,7 @@ typedef bool (*file_management_is_url_download_done_t)(bool* success);
  *
  * @return number of file presented in the list
  */
-typedef int8_t (*file_management_get_file_list_t)(char* file_list[]);
+typedef int8_t (*file_management_get_file_list_t)(char* file_list);
 
 /**
  * @brief file_management_remove_file_t signature.
@@ -120,7 +121,7 @@ typedef void (*file_management_on_url_download_status_listener)(file_management_
                                                                 file_management_status_t status);
 typedef void (*file_management_on_file_list_listener)(file_management_t* file_management,
                                                       file_management_get_file_list_t file_list,
-                                                      int8_t file_list_items);
+                                                      size_t file_list_items);
 
 struct file_management {
     const char* device_key;

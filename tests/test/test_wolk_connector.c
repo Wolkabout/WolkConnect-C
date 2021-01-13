@@ -119,7 +119,7 @@ void test_wolk_connector_wolk_connect(void)
     void file_management_finalize(void){};
     bool file_management_start_url_download(const char* url){};
     bool file_management_is_url_download_done(bool* success){};
-    int8_t file_management_get_file_list(char* file_list[]){return 0;};
+    int8_t file_management_get_file_list(char* file_list){return 0;};
     bool file_management_remove_file(const char* file_name){};
     bool file_management_purge_files(void){};
 

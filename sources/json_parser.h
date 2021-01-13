@@ -65,7 +65,7 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
                                                         file_management_parameter_t* file_management_parameter,
                                                         file_management_status_t* status,
                                                         outbound_message_t* outbound_message);
-bool json_serialize_file_management_file_list_update(const char* device_key, char* file_list[], int8_t file_list_items,
+bool json_serialize_file_management_file_list_update(const char* device_key, char* file_list, size_t file_list_items,
                                                      outbound_message_t* outbound_message);
 
 bool json_serialize_ping_keep_alive_message(const char* device_key, outbound_message_t* outbound_message);

@@ -84,8 +84,7 @@ static void _handle_file_purge(file_management_t* file_management);
 static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request);
-static void _listener_on_file_list_status(file_management_t* file_management, char* file_list[],
-                                          int8_t file_list_items);
+static void _listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t file_list_items);
 
 WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler,
                      actuator_status_provider_t actuator_status_provider, configuration_handler_t configuration_handler,
@@ -360,8 +359,9 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_GET);
     _handle_configuration_command(ctx, &configuration_command);
 
+    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
     if (ctx->file_management_update.has_valid_configuration) {
-        char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
+
         _listener_on_file_list_status(&ctx->file_management_update, file_list,
                                       ctx->file_management_update.get_file_list(file_list));
     }
@@ -1046,7 +1046,7 @@ static void _listener_on_url_download_status(file_management_t* file_management,
     _publish(wolk_ctx, &outbound_message);
 }
 
-static void _listener_on_file_list_status(file_management_t* file_management, char* file_list[], int8_t file_list_items)
+static void _listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t file_list_items)
 {
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(file_list);

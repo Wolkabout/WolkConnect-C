@@ -44,7 +44,7 @@ static void _update_abort(file_management_t* file_management);
 static void _update_finalize(file_management_t* file_management);
 
 static bool _start_url_download(file_management_t* file_management, const char* url);
-static bool _is_url_download_done(file_management_t* file_management, bool* success);
+static bool _is_url_download_done(file_management_t* file_management, bool* success, char* downloaded_file_name);
 static bool _has_url_download(file_management_t* file_management);
 
 static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter);
@@ -52,7 +52,7 @@ static void _handle_file_purge(file_management_t* file_management);
 
 static void _check_url_download(file_management_t* file_management);
 
-static uint8_t _get_file_list(file_management_t* file_management, char* file_list[]);
+static uint8_t _get_file_list(file_management_t* file_management, char* file_list);
 static bool _remove_file(file_management_t* file_management, char* file_name);
 static bool _purge_files(file_management_t* file_management);
 
@@ -63,8 +63,7 @@ static bool _is_file_valid(file_management_t* file_management);
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request);
 static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
-static void _listener_on_file_list_status(file_management_t* file_management, char* file_list[],
-                                          int8_t* file_list_size);
+static void _listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t* file_list_size);
 
 void file_management_init(file_management_t* file_management, const char* device_key, size_t maximum_file_size,
                           size_t chunk_size, file_management_start_t start, file_management_write_chunk_t write_chunk,
@@ -125,6 +124,8 @@ static void _check_url_download(file_management_t* file_management)
     }
 
     bool success;
+    char downloaded_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
+
     switch (file_management->state) {
     case STATE_IDLE:
     case STATE_PACKET_FILE_TRANSFER:
@@ -144,7 +145,7 @@ static void _check_url_download(file_management_t* file_management)
         break;
 
     case STATE_FILE_OBTAINED:
-        if (!_is_url_download_done(file_management, &success)) {
+        if (!_is_url_download_done(file_management, &success, &downloaded_file_name)) {
             return;
         }
 
@@ -155,9 +156,10 @@ static void _check_url_download(file_management_t* file_management)
             return;
         }
 
+        strncpy(file_management->file_name, downloaded_file_name, strlen(downloaded_file_name));
         _listener_on_url_download_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
 
-        char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
+        char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
         _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
 
         file_management->state = STATE_IDLE;
@@ -261,7 +263,7 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
     _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
     _update_finalize(file_management);
 
-    char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
+    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
     _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
     _reset_state(file_management);
 }
@@ -465,12 +467,13 @@ static void _handle_abort(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_UNUSED(file_management);
-    char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
+    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
 
     switch (file_management->state) {
+    case STATE_IDLE:
+        break;
     case STATE_FILE_OBTAINED:
     case STATE_PACKET_FILE_TRANSFER:
-    case STATE_IDLE:
         _update_abort(file_management);
         _listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
 
@@ -502,7 +505,7 @@ static void _handle_file_delete(file_management_t* file_management, file_managem
 
     _remove_file(file_management, parameter->file_name);
 
-    char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
+    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
     _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
 }
 
@@ -511,7 +514,7 @@ static void _handle_file_purge(file_management_t* file_management)
     WOLK_ASSERT(file_management);
     _purge_files(file_management);
 
-    char* file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {};
+    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
     _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
 }
 
@@ -606,6 +609,7 @@ static void _listener_on_packet_request(file_management_t* file_management, file
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
+    WOLK_ASSERT(request);
 
     if (file_management->on_packet_request != NULL) {
         file_management->on_packet_request(file_management, request);
@@ -621,13 +625,14 @@ static bool _start_url_download(file_management_t* file_management, const char* 
     return file_management->start_url_download(url);
 }
 
-static bool _is_url_download_done(file_management_t* file_management, bool* success)
+static bool _is_url_download_done(file_management_t* file_management, bool* success, char* downloaded_file_name)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(success);
+    WOLK_ASSERT(downloaded_file_name);
 
-    return file_management->is_url_download_done(success);
+    return file_management->is_url_download_done(success, downloaded_file_name);
 }
 
 static bool _has_url_download(file_management_t* file_management)
@@ -638,7 +643,7 @@ static bool _has_url_download(file_management_t* file_management)
     return file_management->start_url_download != NULL;
 }
 
-static uint8_t _get_file_list(file_management_t* file_management, char* file_list[])
+static uint8_t _get_file_list(file_management_t* file_management, char* file_list)
 {
     /* Sanity Check */
     WOLK_ASSERT(file_management);
@@ -675,7 +680,7 @@ static void _listener_on_url_download_status(file_management_t* file_management,
     }
 }
 
-static void _listener_on_file_list_status(file_management_t* file_management, char* file_list[], int8_t* file_list_size)
+static void _listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t* file_list_size)
 {
     /* Sanity check */
     WOLK_ASSERT(file_mangement);

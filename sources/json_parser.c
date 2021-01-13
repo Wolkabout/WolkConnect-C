@@ -700,7 +700,7 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
     return true;
 }
 
-bool json_serialize_file_management_file_list_update(const char* device_key, char* file_list[], int8_t file_list_items,
+bool json_serialize_file_management_file_list_update(const char* device_key, char* file_list, size_t file_list_items,
                                                      outbound_message_t* outbound_message)
 {
     outbound_message_init(outbound_message, "", "");
@@ -719,7 +719,8 @@ bool json_serialize_file_management_file_list_update(const char* device_key, cha
     strncpy(outbound_message->payload, "[", strlen("["));
     for (int i = 0; i < file_list_items; i++) {
         if (snprintf(outbound_message->payload + strlen(outbound_message->payload),
-                     WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"fileName\":\"%s\"},", (const char*)file_list[i])
+                     WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"fileName\":\"%s\"},",
+                     (const char*)file_list + (i * FILE_MANAGEMENT_FILE_NAME_SIZE))
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }

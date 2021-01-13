@@ -174,8 +174,8 @@ bool parser_serialize_file_management_url_download(parser_t* parser, const char*
                                                                  outbound_message);
 }
 
-bool parser_serialize_file_management_file_list(parser_t* parser, const char* device_key, char* file_list[],
-                                                int8_t file_list_items, outbound_message_t* outbound_message)
+bool parser_serialize_file_management_file_list(parser_t* parser, const char* device_key, char* file_list,
+                                                size_t file_list_items, outbound_message_t* outbound_message)
 {
     /* Sanity Check */
     WOLK_ASSERT(parser);
