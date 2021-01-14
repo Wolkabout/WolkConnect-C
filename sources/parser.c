@@ -49,6 +49,7 @@ void parser_init(parser_t* parser, parser_type_t parser_type)
         parser->serialize_file_management_url_download_status = json_serialize_file_management_url_download_status;
         parser->serialize_file_management_file_list = json_serialize_file_management_file_list_update;
 
+        parser->deserialize_firmware_update_parameter = json_deserialize_firmware_update_parameter;
         parser->serialize_ping_keep_alive_message = json_serialize_ping_keep_alive_message;
         parser->deserialize_pong_keep_alive_message = json_deserialize_pong_keep_alive_message;
         break;
@@ -185,6 +186,17 @@ bool parser_serialize_file_management_file_list(parser_t* parser, const char* de
     WOLK_ASSERT(outbound_message);
 
     return parser->serialize_file_management_file_list(device_key, file_list, file_list_items, outbound_message);
+}
+
+bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* device_key, char* buffer, size_t buffer_size,
+                                                 firmware_update_t* firmware_update_parameter)
+{
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(buffer);
+    WOLK_ASSERT(buffer_size);
+    WOLK_ASSERT(firmware_update_parameter);
+
+    return parser->deserialize_firmware_update_parameter(device_key, buffer, buffer_size, firmware_update_parameter);
 }
 
 bool parser_serialize_ping_keep_alive_message(parser_t* parser, const char* device_key,

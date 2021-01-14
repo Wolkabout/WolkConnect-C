@@ -10,6 +10,7 @@
 #include "reading.h"
 #include "size_definitions.h"
 #include "wolk_utils.h"
+#include "firmware_update.h"
 
 #include "manifest_item.h"
 #include "outbound_message.h"

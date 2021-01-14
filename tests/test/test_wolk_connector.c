@@ -42,6 +42,7 @@ TEST_FILE("MQTTSubscribeClient.c")
 #include "file_management_packet_request.h"
 #include "file_management_implementation.h"
 
+#include "firmware_update.h"
 
 void setUp(void)
 {

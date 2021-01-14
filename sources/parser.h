@@ -23,6 +23,7 @@
 #include "file_management_packet_request.h"
 #include "file_management_parameter.h"
 #include "file_management_status.h"
+#include "firmware_update.h"
 #include "outbound_message.h"
 #include "reading.h"
 #include "utc_command.h"
@@ -67,9 +68,11 @@ typedef struct {
                                                           file_management_parameter_t* file_management_parameter,
                                                           file_management_status_t* status,
                                                           outbound_message_t* outbound_message);
-
     bool (*serialize_file_management_file_list)(const char* device_key, char* file_list, size_t file_list_items,
                                                 outbound_message_t* outbound_message);
+
+    bool (*deserialize_firmware_update_parameter)(char* device_key, char* buffer, size_t buffer_size,
+                                                  firmware_update_t* parameter);
 
     bool (*serialize_ping_keep_alive_message)(const char* device_key, outbound_message_t* outbound_message);
     bool (*deserialize_pong_keep_alive_message)(char* buffer, size_t buffer_size, utc_command_t* utc);
@@ -122,8 +125,12 @@ bool parser_serialize_file_management_url_download(parser_t* parser, const char*
 
 bool parser_serialize_file_management_file_list(parser_t* parser, const char* device_key, char* file_list,
                                                 size_t file_list_items, outbound_message_t* outbound_message);
-
 /**** File Management ****/
+
+/**** Firmware Update ****/
+bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* device_key, char* buffer, size_t buffer_size,
+                                                 firmware_update_t* firmware_update_parameter);
+/**** Firmware Update ****/
 
 /**** PING keep alive ****/
 bool parser_serialize_ping_keep_alive_message(parser_t* parser, const char* device_key,

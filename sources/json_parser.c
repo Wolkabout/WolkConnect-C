@@ -20,6 +20,7 @@
 #include "file_management_packet_request.h"
 #include "file_management_parameter.h"
 #include "file_management_status.h"
+#include "firmware_update.h"
 #include "jsmn.h"
 #include "reading.h"
 #include "size_definitions.h"
@@ -729,5 +730,46 @@ bool json_serialize_file_management_file_list_update(const char* device_key, cha
     file_list_items == 0 ? strncpy(outbound_message->payload + strlen(outbound_message->payload), "]", strlen("]"))
                          : strncpy(outbound_message->payload + strlen(outbound_message->payload) - 1, "]", strlen("]"));
 
+    return true;
+}
+
+bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, size_t buffer_size,
+                                                firmware_update_t* parameter)
+{
+    jsmn_parser parser;
+    jsmntok_t tokens[12]; /* No more than 12 JSON token(s) are expected, check
+                             jsmn documentation for token definition */
+    jsmn_init(&parser);
+    const int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
+
+    /* Received JSON must be valid, and top level element must be object */
+    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+        return false;
+    }
+
+    firmware_update_parameter_init(parameter);
+
+    /* Obtain command type and value */
+    char value_buffer[COMMAND_ARGUMENT_SIZE];
+
+    for (int i = 1; i < parser_result; i++) {
+        if (json_token_str_equal(buffer, &tokens[i], "devices")) {
+            if (!json_token_str_equal(buffer, &tokens[i + 2], device_key)) {
+                return false;
+            }
+            i += 2; // jump over JSON array
+        } else if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
+            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
+                         buffer + tokens[i + 1].start)
+                >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
+                return false;
+            }
+
+            firmware_update_parameter_set_filename(parameter, value_buffer);
+            i++;
+        } else {
+            return false;
+        }
+    }
     return true;
 }

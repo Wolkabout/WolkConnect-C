@@ -23,6 +23,7 @@
 #include "file_management_packet_request.h"
 #include "file_management_parameter.h"
 #include "file_management_status.h"
+#include "firmware_update.h"
 #include "outbound_message.h"
 #include "reading.h"
 #include "utc_command.h"
@@ -67,6 +68,9 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
                                                         outbound_message_t* outbound_message);
 bool json_serialize_file_management_file_list_update(const char* device_key, char* file_list, size_t file_list_items,
                                                      outbound_message_t* outbound_message);
+
+bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, size_t buffer_size,
+                                                firmware_update_t* parameter);
 
 bool json_serialize_ping_keep_alive_message(const char* device_key, outbound_message_t* outbound_message);
 bool json_deserialize_pong_keep_alive_message(char* buffer, size_t buffer_size, utc_command_t* utc_command);
