@@ -35,7 +35,7 @@ enum { FILE_VERIFICATION_CHUNK_SIZE = 1024 };
 static void _handle_file_management(file_management_t* file_management, file_management_parameter_t* parameter);
 static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
 
-static void _handle_abort(file_management_t* file_management);
+static void _handle_file_management_abort(file_management_t* file_management);
 
 static bool _update_sequence_init(file_management_t* file_management, const char* file_name, size_t file_size);
 static bool _write_chunk(file_management_t* file_management, uint8_t* data, size_t data_size);
@@ -268,7 +268,7 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
     _reset_state(file_management);
 }
 
-void handle_abort(file_management_t* file_management)
+void handle_file_management_abort(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
@@ -277,7 +277,7 @@ void handle_abort(file_management_t* file_management)
         return;
     }
 
-    _handle_abort(file_management);
+    _handle_file_management_abort(file_management);
 }
 
 void handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
@@ -463,7 +463,7 @@ static void _handle_url_download(file_management_t* file_management, file_manage
     }
 }
 
-static void _handle_abort(file_management_t* file_management)
+static void _handle_file_management_abort(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_UNUSED(file_management);

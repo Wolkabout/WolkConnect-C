@@ -117,7 +117,7 @@ void file_management_abort(void)
 
 void file_management_finalize(void)
 {
-    printf("Finalizing file update\n");
+    printf("Finalizing file update\nFile downloaded with name: %s \n", file_management_file_name);
 
     if (file_management_file != NULL) {
         fclose(file_management_file);
