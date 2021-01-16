@@ -79,11 +79,13 @@ static void _handle_file_management_parameter(file_management_t* file_management
                                               file_management_parameter_t* file_management_parameter);
 static void _handle_file_management_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
 static void _handle_file_management_abort(file_management_t* file_management);
-static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
-static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter);
-static void _handle_file_purge(file_management_t* file_management);
+static void _handle_file_management_url_download(file_management_t* file_management,
+                                                 file_management_parameter_t* parameter);
+static void _handle_file_management_file_delete(file_management_t* file_management,
+                                                file_management_parameter_t* parameter);
+static void _handle_file_management_file_purge(file_management_t* file_management);
 
-static void _handle_firmware_update_installation(firmware_update_t* firmware_update);
+static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter);
 static void _handle_firmware_update_abort(firmware_update_t* firmware_update);
 static void _listener_on_firmware_update_version(firmware_update_t* firmware_update, char* firmware_update_version);
 static void _listener_on_firmware_update_status(firmware_update_t* firmware_update);
@@ -214,7 +216,7 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_inst
                                      firmware_update_abort_t abort_installation)
 {
     firmware_update_init(&ctx->firmware_update, start_installation, is_installation_completed, get_version,
-                         abort_installation);
+                         abort_installation, ctx);
 
     firmware_update_set_on_status_listener(&ctx->firmware_update, _listener_on_firmware_update_status);
     firmware_update_set_on_version_listener(&ctx->firmware_update, _listener_on_firmware_update_version);
@@ -403,7 +405,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         _listener_on_file_list_status(&ctx->file_management, file_list, ctx->file_management.get_file_list(file_list));
     }
 
-    char firmware_update_version[FIRMWARE_UPDATE_VERSION_SIZE];
+    char firmware_update_version[FIRMWARE_UPDATE_VERSION_SIZE] = {0};
     if (ctx->firmware_update.is_initialized) {
         ctx->firmware_update.get_version(firmware_update_version);
         _listener_on_firmware_update_version(&ctx->firmware_update, firmware_update_version);
@@ -467,11 +469,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
         return W_TRUE;
     }
 
-    file_management_process(&ctx->file_management); // TODO: check on going processes
-
-    // TODO: watch ongoing process of firmware installation: firmware_update_processes(&ctx->firmware_update);
-    // once send FIRMWARE_UPDATE_STATUS_INSTALLATION and wait in same state until its changed to STATE_COMPLETED or
-    // STATE_ERROR
+    file_management_process(&ctx->file_management);
 
     return W_FALSE;
 }
@@ -815,26 +813,26 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             const size_t num_deserialized = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized != 0) {
-                _handle_url_download(&ctx->file_management, &file_management_parameter);
+                _handle_file_management_url_download(&ctx->file_management, &file_management_parameter);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_DELETE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized != 0) {
-                _handle_file_delete(&ctx->file_management, &file_management_parameter);
+                _handle_file_management_file_delete(&ctx->file_management, &file_management_parameter);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_PURGE_TOPIC)) {
-            _handle_file_purge(&ctx->file_management);
+            _handle_file_management_file_purge(&ctx->file_management);
         } else if (strstr(topic_str, FIRMWARE_UPDATE_INSTALL_TOPIC)) {
             firmware_update_t firmware_update_parameter;
             const size_t num_deserialized = parse_deserialize_firmware_update_parameter(
                 &ctx->parser, (char*)ctx->device_key, (char*)payload, (size_t)payload_len, &firmware_update_parameter);
             if (num_deserialized != 0) {
-                _handle_firmware_update_installation(&firmware_update_parameter);
+                _handle_firmware_update_installation(&ctx->firmware_update, &firmware_update_parameter);
             }
         } else if (strstr(topic_str, FIRMWARE_UPDATE_ABORT_TOPIC)) {
-            _handle_firmware_update_abort(&ctx->firmware_update); // TODO: have to implemented
+            _handle_firmware_update_abort(&ctx->firmware_update);
         }
     }
 
@@ -1032,30 +1030,32 @@ static void _handle_file_management_abort(file_management_t* file_management)
     handle_file_management_abort(file_management);
 }
 
-static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
+static void _handle_file_management_url_download(file_management_t* file_management,
+                                                 file_management_parameter_t* parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    handle_url_download(file_management, parameter);
+    handle_file_management_url_download(file_management, parameter);
 }
 
-static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter)
+static void _handle_file_management_file_delete(file_management_t* file_management,
+                                                file_management_parameter_t* parameter)
 {
     /* Sanity Check*/
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    handle_file_delete(file_management, parameter);
+    handle_file_management_file_delete(file_management, parameter);
 }
 
-static void _handle_file_purge(file_management_t* file_management)
+static void _handle_file_management_file_purge(file_management_t* file_management)
 {
     /* Sanity Check */
     WOLK_ASSERT(file_management);
 
-    handle_file_purge(file_management);
+    handle_file_management_file_purge(file_management);
 }
 
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status)
@@ -1120,18 +1120,20 @@ static void _listener_on_file_list_status(file_management_t* file_management, ch
     _publish(wolk_ctx, &outbound_message);
 }
 
-static void _handle_firmware_update_installation(firmware_update_t* firmware_update)
+static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter)
 {
     /* Sanity check */
+    WOLK_ASSERT(firmware_update);
     WOLK_ASSERT(parameter);
 
-    firmware_update_handle_parameter(firmware_update);
+    firmware_update_handle_parameter(firmware_update, parameter);
 }
 
 static void _listener_on_firmware_update_status(firmware_update_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(status);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
     outbound_message_t outbound_message;

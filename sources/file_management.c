@@ -140,8 +140,7 @@ static void _check_url_download(file_management_t* file_management)
             return;
         }
 
-        file_management->state =
-            STATE_FILE_OBTAINED; // TODO: have to jump to STATE_PACKET_FILE_TRANSFER and when is done jump to OBTAINED
+        file_management->state = STATE_FILE_OBTAINED;
         break;
 
     case STATE_FILE_OBTAINED:
@@ -281,7 +280,7 @@ void handle_file_management_abort(file_management_t* file_management)
     _handle_abort(file_management);
 }
 
-void handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
+void handle_file_management_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
 {
     /*Sanity check*/
     WOLK_ASSERT(file_management);
@@ -290,7 +289,7 @@ void handle_url_download(file_management_t* file_management, file_management_par
     _handle_url_download(file_management, parameter);
 }
 
-void handle_file_delete(file_management_t* file_management, file_management_t* parameter)
+void handle_file_management_file_delete(file_management_t* file_management, file_management_t* parameter)
 {
     /* Sanity Check*/
     WOLK_ASSERT(file_management);
@@ -299,7 +298,7 @@ void handle_file_delete(file_management_t* file_management, file_management_t* p
     _handle_file_delete(file_management, parameter);
 }
 
-void handle_file_purge(file_management_t* file_management)
+void handle_file_management_file_purge(file_management_t* file_management)
 {
     /* Sanity Check */
     WOLK_ASSERT(file_management);

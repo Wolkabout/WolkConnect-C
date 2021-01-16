@@ -102,7 +102,7 @@ size_t file_management_chunk_read(size_t index, uint8_t* data, size_t data_size)
     return fread(data, data_size, 1, file_management_file) == 1 ? data_size : 0;
 }
 
-void file_management_abort(void)
+bool file_management_abort(void)
 {
     printf("Aborting File Management\nFile with name: %s\n", file_management_file_name);
 
@@ -112,7 +112,10 @@ void file_management_abort(void)
 
     if (remove(file_management_file_name) != 0) {
         printf("File can't be removed for FS\n");
+        return false;
     }
+
+    return true;
 }
 
 void file_management_finalize(void)
