@@ -34,8 +34,9 @@ enum { FILE_VERIFICATION_CHUNK_SIZE = 1024 };
 
 static void _handle_file_management(file_management_t* file_management, file_management_parameter_t* parameter);
 static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
-
-static void _handle_file_management_abort(file_management_t* file_management);
+static void _handle_abort(file_management_t* file_management);
+static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter);
+static void _handle_file_purge(file_management_t* file_management);
 
 static bool _update_sequence_init(file_management_t* file_management, const char* file_name, size_t file_size);
 static bool _write_chunk(file_management_t* file_management, uint8_t* data, size_t data_size);
@@ -46,9 +47,6 @@ static void _update_finalize(file_management_t* file_management);
 static bool _start_url_download(file_management_t* file_management, const char* url);
 static bool _is_url_download_done(file_management_t* file_management, bool* success, char* downloaded_file_name);
 static bool _has_url_download(file_management_t* file_management);
-
-static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter);
-static void _handle_file_purge(file_management_t* file_management);
 
 static void _check_url_download(file_management_t* file_management);
 
@@ -142,7 +140,8 @@ static void _check_url_download(file_management_t* file_management)
             return;
         }
 
-        file_management->state = STATE_FILE_OBTAINED;//TODO: have to jump to STATE_PACKET_FILE_TRANSFER and when is done jump to OBTAINED
+        file_management->state =
+            STATE_FILE_OBTAINED; // TODO: have to jump to STATE_PACKET_FILE_TRANSFER and when is done jump to OBTAINED
         break;
 
     case STATE_FILE_OBTAINED:
@@ -279,7 +278,7 @@ void handle_file_management_abort(file_management_t* file_management)
         return;
     }
 
-    _handle_file_management_abort(file_management);
+    _handle_abort(file_management);
 }
 
 void handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
@@ -465,7 +464,7 @@ static void _handle_url_download(file_management_t* file_management, file_manage
     }
 }
 
-static void _handle_file_management_abort(file_management_t* file_management)
+static void _handle_abort(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
