@@ -50,6 +50,9 @@ void parser_init(parser_t* parser, parser_type_t parser_type)
         parser->serialize_file_management_file_list = json_serialize_file_management_file_list_update;
 
         parser->deserialize_firmware_update_parameter = json_deserialize_firmware_update_parameter;
+        parser->serialize_firmware_update_status = json_serialize_firmware_update_status;
+        parser->serialize_firmware_update_version = json_serialize_firmware_update_version;
+
         parser->serialize_ping_keep_alive_message = json_serialize_ping_keep_alive_message;
         parser->deserialize_pong_keep_alive_message = json_deserialize_pong_keep_alive_message;
         break;
@@ -197,6 +200,30 @@ bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* device_
     WOLK_ASSERT(firmware_update_parameter);
 
     return parser->deserialize_firmware_update_parameter(device_key, buffer, buffer_size, firmware_update_parameter);
+}
+
+bool parse_serialize_firmware_update_status(parser_t* parser, const char* device_key,
+                                            firmware_update_t* firmware_update, outbound_message_t* outbound_message)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+    WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(outbound_message);
+
+    return parser->serialize_firmware_update_status(device_key, firmware_update, outbound_message);
+}
+
+bool parse_serialize_firmware_update_version(parser_t* parser, const char* device_key, char* firmware_update_version,
+                                             outbound_message_t* outbound_message)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+    WOLK_ASSERT(firmware_update_version);
+    WOLK_ASSERT(outbound_message);
+
+    return parser->serialize_firmware_update_version(device_key, firmware_update_version, outbound_message);
 }
 
 bool parser_serialize_ping_keep_alive_message(parser_t* parser, const char* device_key,

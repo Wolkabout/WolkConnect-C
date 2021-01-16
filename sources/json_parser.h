@@ -71,6 +71,10 @@ bool json_serialize_file_management_file_list_update(const char* device_key, cha
 
 bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, size_t buffer_size,
                                                 firmware_update_t* parameter);
+bool json_serialize_firmware_update_status(const char* device_key, firmware_update_t* firmware_update,
+                                           outbound_message_t* outbound_message);
+bool json_serialize_firmware_update_version(const char* device_key, char* firmware_update_version,
+                                            outbound_message_t* outbound_message);
 
 bool json_serialize_ping_keep_alive_message(const char* device_key, outbound_message_t* outbound_message);
 bool json_deserialize_pong_keep_alive_message(char* buffer, size_t buffer_size, utc_command_t* utc_command);

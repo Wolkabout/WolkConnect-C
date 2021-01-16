@@ -134,7 +134,9 @@ typedef struct wolk_ctx {
 
     persistence_t persistence;
 
-    file_management_t file_management_update;
+    file_management_t file_management;
+
+    firmware_update_t firmware_update;
 
     const char** actuator_references;
     uint32_t num_actuator_references;
@@ -231,6 +233,21 @@ WOLK_ERR_T wolk_init_file_management(
     file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
     file_management_is_url_download_done_t is_url_download_done, file_management_get_file_list_t get_file_list,
     file_management_remove_file_t remove_file, file_management_purge_files_t purge_files);
+
+/*
+ * @brief Initializes Firmware Update
+ *
+ * @param ctx Context
+ * @param function pointer to 'start_installation' implementation
+ * @param function pointer to 'is_installation_completed' implementation
+ * @param function pointer to 'abort_installation' implementation
+ *
+ * @return Error code
+ * */
+WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_installation_t start_installation,
+                                     firmware_update_is_installation_completed_t is_installation_completed,
+                                     firmware_update_get_version_t get_version,
+                                     firmware_update_abort_t abort_installation);
 
 /**
  * @brief Enable internal ping keep alive mechanism.
