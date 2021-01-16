@@ -20,7 +20,7 @@
 file_management_status_t file_management_status_ok(file_management_state_t state)
 {
     file_management_status_t status;
-    status.status = state;
+    status.state = state;
     status.error = FILE_MANAGEMENT_ERROR_NONE;
 
     return status;
@@ -29,7 +29,7 @@ file_management_status_t file_management_status_ok(file_management_state_t state
 file_management_status_t file_management_status_error(file_management_error_t error)
 {
     file_management_status_t status;
-    status.status = FILE_MANAGEMENT_STATE_ERROR;
+    status.state = FILE_MANAGEMENT_STATE_ERROR;
     status.error = error;
 
     return status;
@@ -40,7 +40,7 @@ file_management_state_t file_management_status_get_state(file_management_status_
     /* Sanity check */
     WOLK_ASSERT(status);
 
-    return status->status;
+    return status->state;
 }
 
 file_management_error_t file_management_status_get_error(file_management_status_t* status)

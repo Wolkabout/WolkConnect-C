@@ -31,6 +31,7 @@ void file_management_parameter_init(file_management_parameter_t* parameter)
     memset(parameter->file_url, '\0', WOLK_ARRAY_LENGTH(parameter->file_url));
     parameter->file_size = 0;
     memset(parameter->file_list, '\0', WOLK_ARRAY_LENGTH(parameter->file_list));
+    memset(parameter->result, '\0', WOLK_ARRAY_LENGTH(parameter->result));
 }
 
 const char* file_management_parameter_get_file_name(file_management_parameter_t* parameter)

@@ -119,6 +119,7 @@ static void _check_url_download(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
+
     if (!_has_url_download(file_management)) {
         return;
     }
@@ -141,7 +142,7 @@ static void _check_url_download(file_management_t* file_management)
             return;
         }
 
-        file_management->state = STATE_FILE_OBTAINED;
+        file_management->state = STATE_FILE_OBTAINED;//TODO: have to jump to STATE_PACKET_FILE_TRANSFER and when is done jump to OBTAINED
         break;
 
     case STATE_FILE_OBTAINED:
@@ -192,6 +193,7 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
     /* Sanity check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(packet);
+    WOLK_ASSERT(packet_size);
 
     if (!file_management->has_valid_configuration) {
         _listener_on_status(file_management,
@@ -353,7 +355,7 @@ void file_management_set_on_file_list_listener(file_management_t* file_managemen
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
-    WOLK_ASSERT(on_status);
+    WOLK_ASSERT(file_list);
 
     file_management->on_file_list = file_list;
 }
@@ -466,7 +468,8 @@ static void _handle_url_download(file_management_t* file_management, file_manage
 static void _handle_file_management_abort(file_management_t* file_management)
 {
     /* Sanity check */
-    WOLK_UNUSED(file_management);
+    WOLK_ASSERT(file_management);
+
     char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
 
     switch (file_management->state) {
@@ -512,6 +515,7 @@ static void _handle_file_delete(file_management_t* file_management, file_managem
 static void _handle_file_purge(file_management_t* file_management)
 {
     WOLK_ASSERT(file_management);
+
     _purge_files(file_management);
 
     char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
@@ -522,6 +526,8 @@ static bool _update_sequence_init(file_management_t* file_management, const char
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
+    WOLK_ASSERT(file_name);
+    WOLK_ASSERT(file_size);
 
     return file_management->start(file_name, file_size);
 }
@@ -531,6 +537,7 @@ static bool _write_chunk(file_management_t* file_management, uint8_t* data, size
     /* Sanity check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(data);
+    WOLK_ASSERT(data_size);
 
     return file_management->write_chunk(data, data_size);
 }
@@ -539,7 +546,9 @@ static size_t _read_chunk(file_management_t* file_management, size_t index, uint
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
+    WOLK_ASSERT(index);
     WOLK_ASSERT(data);
+    WOLK_ASSERT(data_size);
 
     return file_management->read_chunk(index, data, data_size);
 }
@@ -599,6 +608,7 @@ static void _listener_on_status(file_management_t* file_management, file_managem
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
+    WOLK_ASSERT(status);
 
     if (file_management->on_status != NULL) {
         file_management->on_status(file_management, status);

@@ -40,7 +40,7 @@ typedef enum {
 } file_management_error_t;
 
 typedef struct {
-    file_management_state_t status;
+    file_management_state_t state;
     file_management_error_t error;
 } file_management_status_t;
 
