@@ -28,6 +28,7 @@
 #include <openssl/ssl.h>
 
 #include "file_management_implementation.h"
+#include "firmware_update_implementation.h"
 #include "sensor_readings.h"
 
 #define DEFAULT_PUBLISH_PERIOD_SECONDS 15
@@ -271,6 +272,13 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    if (wolk_init_firmware_update(&wolk, firmware_update_start_installation, firmware_update_is_installation_completed,
+                                  firmware_update_get_version, firmware_update_abort_installation)
+        != W_FALSE) {
+        printf("Error initializing Firmware Update");
+        return 1;
+    }
+
     update_default_device_configuration_values(&device_configuration_values, DEFAULT_PUBLISH_PERIOD_SECONDS);
 
     printf("Wolk client - Connecting to server\n");
@@ -292,7 +300,7 @@ int main(int argc, char* argv[])
         sensor_readings_process(&wolk, &publish_period_seconds, DEFAULT_PUBLISH_PERIOD_SECONDS);
     }
 
-    printf("Wolk client - Diconnecting\n");
+    printf("Wolk client - Disconnecting\n");
     wolk_disconnect(&wolk);
     BIO_free_all(sockfd);
 

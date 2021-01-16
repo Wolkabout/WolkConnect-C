@@ -55,10 +55,10 @@ typedef bool (*firmware_update_get_version_t)(const char* version);
 typedef bool (*firmware_update_abort_t)(void);
 
 typedef enum {
-    FIRMWARE_UPDATE_STATUS_INSTALLATION,
-    FIRMWARE_UPDATE_STATUS_COMPLETED,
-    FIRMWARE_UPDATE_STATUS_ERROR,
-    FIRMWARE_UPDATE_STATUS_ABORTED
+    FIRMWARE_UPDATE_STATUS_INSTALLATION = 0,
+    FIRMWARE_UPDATE_STATUS_COMPLETED = 1,
+    FIRMWARE_UPDATE_STATUS_ERROR = 2,
+    FIRMWARE_UPDATE_STATUS_ABORTED = 3
 } firmware_update_status_t;
 
 typedef enum {
@@ -70,7 +70,7 @@ typedef enum {
 } firmware_update_error_t;
 
 typedef struct firmware_update firmware_update_t;
-typedef void (*firmware_update_on_status_listener)(firmware_update_t* firmware_update, firmware_update_status_t status);
+typedef void (*firmware_update_on_status_listener)(firmware_update_t* firmware_update);
 typedef void (*firmware_update_on_version_listener)(firmware_update_t* firmware_update,
                                                     firmware_update_get_version_t version);
 
@@ -96,10 +96,11 @@ struct firmware_update {
 };
 void firmware_update_init(firmware_update_t* firmware_update, firmware_update_start_installation_t start_installation,
                           firmware_update_is_installation_completed_t is_installation_completed,
-                          firmware_update_get_version_t get_version, firmware_update_abort_t abort_installation);
+                          firmware_update_get_version_t get_version, firmware_update_abort_t abort_installation,
+                          void* wolk_ctx);
 void firmware_update_parameter_init(firmware_update_t* parameter);
 void firmware_update_parameter_set_filename(firmware_update_t* parameter, const char* file_name);
-void firmware_update_handle_parameter(firmware_update_t* firmware_update);
+void firmware_update_handle_parameter(firmware_update_t* firmware_update, firmware_update_t* parameter);
 void firmware_update_handle_abort(firmware_update_t* firmware_update);
 void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
                                             firmware_update_on_status_listener status);

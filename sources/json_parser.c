@@ -836,6 +836,9 @@ bool json_serialize_firmware_update_version(const char* device_key, char* firmwa
 {
     outbound_message_init(outbound_message, "", "");
 
+    memset(outbound_message->topic, '\0', sizeof(outbound_message->topic));
+    memset(outbound_message->payload, '\0', sizeof(outbound_message->payload));
+
     /* Serialize topic */
     strncpy(outbound_message->topic, FIRMWARE_UPDATE_VERSION_TOPIC, strlen(FIRMWARE_UPDATE_VERSION_TOPIC));
     if (snprintf(outbound_message->topic + strlen(FIRMWARE_UPDATE_VERSION_TOPIC),
