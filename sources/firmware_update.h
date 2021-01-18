@@ -106,5 +106,6 @@ void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
                                             firmware_update_on_status_listener status);
 void firmware_update_set_on_version_listener(firmware_update_t* firmware_update,
                                              firmware_update_on_version_listener version);
+void firmware_update_process(firmware_update_t* firmware_update);
 
 #endif // WOLKCONNECTOR_C_FIRMWARE_UPDATE_H

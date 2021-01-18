@@ -470,6 +470,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
     }
 
     file_management_process(&ctx->file_management);
+    firmware_update_process(&ctx->firmware_update);
 
     return W_FALSE;
 }
