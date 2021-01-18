@@ -113,63 +113,6 @@ void file_management_init(file_management_t* file_management, const char* device
     }
 }
 
-static void _check_url_download(file_management_t* file_management)
-{
-    /* Sanity check */
-    WOLK_ASSERT(file_management);
-
-    if (!_has_url_download(file_management)) {
-        return;
-    }
-
-    bool success;
-    char downloaded_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
-
-    switch (file_management->state) {
-    case STATE_IDLE:
-    case STATE_PACKET_FILE_TRANSFER:
-        break;
-    case STATE_URL_DOWNLOAD:
-        _listener_on_url_download_status(file_management,
-                                         file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
-        if (!_start_url_download(file_management, file_management->file_url)) {
-            _listener_on_url_download_status(file_management,
-                                             file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
-
-            _reset_state(file_management);
-            return;
-        }
-
-        file_management->state = STATE_FILE_OBTAINED;
-        break;
-
-    case STATE_FILE_OBTAINED:
-        if (!_is_url_download_done(file_management, &success, &downloaded_file_name)) {
-            return;
-        }
-
-        if (!success) {
-            _reset_state(file_management);
-            _listener_on_url_download_status(file_management,
-                                             file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
-            return;
-        }
-
-        strncpy(file_management->file_name, downloaded_file_name, strlen(downloaded_file_name));
-        _listener_on_url_download_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
-
-        char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
-        _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
-
-        file_management->state = STATE_IDLE;
-        break;
-
-    default:
-        /* Sanity check */
-        WOLK_ASSERT(false);
-    }
-}
-
 void file_management_handle_parameter(file_management_t* file_management,
                                       file_management_parameter_t* file_management_parameter)
 {
@@ -433,6 +376,7 @@ static void _handle_url_download(file_management_t* file_management, file_manage
 
     switch (file_management->state) {
     case STATE_IDLE:
+    case STATE_PACKET_FILE_TRANSFER:
         if ((strlen(parameter->file_url) >= FILE_MANAGEMENT_URL_SIZE) || (strlen(parameter->file_url) == 0)) {
             _listener_on_url_download_status(file_management,
                                              file_management_status_error(FILE_MANAGEMENT_ERROR_MALFORMED_URL));
@@ -451,9 +395,65 @@ static void _handle_url_download(file_management_t* file_management, file_manage
         break;
 
     /* File Management already in progress - Ignore */
-    case STATE_PACKET_FILE_TRANSFER:
     case STATE_URL_DOWNLOAD:
     case STATE_FILE_OBTAINED:
+        file_management->state = STATE_IDLE;
+        break;
+
+    default:
+        /* Sanity check */
+        WOLK_ASSERT(false);
+    }
+}
+
+static void _check_url_download(file_management_t* file_management)
+{
+    /* Sanity check */
+    WOLK_ASSERT(file_management);
+
+    if (!_has_url_download(file_management)) {
+        return;
+    }
+
+    bool success;
+    char downloaded_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
+
+    switch (file_management->state) {
+    case STATE_IDLE:
+    case STATE_PACKET_FILE_TRANSFER:
+        break;
+    case STATE_URL_DOWNLOAD:
+        _listener_on_url_download_status(file_management,
+                                         file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
+        if (!_start_url_download(file_management, file_management->file_url)) {
+            _listener_on_url_download_status(file_management,
+                                             file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+
+            _reset_state(file_management);
+            return;
+        }
+
+        file_management->state = STATE_FILE_OBTAINED;
+        break;
+
+    case STATE_FILE_OBTAINED:
+        if (!_is_url_download_done(file_management, &success, &downloaded_file_name)) {
+            return;
+        }
+
+        if (!success) {
+            _reset_state(file_management);
+            _listener_on_url_download_status(file_management,
+                                             file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+            return;
+        }
+
+        strncpy(file_management->file_name, downloaded_file_name, strlen(downloaded_file_name));
+        _listener_on_url_download_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
+
+        char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+        _listener_on_file_list_status(file_management, file_list, _get_file_list(file_management, file_list));
+
         file_management->state = STATE_IDLE;
         break;
 
