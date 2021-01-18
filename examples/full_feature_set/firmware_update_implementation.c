@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-#include "string.h"
 #include <stdint.h>
 #include <stdio.h>
-#include <unistd.h>
 
 #include "firmware_update_implementation.h"
 #include "size_definitions.h"
@@ -46,7 +44,6 @@ bool firmware_update_start_installation(const char* file_name)
 
 bool firmware_update_is_installation_completed(bool* success)
 {
-    sleep(3);
     printf("Installation is completed\n");
 
     version_patch++;
