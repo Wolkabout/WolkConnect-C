@@ -20,6 +20,7 @@
 #include "file_management_packet_request.h"
 #include "file_management_parameter.h"
 #include "file_management_status.h"
+#include "firmware_update.h"
 #include "jsmn.h"
 #include "reading.h"
 #include "size_definitions.h"
@@ -43,10 +44,11 @@ static const char* CONFIGURATION_GET_TOPIC = "d2p/configuration_get/d/";
 
 static const char* FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC = "d2p/file_upload_status/d/";
 static const char* FILE_MANAGEMENT_PACKET_REQUEST_TOPIC = "d2p/file_binary_request/d/";
-
 static const char* FILE_MANAGEMENT_URL_DOWNLOAD_STATUS = "d2p/file_url_download_status/d/";
-
 static const char* FILE_MANAGEMENT_FILE_LIST_UPDATE = "d2p/file_list_update/d/";
+
+static const char* FIRMWARE_UPDATE_STATUS_TOPIC = "d2p/firmware_update_status/d/";
+static const char* FIRMWARE_UPDATE_VERSION_TOPIC = "d2p/firmware_version_update/d/";
 
 static bool all_readings_have_equal_rtc(reading_t* first_reading, size_t num_readings)
 {
@@ -441,7 +443,7 @@ static const char* file_management_status_as_str(file_management_status_t* statu
     /* Sanity check */
     WOLK_ASSERT(status);
 
-    switch (status->status) {
+    switch (status->state) {
     case FILE_MANAGEMENT_STATE_FILE_TRANSFER:
         return "FILE_TRANSFER";
 
@@ -598,62 +600,6 @@ bool json_serialize_file_management_packet_request(const char* device_key,
     return true;
 }
 
-bool json_serialize_ping_keep_alive_message(const char* device_key, outbound_message_t* outbound_message)
-{
-    outbound_message_init(outbound_message, "", "");
-
-    /* Serialize topic */
-    strncpy(outbound_message->topic, PING_TOPIC, strlen(PING_TOPIC));
-
-    if (snprintf(outbound_message->topic + strlen(PING_TOPIC), WOLK_ARRAY_LENGTH(outbound_message->topic), "%s",
-                 device_key)
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
-        return false;
-    }
-
-    return true;
-}
-
-bool json_deserialize_pong_keep_alive_message(char* buffer, size_t buffer_size, utc_command_t* utc_command)
-{
-    jsmn_parser parser;
-    jsmntok_t tokens[10]; /* No more than 10 JSON token(s) are expected, check
-                             jsmn documentation for token definition */
-    jsmn_init(&parser);
-    int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
-
-    /* Received JSON must be valid, and top level element must be object */
-    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
-        return false;
-    }
-
-    char value_buffer[READING_SIZE];
-    /*Obtain values*/
-    for (int i = 1; i < parser_result; i++) {
-        if (i >= parser_result || tokens[i].type != JSMN_STRING) {
-            continue;
-        }
-
-        if (json_token_str_equal(buffer, &tokens[i], "value")) {
-            if (tokens[i + 1].type == JSMN_PRIMITIVE) {
-                if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s",
-                             tokens[i + 1].end - tokens[i + 1].start, buffer + tokens[i + 1].start)
-                    >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
-                    return false;
-                }
-
-                uint64_t conversion_result = strtod(value_buffer, NULL);
-                if (conversion_result == NULL) {
-                    return false;
-                }
-                utc_command->utc = conversion_result;
-            }
-        }
-    }
-
-    return true;
-}
-
 bool json_serialize_file_management_url_download_status(const char* device_key,
                                                         file_management_parameter_t* file_management_parameter,
                                                         file_management_status_t* status,
@@ -728,6 +674,184 @@ bool json_serialize_file_management_file_list_update(const char* device_key, cha
 
     file_list_items == 0 ? strncpy(outbound_message->payload + strlen(outbound_message->payload), "]", strlen("]"))
                          : strncpy(outbound_message->payload + strlen(outbound_message->payload) - 1, "]", strlen("]"));
+
+    return true;
+}
+
+bool json_serialize_ping_keep_alive_message(const char* device_key, outbound_message_t* outbound_message)
+{
+    outbound_message_init(outbound_message, "", "");
+
+    /* Serialize topic */
+    strncpy(outbound_message->topic, PING_TOPIC, strlen(PING_TOPIC));
+
+    if (snprintf(outbound_message->topic + strlen(PING_TOPIC), WOLK_ARRAY_LENGTH(outbound_message->topic), "%s",
+                 device_key)
+        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool json_deserialize_pong_keep_alive_message(char* buffer, size_t buffer_size, utc_command_t* utc_command)
+{
+    jsmn_parser parser;
+    jsmntok_t tokens[10]; /* No more than 10 JSON token(s) are expected, check
+                             jsmn documentation for token definition */
+    jsmn_init(&parser);
+    int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
+
+    /* Received JSON must be valid, and top level element must be object */
+    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+        return false;
+    }
+
+    char value_buffer[READING_SIZE];
+    /*Obtain values*/
+    for (int i = 1; i < parser_result; i++) {
+        if (i >= parser_result || tokens[i].type != JSMN_STRING) {
+            continue;
+        }
+
+        if (json_token_str_equal(buffer, &tokens[i], "value")) {
+            if (tokens[i + 1].type == JSMN_PRIMITIVE) {
+                if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s",
+                             tokens[i + 1].end - tokens[i + 1].start, buffer + tokens[i + 1].start)
+                    >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
+                    return false;
+                }
+
+                uint64_t conversion_result = strtod(value_buffer, NULL);
+                if (conversion_result == NULL) {
+                    return false;
+                }
+                utc_command->utc = conversion_result;
+            }
+        }
+    }
+
+    return true;
+}
+
+static const char* firmware_update_status_as_str(firmware_update_t* firmware_update)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+
+    switch (firmware_update->status) {
+    case FIRMWARE_UPDATE_STATUS_INSTALLATION:
+        return "INSTALLATION";
+
+    case FIRMWARE_UPDATE_STATUS_COMPLETED:
+        return "COMPLETED";
+
+    case FIRMWARE_UPDATE_STATUS_ERROR:
+        return "ERROR";
+
+    case FIRMWARE_UPDATE_STATUS_ABORTED:
+        return "ABORTED";
+
+    default:
+        WOLK_ASSERT(false);
+        return "";
+    }
+}
+
+bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, size_t buffer_size,
+                                                firmware_update_t* parameter)
+{
+    jsmn_parser parser;
+    jsmntok_t tokens[12]; /* No more than 12 JSON token(s) are expected, check
+                             jsmn documentation for token definition */
+    jsmn_init(&parser);
+    const int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
+
+    /* Received JSON must be valid, and top level element must be object */
+    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+        return false;
+    }
+
+    firmware_update_parameter_init(parameter);
+
+    /* Obtain command type and value */
+    char value_buffer[COMMAND_ARGUMENT_SIZE];
+
+    for (int i = 1; i < parser_result; i++) {
+        if (json_token_str_equal(buffer, &tokens[i], "devices")) {
+            if (!json_token_str_equal(buffer, &tokens[i + 2], device_key)) {
+                return false;
+            }
+            i += 2; // jump over JSON array
+        } else if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
+            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
+                         buffer + tokens[i + 1].start)
+                >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
+                return false;
+            }
+
+            firmware_update_parameter_set_filename(parameter, value_buffer);
+            i++;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool json_serialize_firmware_update_status(const char* device_key, firmware_update_t* firmware_update,
+                                           outbound_message_t* outbound_message)
+{
+    outbound_message_init(outbound_message, "", "");
+
+    /* Serialize topic */
+    strncpy(outbound_message->topic, FIRMWARE_UPDATE_STATUS_TOPIC, strlen(FIRMWARE_UPDATE_STATUS_TOPIC));
+    if (snprintf(outbound_message->topic + strlen(FIRMWARE_UPDATE_STATUS_TOPIC),
+                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
+        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
+        return false;
+    }
+
+    /* Serialize payload */
+    if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"status\": \"%s\"}",
+                 firmware_update_status_as_str(firmware_update))
+        >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
+        return false;
+    }
+
+    size_t error = firmware_update->error;
+    if (error >= 0) {
+        if (snprintf(outbound_message->payload + strlen(outbound_message->payload) - 1,
+                     WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"error\":%d}", error)
+            >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool json_serialize_firmware_update_version(const char* device_key, char* firmware_update_version,
+                                            outbound_message_t* outbound_message)
+{
+    outbound_message_init(outbound_message, "", "");
+
+    memset(outbound_message->topic, '\0', sizeof(outbound_message->topic));
+    memset(outbound_message->payload, '\0', sizeof(outbound_message->payload));
+
+    /* Serialize topic */
+    strncpy(outbound_message->topic, FIRMWARE_UPDATE_VERSION_TOPIC, strlen(FIRMWARE_UPDATE_VERSION_TOPIC));
+    if (snprintf(outbound_message->topic + strlen(FIRMWARE_UPDATE_VERSION_TOPIC),
+                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
+        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
+        return false;
+    }
+
+    /* Serialize payload */
+    if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload), "%s", firmware_update_version)
+        >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
+        return false;
+    }
 
     return true;
 }

@@ -27,7 +27,7 @@
 bool file_management_start(const char* file_name, size_t file_size);
 bool file_management_chunk_write(uint8_t* data, size_t data_size);
 size_t file_management_chunk_read(size_t index, uint8_t* data, size_t data_size);
-void file_management_abort(void);
+bool file_management_abort(void);
 void file_management_finalize(void);
 bool file_management_start_url_download(const char* url);
 bool file_management_is_url_download_done(bool* success, char* downloaded_file_name);

@@ -60,8 +60,10 @@ typedef size_t (*file_management_read_chunk_t)(size_t n, uint8_t* data, size_t d
 /**
  * @brief file_management_abort signature.
  * Aborts initialized File Management procedure.
+ *
+ * @return true if file management abort is possible, false otherwise
  */
-typedef void (*file_management_abort_t)(void);
+typedef bool (*file_management_abort_t)(void);
 
 /**
  * @brief file_management_finalize signature.
@@ -184,12 +186,12 @@ void file_management_handle_parameter(file_management_t* file_management,
 
 void file_management_handle_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
 
-void handle_abort(file_management_t* file_management);
+void handle_file_management_abort(file_management_t* file_management);
 
-void handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
+void handle_file_management_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
 
-void handle_file_delete(file_management_t* file_management, file_management_t* parameter);
-void handle_file_purge(file_management_t* file_management);
+void handle_file_management_file_delete(file_management_t* file_management, file_management_t* parameter);
+void handle_file_management_file_purge(file_management_t* file_management);
 
 void file_management_process(file_management_t* file_management);
 

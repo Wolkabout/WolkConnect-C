@@ -19,6 +19,7 @@
 #include "actuator_command.h"
 #include "file_management.h"
 #include "file_management_parameter.h"
+#include "firmware_update.h"
 #include "in_memory_persistence.h"
 #include "outbound_message.h"
 #include "outbound_message_factory.h"
@@ -55,6 +56,9 @@ static const char* FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC = "p2d/file_url_down
 static const char* FILE_MANAGEMENT_FILE_DELETE_TOPIC = "p2d/file_delete/d/";
 static const char* FILE_MANAGEMENT_FILE_PURGE_TOPIC = "p2d/file_purge/d/";
 
+static const char* FIRMWARE_UPDATE_INSTALL_TOPIC = "p2d/firmware_update_install/d/";
+static const char* FIRMWARE_UPDATE_ABORT_TOPIC = "p2d/firmware_update_abort/d/";
+
 static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
 static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
 
@@ -70,16 +74,21 @@ static bool _is_wolk_initialized(wolk_ctx_t* ctx);
 static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command);
 static void _handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command);
 static void _handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc);
+
 static void _handle_file_management_parameter(file_management_t* file_management,
                                               file_management_parameter_t* file_management_parameter);
 static void _handle_file_management_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
+static void _handle_file_management_abort(file_management_t* file_management);
+static void _handle_file_management_url_download(file_management_t* file_management,
+                                                 file_management_parameter_t* parameter);
+static void _handle_file_management_file_delete(file_management_t* file_management,
+                                                file_management_parameter_t* parameter);
+static void _handle_file_management_file_purge(file_management_t* file_management);
 
-static void _handle_abort(file_management_t* file_management);
-
-static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
-
-static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter);
-static void _handle_file_purge(file_management_t* file_management);
+static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter);
+static void _handle_firmware_update_abort(firmware_update_t* firmware_update);
+static void _listener_on_firmware_update_version(firmware_update_t* firmware_update, char* firmware_update_version);
+static void _listener_on_firmware_update_status(firmware_update_t* firmware_update);
 
 static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
@@ -190,14 +199,28 @@ WOLK_ERR_T wolk_init_file_management(
         chunk_size = MQTT_PACKET_SIZE - (4 * FILE_MANAGEMENT_HASH_SIZE);
     }
 
-    file_management_init(&ctx->file_management_update, ctx->device_key, maximum_file_size, chunk_size, start,
-                         write_chunk, read_chunk, abort, finalize, start_url_download, is_url_download_done,
-                         get_file_list, remove_file, purge_files, ctx);
+    file_management_init(&ctx->file_management, ctx->device_key, maximum_file_size, chunk_size, start, write_chunk,
+                         read_chunk, abort, finalize, start_url_download, is_url_download_done, get_file_list,
+                         remove_file, purge_files, ctx);
 
-    file_management_set_on_status_listener(&ctx->file_management_update, _listener_on_status);
-    file_management_set_on_packet_request_listener(&ctx->file_management_update, _listener_on_packet_request);
-    file_management_set_on_url_download_status_listener(&ctx->file_management_update, _listener_on_url_download_status);
-    file_management_set_on_file_list_listener(&ctx->file_management_update, _listener_on_file_list_status);
+    file_management_set_on_status_listener(&ctx->file_management, _listener_on_status);
+    file_management_set_on_packet_request_listener(&ctx->file_management, _listener_on_packet_request);
+    file_management_set_on_url_download_status_listener(&ctx->file_management, _listener_on_url_download_status);
+    file_management_set_on_file_list_listener(&ctx->file_management, _listener_on_file_list_status);
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_installation_t start_installation,
+                                     firmware_update_is_installation_completed_t is_installation_completed,
+                                     firmware_update_get_version_t get_version,
+                                     firmware_update_abort_t abort_installation)
+{
+    firmware_update_init(&ctx->firmware_update, start_installation, is_installation_completed, get_version,
+                         abort_installation, ctx);
+
+    firmware_update_set_on_status_listener(&ctx->firmware_update, _listener_on_firmware_update_status);
+    firmware_update_set_on_version_listener(&ctx->firmware_update, _listener_on_firmware_update_version);
+
     return W_FALSE;
 }
 
@@ -339,6 +362,23 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
+    /* Firmware Update */
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], FIRMWARE_UPDATE_INSTALL_TOPIC);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
+    memset(topic_buf, '\0', sizeof(topic_buf));
+    strcpy(&topic_buf[0], FIRMWARE_UPDATE_ABORT_TOPIC);
+    strcat(&topic_buf[0], ctx->device_key);
+
+    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        return W_TRUE;
+    }
+
     /* Publish initial values */
     for (i = 0; i < ctx->num_actuator_references; ++i) {
         const char* reference = ctx->actuator_references[i];
@@ -360,10 +400,15 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     _handle_configuration_command(ctx, &configuration_command);
 
     char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
-    if (ctx->file_management_update.has_valid_configuration) {
+    if (ctx->file_management.has_valid_configuration) {
 
-        _listener_on_file_list_status(&ctx->file_management_update, file_list,
-                                      ctx->file_management_update.get_file_list(file_list));
+        _listener_on_file_list_status(&ctx->file_management, file_list, ctx->file_management.get_file_list(file_list));
+    }
+
+    char firmware_update_version[FIRMWARE_UPDATE_VERSION_SIZE] = {0};
+    if (ctx->firmware_update.is_initialized) {
+        ctx->firmware_update.get_version(firmware_update_version);
+        _listener_on_firmware_update_version(&ctx->firmware_update, firmware_update_version);
     }
 
     return W_FALSE;
@@ -424,7 +469,8 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
         return W_TRUE;
     }
 
-    file_management_process(&ctx->file_management_update);
+    file_management_process(&ctx->file_management);
+    firmware_update_process(&ctx->firmware_update);
 
     return W_FALSE;
 }
@@ -751,34 +797,43 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized_parameter != 0) {
-                _handle_file_management_parameter(&ctx->file_management_update, &file_management_parameter);
+                _handle_file_management_parameter(&ctx->file_management, &file_management_parameter);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC)) {
-            _handle_file_management_packet(&ctx->file_management_update, (uint8_t*)payload, (size_t)payload_len);
+            _handle_file_management_packet(&ctx->file_management, (uint8_t*)payload, (size_t)payload_len);
         } else if ((strstr(topic_str, FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC))
                    || (strstr(topic_str, FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC))) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized_parameter != 0) {
-                _handle_abort(&ctx->file_management_update);
+                _handle_file_management_abort(&ctx->file_management);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized != 0) {
-                _handle_url_download(&ctx->file_management_update, &file_management_parameter);
+                _handle_file_management_url_download(&ctx->file_management, &file_management_parameter);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_DELETE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized != 0) {
-                _handle_file_delete(&ctx->file_management_update, &file_management_parameter);
+                _handle_file_management_file_delete(&ctx->file_management, &file_management_parameter);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_PURGE_TOPIC)) {
-            _handle_file_purge(&ctx->file_management_update);
+            _handle_file_management_file_purge(&ctx->file_management);
+        } else if (strstr(topic_str, FIRMWARE_UPDATE_INSTALL_TOPIC)) {
+            firmware_update_t firmware_update_parameter;
+            const size_t num_deserialized = parse_deserialize_firmware_update_parameter(
+                &ctx->parser, (char*)ctx->device_key, (char*)payload, (size_t)payload_len, &firmware_update_parameter);
+            if (num_deserialized != 0) {
+                _handle_firmware_update_installation(&ctx->firmware_update, &firmware_update_parameter);
+            }
+        } else if (strstr(topic_str, FIRMWARE_UPDATE_ABORT_TOPIC)) {
+            _handle_firmware_update_abort(&ctx->firmware_update);
         }
     }
 
@@ -968,44 +1023,48 @@ static void _handle_file_management_packet(file_management_t* file_management, u
     file_management_handle_packet(file_management, packet, packet_size);
 }
 
-static void _handle_abort(file_management_t* file_management)
+static void _handle_file_management_abort(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
-    handle_abort(file_management);
+    handle_file_management_abort(file_management);
 }
 
-static void _handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
+static void _handle_file_management_url_download(file_management_t* file_management,
+                                                 file_management_parameter_t* parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    handle_url_download(file_management, parameter);
+    handle_file_management_url_download(file_management, parameter);
 }
 
-static void _handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter)
+static void _handle_file_management_file_delete(file_management_t* file_management,
+                                                file_management_parameter_t* parameter)
 {
     /* Sanity Check*/
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    handle_file_delete(file_management, parameter);
+    handle_file_management_file_delete(file_management, parameter);
 }
 
-static void _handle_file_purge(file_management_t* file_management)
+static void _handle_file_management_file_purge(file_management_t* file_management)
 {
     /* Sanity Check */
     WOLK_ASSERT(file_management);
 
-    handle_file_purge(file_management);
+    handle_file_management_file_purge(file_management);
 }
 
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
+    WOLK_ASSERT(status);
+
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
     outbound_message_t outbound_message;
     outbound_message_make_from_file_management_status(&wolk_ctx->parser, wolk_ctx->device_key,
@@ -1048,6 +1107,7 @@ static void _listener_on_url_download_status(file_management_t* file_management,
 
 static void _listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t file_list_items)
 {
+    /* Sanity check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(file_list);
     WOLK_ASSERT(file_list_items);
@@ -1059,4 +1119,51 @@ static void _listener_on_file_list_status(file_management_t* file_management, ch
                                                          file_list_items, &outbound_message);
 
     _publish(wolk_ctx, &outbound_message);
+}
+
+static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(parameter);
+
+    firmware_update_handle_parameter(firmware_update, parameter);
+}
+
+static void _listener_on_firmware_update_status(firmware_update_t* firmware_update)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(status);
+
+    wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
+    outbound_message_t outbound_message;
+
+    outbound_message_make_from_firmware_update_status(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update,
+                                                      &outbound_message);
+
+    _publish(wolk_ctx, &outbound_message);
+}
+
+static void _listener_on_firmware_update_version(firmware_update_t* firmware_update, char* firmware_update_version)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(firmware_update_version);
+
+    wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
+    outbound_message_t outbound_message;
+
+    outbound_message_make_from_firmware_update_version(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update_version,
+                                                       &outbound_message);
+
+    _publish(wolk_ctx, &outbound_message);
+}
+
+static void _handle_firmware_update_abort(firmware_update_t* firmware_update)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+
+    firmware_update_handle_abort(firmware_update);
 }
