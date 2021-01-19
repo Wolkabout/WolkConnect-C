@@ -32,7 +32,7 @@ enum {
     DEVICE_PASSWORD_SIZE = 64,
 
     /* Maximum number of characters in topic string */
-    TOPIC_SIZE = 64,
+    TOPIC_SIZE = 64 + DEVICE_KEY_SIZE,
     /* Maximum number of bytes in payload string */
     PAYLOAD_SIZE = 448,
 

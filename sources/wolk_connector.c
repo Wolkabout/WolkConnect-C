@@ -195,8 +195,8 @@ WOLK_ERR_T wolk_init_file_management(
     file_management_is_url_download_done_t is_url_download_done, file_management_get_file_list_t get_file_list,
     file_management_remove_file_t remove_file, file_management_purge_files_t purge_files)
 {
-    if (chunk_size > (MQTT_PACKET_SIZE - (4 * FILE_MANAGEMENT_HASH_SIZE))) {
-        chunk_size = MQTT_PACKET_SIZE - (4 * FILE_MANAGEMENT_HASH_SIZE);
+    if (chunk_size > (PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE)) {
+        chunk_size = PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE;
     }
 
     file_management_init(&ctx->file_management, ctx->device_key, maximum_file_size, chunk_size, start, write_chunk,
