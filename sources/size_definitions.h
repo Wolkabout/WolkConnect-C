@@ -64,7 +64,7 @@ enum {
     /* Maximum number of files in list */
     FILE_MANAGEMENT_FILE_LIST_SIZE = 32,
     /* Maximum number of characters in file management filename */
-    FILE_MANAGEMENT_FILE_NAME_SIZE = 32,
+    FILE_MANAGEMENT_FILE_NAME_SIZE = 64,
     /* Maximum number of characters in file management file url */
     FILE_MANAGEMENT_URL_SIZE = 64,
     /* Size of hash used for file management file transfer (SHA-256) */

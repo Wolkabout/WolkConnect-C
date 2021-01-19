@@ -190,7 +190,7 @@ size_t file_management_get_file_list(char* file_list)
 
     DIR* dr = opendir(directory_name);
     if (dr == NULL) {
-        printf("Could not open current directory");
+        printf("Could not open current directory\n");
         return false;
     }
 
@@ -227,7 +227,7 @@ bool file_management_purge_files(void)
 
     DIR* dr = opendir(directory_name);
     if (dr == NULL) {
-        printf("Could not open current directory");
+        printf("Could not open current directory\n");
         return false;
     }
 
