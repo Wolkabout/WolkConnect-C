@@ -193,7 +193,7 @@ size_t file_management_get_file_list(char* file_list)
         printf("Could not open current directory\n");
         return false;
     }
-
+    printf("Getting file list\n");
     size_t file_list_items = 0;
     while ((de = readdir(dr)) != NULL) {
         if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) { // Ignore unix hidden files
@@ -210,6 +210,7 @@ size_t file_management_get_file_list(char* file_list)
 
 bool file_management_remove_file(const char* file_name)
 {
+    printf("Remove file with name: %s\n", file_name);
     memset(file_management_file_name, '\0', FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE);
 
     if (snprintf(file_management_file_name, FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE, "%s%s",
@@ -224,6 +225,7 @@ bool file_management_remove_file(const char* file_name)
 bool file_management_purge_files(void)
 {
     struct dirent* de;
+    printf("Purge all file from `files` directory\n");
 
     DIR* dr = opendir(directory_name);
     if (dr == NULL) {
