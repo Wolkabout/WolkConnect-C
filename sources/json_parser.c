@@ -524,8 +524,13 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
                 return false;
             }
 
-            file_management_parameter_set_filename(parameter, value_buffer);
-            i++;
+            if (strlen(value_buffer) > FILE_MANAGEMENT_FILE_NAME_SIZE) {
+                /* Leave file name array empty */
+                return true;
+            } else {
+                file_management_parameter_set_filename(parameter, value_buffer);
+                i++;
+            }
         } else if (json_token_str_equal(buffer, &tokens[i], "fileSize")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)

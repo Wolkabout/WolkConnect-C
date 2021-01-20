@@ -315,6 +315,11 @@ static void _handle_file_management(file_management_t* file_management, file_man
             return;
         }
 
+        if (!strlen(file_management_parameter_get_file_name(parameter))) {
+            _listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+            return;
+        }
+
         if (file_management->maximum_file_size < file_management_parameter_get_file_size(parameter)) {
             _listener_on_status(file_management,
                                 file_management_status_error(FILE_MANAGEMENT_ERROR_UNSUPPORTED_FILE_SIZE));

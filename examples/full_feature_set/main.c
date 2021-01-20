@@ -178,14 +178,9 @@ int update_default_device_configuration_values(char* default_device_configuratio
     strncpy(&default_device_configuration_values[0], default_publish_period, number_size);
 }
 
-
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                   char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items)
 {
-    char value_str[READING_SIZE];
-    memset(value_str, 0, sizeof(value_str));
-    sprintf(value_str, "%f", value);
-
     for (size_t i = 0; i < num_configuration_items; ++i) {
         size_t iteration_counter = 0;
 
