@@ -45,8 +45,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
                                     -Wcast-qual                       \
                                     -Wstrict-prototypes               \
                                     -Wmissing-prototypes              \
-                                    -Wconversion \
-                                    -fsanitize=address")
+                                    -Wconversion                      \
+                                    -fsanitize=address                \
+                                    -static-libasan")
 
 set(LIBRARY_NAME "WolkConnector-C")
 
