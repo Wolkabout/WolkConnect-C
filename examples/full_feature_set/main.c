@@ -181,29 +181,24 @@ int update_default_device_configuration_values(char* default_device_configuratio
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
                                   char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items)
 {
-    char value_str[READING_SIZE];
-    memset(value_str, 0, sizeof(value_str));
-    if (snprintf(value_str, READING_SIZE, "%f", value) < READING_SIZE) {
+    for (size_t i = 0; i < num_configuration_items; ++i) {
+        size_t iteration_counter = 0;
 
-        for (size_t i = 0; i < num_configuration_items; ++i) {
-            size_t iteration_counter = 0;
+        for (size_t j = 0; j < CONFIGURATION_ITEMS_SIZE; ++j) {
+            if (!strcmp(reference[i], device_configuration_references[j])) {
+                strcpy(device_configuration_values[j], value[i]);
+                printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
 
-            for (size_t j = 0; j < CONFIGURATION_ITEMS_SIZE; ++j) {
-                if (!strcmp(reference[i], device_configuration_references[j])) {
-                    strcpy(device_configuration_values[j], value[i]);
-                    printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
-
-                    if (!strcmp(reference[i], device_configuration_references[0])) {
-                        publish_period_seconds = atoi(value[i]);
-                    } else if (!strcmp(reference[i], device_configuration_references[2])) {
-                        enable_feeds(&value[i]);
-                    }
-                } else
-                    iteration_counter++;
-
-                if (iteration_counter == CONFIGURATION_ITEMS_SIZE) {
-                    printf("Unrecognised Reference received!\n");
+                if (!strcmp(reference[i], device_configuration_references[0])) {
+                    publish_period_seconds = atoi(value[i]);
+                } else if (!strcmp(reference[i], device_configuration_references[2])) {
+                    enable_feeds(&value[i]);
                 }
+            } else
+                iteration_counter++;
+
+            if (iteration_counter == CONFIGURATION_ITEMS_SIZE) {
+                printf("Unrecognised Reference received!\n");
             }
         }
     }
