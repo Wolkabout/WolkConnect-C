@@ -30,7 +30,7 @@ extern "C" {
 #include "MQTTPacket.h"
 #include "actuator_status.h"
 #include "data_transmission.h"
-#include "firmware_update.h"
+#include "file_management.h"
 #include "parser.h"
 #include "persistence.h"
 #include "size_definitions.h"
@@ -42,7 +42,7 @@ extern "C" {
 /**
  * @brief Library versioning
  */
-enum { WOLK_VERSION_MAJOR = 3, WOLK_VERSION_MINOR = 0, WOLK_VERSION_PATCH = 2 };
+enum { WOLK_VERSION_MAJOR = 4, WOLK_VERSION_MINOR = 0, WOLK_VERSION_PATCH = 0 };
 
 /**
  * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_WOLKABOUT
@@ -134,6 +134,8 @@ typedef struct wolk_ctx {
 
     persistence_t persistence;
 
+    file_management_t file_management;
+
     firmware_update_t firmware_update;
 
     const char** actuator_references;
@@ -209,28 +211,43 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
                                         persistence_pop_t pop, persistence_is_empty_t is_empty);
 
 /**
- * @brief Initializes firmware update
+ * @brief Initializes File Management
  *
  * @param ctx Context
- * @param version Current firmware version
- * @param maximum_firmware_size Maximum acceptable size of firmware file, in bytes
- * @param chunk_size Firmware file is transfered in chunks of size 'chunk_size'
- * @param start Function pointer to 'firmware_update_start' implementation
- * @param write_chunk Function pointer to 'firmware_update_write_chunk' implementation
- * @param read_chunk Function pointer to 'firmware_update_read_chunk' implementation
- * @param abort Function pointer to 'firmware_update_abort' implementation
- * @param finalize Function pointer to 'firmware_update_finalize' implementation
+ * @param maximum_file_size Maximum acceptable size of file, in bytes
+ * @param chunk_size file is transferred in chunks of size 'chunk_size'
+ * @param start Function pointer to 'file_management_start' implementation
+ * @param write_chunk Function pointer to 'file_management_write_chunk' implementation
+ * @param read_chunk Function pointer to 'file_management_read_chunk' implementation
+ * @param abort Function pointer to 'file_management_abort' implementation
+ * @param finalize Function pointer to 'file_management_finalize' implementation
+ * @param start_url_download Function pointer to 'file_management_start_url_download' implementation
+ * @param is_url_download_done Function pointer to 'file_management_is_url_download_done' implementation
+ *
  *
  * @return Error code.
  */
-WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, const char* version, size_t maximum_firmware_size,
-                                     size_t chunk_size, firmware_update_start_t start,
-                                     firmware_update_write_chunk_t write_chunk, firmware_update_read_chunk_t read_chunk,
-                                     firmware_update_abort_t abort, firmware_update_finalize_t finalize,
-                                     firmware_update_persist_firmware_version_t persist_version,
-                                     firmware_update_unpersist_firmware_version_t unpersist_version,
-                                     firmware_update_start_url_download_t start_url_download,
-                                     firmware_update_is_url_download_done_t is_url_download_done);
+WOLK_ERR_T wolk_init_file_management(
+    wolk_ctx_t* ctx, size_t maximum_file_size, size_t chunk_size, file_management_start_t start,
+    file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk, file_management_abort_t abort,
+    file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
+    file_management_is_url_download_done_t is_url_download_done, file_management_get_file_list_t get_file_list,
+    file_management_remove_file_t remove_file, file_management_purge_files_t purge_files);
+
+/*
+ * @brief Initializes Firmware Update
+ *
+ * @param ctx Context
+ * @param function pointer to 'start_installation' implementation
+ * @param function pointer to 'is_installation_completed' implementation
+ * @param function pointer to 'abort_installation' implementation
+ *
+ * @return Error code
+ * */
+WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_installation_t start_installation,
+                                     firmware_update_is_installation_completed_t is_installation_completed,
+                                     firmware_update_get_version_t get_version,
+                                     firmware_update_abort_t abort_installation);
 
 /**
  * @brief Enable internal ping keep alive mechanism.

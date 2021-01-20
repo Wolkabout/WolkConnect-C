@@ -14,36 +14,36 @@
  * limitations under the License.
  */
 
-#include "firmware_update_status.h"
+#include "file_management_status.h"
 #include "wolk_utils.h"
 
-firmware_update_status_t firmware_update_status_ok(firmware_update_state_t state)
+file_management_status_t file_management_status_ok(file_management_state_t state)
 {
-    firmware_update_status_t status;
-    status.status = state;
-    status.error = FIRMWARE_UPDATE_ERROR_NONE;
+    file_management_status_t status;
+    status.state = state;
+    status.error = FILE_MANAGEMENT_ERROR_NONE;
 
     return status;
 }
 
-firmware_update_status_t firmware_update_status_error(firmware_update_error_t error)
+file_management_status_t file_management_status_error(file_management_error_t error)
 {
-    firmware_update_status_t status;
-    status.status = FIRMWARE_UPDATE_STATE_ERROR;
+    file_management_status_t status;
+    status.state = FILE_MANAGEMENT_STATE_ERROR;
     status.error = error;
 
     return status;
 }
 
-firmware_update_state_t firmware_update_status_get_state(firmware_update_status_t* status)
+file_management_state_t file_management_status_get_state(file_management_status_t* status)
 {
     /* Sanity check */
     WOLK_ASSERT(status);
 
-    return status->status;
+    return status->state;
 }
 
-firmware_update_error_t firmware_update_status_get_error(firmware_update_status_t* status)
+file_management_error_t file_management_status_get_error(file_management_status_t* status)
 {
     /* Sanity check */
     WOLK_ASSERT(status);

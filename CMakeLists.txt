@@ -45,7 +45,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
                                     -Wcast-qual                       \
                                     -Wstrict-prototypes               \
                                     -Wmissing-prototypes              \
-                                    -Wconversion")
+                                    -Wconversion \
+                                    -fsanitize=address")
 
 set(LIBRARY_NAME "WolkConnector-C")
 
@@ -72,10 +73,10 @@ add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
-add_dependencies(${LIBRARY_NAME} pahomqttembeddedc format tests)
+add_dependencies(${LIBRARY_NAME} pahomqttembeddedc)
 
 # Format code
-add_custom_target(format
+add_custom_target(format ALL
                   COMMAND "clang-format" -i -sort-includes -style=file
                   ${HEADER_FILES} ${SOURCE_FILES}
                   ${FULL_EXAMPLE_HEADER_FILES} ${FULL_EXAMPLE_SOURCE_FILES}
@@ -87,8 +88,10 @@ add_custom_target(format
 # Run Unit tests
 set(TEST_FILES "${CMAKE_SOURCE_DIR}/tests")
 
-add_custom_target(tests
+add_custom_target(tests ALL
         WORKING_DIRECTORY "${TEST_FILES}"
+        DEPENDS pahomqttembeddedc
+        COMMAND ceedling clean
         COMMAND ceedling test:all
         COMMENT "[Run Unit tests]"
         VERBATIM)

@@ -32,7 +32,7 @@ enum {
     DEVICE_PASSWORD_SIZE = 64,
 
     /* Maximum number of characters in topic string */
-    TOPIC_SIZE = 64,
+    TOPIC_SIZE = 64 + DEVICE_KEY_SIZE,
     /* Maximum number of bytes in payload string */
     PAYLOAD_SIZE = 448,
 
@@ -61,17 +61,17 @@ enum {
     /* Parser internal buffer size, should be at least READING_SIZE  big */
     PARSER_INTERNAL_BUFFER_SIZE = READING_SIZE,
 
-    /* Maximum number of characters in version string */
-    FIRMWARE_UPDATE_VERSION_SIZE = 8,
+    /* Maximum number of files in list */
+    FILE_MANAGEMENT_FILE_LIST_SIZE = 32,
+    /* Maximum number of characters in file management filename */
+    FILE_MANAGEMENT_FILE_NAME_SIZE = 64,
+    /* Maximum number of characters in file management file url */
+    FILE_MANAGEMENT_URL_SIZE = 64,
+    /* Size of hash used for file management file transfer (SHA-256) */
+    FILE_MANAGEMENT_HASH_SIZE = 32,
 
-    /* Maximum number of characters in firmware update filename */
-    FIRMWARE_UPDATE_FILE_NAME_SIZE = 32,
-
-    /* Maximum number of characters in firmware file url */
-    FIRMWARE_UPDATE_URL_SIZE = 64,
-
-    /* Size of hash used for firmware update file transfer (SHA-256) */
-    FIRMWARE_UPDATE_HASH_SIZE = 32,
+    /* Maximum number of characters in firmware update version */
+    FIRMWARE_UPDATE_VERSION_SIZE = 16,
 };
 
 #ifdef __cplusplus

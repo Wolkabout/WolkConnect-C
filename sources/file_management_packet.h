@@ -14,31 +14,27 @@
  * limitations under the License.
  */
 
-#ifndef FIRMWARE_UPDATE_PACKET_REQUEST_H
-#define FIRMWARE_UPDATE_PACKET_REQUEST_H
+#ifndef FILE_MANAGEMENT_PACKET_H
+#define FILE_MANAGEMENT_PACKET_H
 
 #include "size_definitions.h"
 
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct {
-    char file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
-    size_t chunk_index;
-    size_t chunk_size;
-} firmware_update_packet_request_t;
+bool file_management_packet_is_valid(uint8_t* packet, size_t packet_size);
 
-void firmware_update_packet_request_init(firmware_update_packet_request_t* request, const char* file_name,
-                                         size_t chunk_index, size_t chunk_size);
+uint8_t* file_management_packet_get_hash(uint8_t* packet, size_t packet_size);
 
-const char* firmware_update_packet_request_get_file_name(firmware_update_packet_request_t* request);
+uint8_t* file_management_packet_get_previous_packet_hash(uint8_t* packet, size_t packet_size);
 
-size_t firmware_update_packet_request_get_chunk_index(firmware_update_packet_request_t* request);
-
-size_t firmware_update_packet_request_get_chunk_size(firmware_update_packet_request_t* request);
+uint8_t* file_management_packet_get_data(uint8_t* packet, size_t packet_size);
+size_t file_management_packet_get_data_size(uint8_t* packet, size_t packet_size);
 
 #ifdef __cplusplus
 }

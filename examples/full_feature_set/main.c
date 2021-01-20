@@ -27,7 +27,8 @@
 
 #include <openssl/ssl.h>
 
-#include "firmware_implementation.h"
+#include "file_management_implementation.h"
+#include "firmware_update_implementation.h"
 #include "sensor_readings.h"
 
 #define DEFAULT_PUBLISH_PERIOD_SECONDS 15
@@ -261,13 +262,20 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init_firmware_update(&wolk, FIRMWARE_VERSION, 128 * 1024 * 1024, 256, firmware_update_start,
-                                  firmware_chunk_write, firmware_chunk_read, firmware_update_abort,
-                                  firmware_update_finalize, firmware_update_persist_firmware_version,
-                                  firmware_update_unpersist_firmware_version, firmware_update_start_url_download,
-                                  firmware_update_is_url_download_done)
+    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 500, file_management_start, file_management_chunk_write,
+                                  file_management_chunk_read, file_management_abort, file_management_finalize,
+                                  file_management_start_url_download, file_management_is_url_download_done,
+                                  file_management_get_file_list, file_management_remove_file,
+                                  file_management_purge_files)
         != W_FALSE) {
-        printf("Error initializing firmware update");
+        printf("Error initializing File Management");
+        return 1;
+    }
+
+    if (wolk_init_firmware_update(&wolk, firmware_update_start_installation, firmware_update_is_installation_completed,
+                                  firmware_update_get_version, firmware_update_abort_installation)
+        != W_FALSE) {
+        printf("Error initializing Firmware Update");
         return 1;
     }
 
@@ -292,7 +300,7 @@ int main(int argc, char* argv[])
         sensor_readings_process(&wolk, &publish_period_seconds, DEFAULT_PUBLISH_PERIOD_SECONDS);
     }
 
-    printf("Wolk client - Diconnecting\n");
+    printf("Wolk client - Disconnecting\n");
     wolk_disconnect(&wolk);
     BIO_free_all(sockfd);
 

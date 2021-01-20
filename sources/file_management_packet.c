@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "firmware_update_packet.h"
+#include "file_management_packet.h"
 #include "sha256.h"
 #include "size_definitions.h"
 #include "wolk_utils.h"
@@ -23,69 +23,69 @@
 #include <stddef.h>
 #include <string.h>
 
-/*  Firmware update packet:               */
+/*  File Management packet:               */
 /*  32 bytes   - Previous packet SHA-256  */
 /*  N  byte(s) - Data                     */
 /*  32 bytes   - Packet SHA-256           */
 
-bool firmware_update_packet_is_valid(uint8_t* packet, size_t packet_size)
+bool file_management_packet_is_valid(uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(packet);
 
-    if (packet_size <= 2 * FIRMWARE_UPDATE_HASH_SIZE) {
+    if (packet_size <= 2 * FILE_MANAGEMENT_HASH_SIZE) {
         return false;
     }
 
-    uint8_t* received_sha256 = packet + packet_size - FIRMWARE_UPDATE_HASH_SIZE;
+    uint8_t* received_sha256 = packet + packet_size - FILE_MANAGEMENT_HASH_SIZE;
 
-    const uint8_t* data = packet + FIRMWARE_UPDATE_HASH_SIZE;
-    const size_t data_size = packet_size - (2 * FIRMWARE_UPDATE_HASH_SIZE);
+    const uint8_t* data = packet + FILE_MANAGEMENT_HASH_SIZE;
+    const size_t data_size = packet_size - (2 * FILE_MANAGEMENT_HASH_SIZE);
 
-    uint8_t calculated_sha256[FIRMWARE_UPDATE_HASH_SIZE];
+    uint8_t calculated_sha256[FILE_MANAGEMENT_HASH_SIZE];
     sha256(data, data_size, &calculated_sha256[0]);
 
-    return memcmp(received_sha256, &calculated_sha256, FIRMWARE_UPDATE_HASH_SIZE) == 0;
+    return memcmp(received_sha256, &calculated_sha256, FILE_MANAGEMENT_HASH_SIZE) == 0;
 }
 
-uint8_t* firmware_update_packet_get_hash(uint8_t* packet, size_t packet_size)
+uint8_t* file_management_packet_get_hash(uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(packet);
-    WOLK_ASSERT(packet_size > 2 * FIRMWARE_UPDATE_HASH_SIZE);
+    WOLK_ASSERT(packet_size > 2 * FILE_MANAGEMENT_HASH_SIZE);
 
-    return packet + packet_size - FIRMWARE_UPDATE_HASH_SIZE;
+    return packet + packet_size - FILE_MANAGEMENT_HASH_SIZE;
 }
 
-uint8_t* firmware_update_packet_get_previous_packet_hash(uint8_t* packet, size_t packet_size)
+uint8_t* file_management_packet_get_previous_packet_hash(uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(packet);
-    WOLK_ASSERT(packet_size > 2 * FIRMWARE_UPDATE_HASH_SIZE);
+    WOLK_ASSERT(packet_size > 2 * FILE_MANAGEMENT_HASH_SIZE);
 
     WOLK_UNUSED(packet_size);
 
     return packet;
 }
 
-uint8_t* firmware_update_packet_get_data(uint8_t* packet, size_t packet_size)
+uint8_t* file_management_packet_get_data(uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(packet);
-    WOLK_ASSERT(packet_size > 2 * FIRMWARE_UPDATE_HASH_SIZE);
+    WOLK_ASSERT(packet_size > 2 * FILE_MANAGEMENT_HASH_SIZE);
 
     WOLK_UNUSED(packet_size);
 
-    return packet + FIRMWARE_UPDATE_HASH_SIZE;
+    return packet + FILE_MANAGEMENT_HASH_SIZE;
 }
 
-size_t firmware_update_packet_get_data_size(uint8_t* packet, size_t packet_size)
+size_t file_management_packet_get_data_size(uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(packet);
-    WOLK_ASSERT(packet_size > 2 * FIRMWARE_UPDATE_HASH_SIZE);
+    WOLK_ASSERT(packet_size > 2 * FILE_MANAGEMENT_HASH_SIZE);
 
     WOLK_UNUSED(packet);
 
-    return packet_size - (2 * FIRMWARE_UPDATE_HASH_SIZE);
+    return packet_size - (2 * FILE_MANAGEMENT_HASH_SIZE);
 }

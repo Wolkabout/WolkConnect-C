@@ -157,32 +157,45 @@ wolk_init_custom_persistence(&wolk,
 
 For more info on persistence mechanism see `sources/persistence.h` and `sources/in_memory_persistence.h` files.
 
-**Firmware Update:**
+**File Management:**
 
-**THIS FEAT IS WORK IN PROGRESS IN v3.0.0**
-
-WolkAbout C Connector provides mechanism for updating device firmware.
+WolkAbout C Connector provides mechanism for file management.
 
 By default this feature is disabled.
-See code snippet below on how to enable device firmware update.
-
+See code snippet below on how to enable device file management.
 ```c
-wolk_init_firmware_update(&wolk,
-                          "1.0.0",                                      // Current firmware version
-                          128 * 1024 * 1024,                            // Maximum acceptable size of firmware file, in bytes
-                          256,                                          // Size of firmware file transfer chunk, in bytes
-                          firmware_update_start,                        // Prepares device for receiving firmware file
-                          firmware_chunk_write,                         // Writes received firmware file chunk
-                          firmware_chunk_read,                          // Reads requested firmware file chunk
-                          firmware_update_abort,                        // Aborts firmware update sequence
-                          firmware_update_finalize,                     // Reboots device
-                          firmware_update_persist_firmware_version,     // Places given firmware version to persistent storage
-                          firmware_update_unpersist_firmware_version,   // Reads persisted firmware version from persistent storage
-                          NULL,                                         // Optional custom download handler that obtains file from URL
-                          NULL)                                         // Reports URL download state (in progress | done), and it's result (success | failure)
+wolk_init_file_management(&wolk,
+                          128 * 1024 * 1024,                            // Maximum acceptable size of file, in bytes
+                          256,                                          // Size of file transfer chunk, in bytes, can't be higher that MQTT_PACKET_SIZE
+                          file_management_start,                        // Prepares device for receiving file
+                          file_management_write,                        // Writes received file chunk
+                          file_management_chunk_read,                   // Reads requested file chunk
+                          file_management_abort,                        // Aborts file update sequence
+                          file_management_finalize,                     // Reboots device
+                          file_management_url_download,                 // Handler that obtains file from URL
+                          file_management_is_url_download_done,         // Reports URL download state (in progress | done), and it's result (success | failure)
+                          file_management_get_file_list,                // Return list of the files from directory `files`
+                          file_management_remove_file,                  // Delete specific file
+                          file_management_purge_list)                   // Delete all files from directory `files`
 ```
 
-For more info on device firmware update mechanism see `firmware_update.h` file.
+For more info on device File Management mechanism see `file_management.h` file.
+
+**Firmware Update:**
+
+WolkAbout C Connector provides mechanism for triggering Firmware Update. Firmware update itself isn't covered, it is platform specific and it is up to user to implement it.
+
+By default this feature is disabled.
+See code snippet below on how to enable device file management.
+```
+wolk_init_firmware_update(&wolk,
+                          firmware_update_start_installation,           // Trigger start of the firmware update
+                          firmware_update_is_installation_completed,    // Check status of the firmware update
+                          firmware_update_get_version,                  // Return current version of the firmware
+                          firmware_update_abort_installation)           // Abort current installation
+```
+
+For more info on device File Management mechanism see `firmware_update.h` file.
 
 **Ping Keep Alive Mechanism:**
 

@@ -19,7 +19,6 @@
 #include "wolk_utils.h"
 
 #include <stdbool.h>
-#include <stddef.h>
 
 void persistence_init(persistence_t* persistence, persistence_push_t push, persistence_peek_t peek,
                       persistence_pop_t pop, persistence_is_empty_t is_empty)

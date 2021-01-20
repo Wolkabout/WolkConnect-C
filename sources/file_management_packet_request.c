@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-#include "firmware_update_packet_request.h"
+#include "file_management_packet_request.h"
 #include "wolk_utils.h"
 
 #include <stddef.h>
 #include <string.h>
 
-void firmware_update_packet_request_init(firmware_update_packet_request_t* request, const char* file_name,
+void file_management_packet_request_init(file_management_packet_request_t* request, const char* file_name,
                                          size_t chunk_index, size_t chunk_size)
 {
     /* Sanity check */
     WOLK_ASSERT(request);
     WOLK_ASSERT(file_name);
-    WOLK_ASSERT(strlen(file_name) <= FIRMWARE_UPDATE_FILE_NAME_SIZE);
+    WOLK_ASSERT(strlen(file_name) <= FILE_MANAGEMENT_FILE_NAME_SIZE);
 
     strcpy(request->file_name, file_name);
     request->chunk_index = chunk_index;
     request->chunk_size = chunk_size;
 }
 
-const char* firmware_update_packet_request_get_file_name(firmware_update_packet_request_t* request)
+const char* file_management_packet_request_get_file_name(file_management_packet_request_t* request)
 {
     /* Sanity check */
     WOLK_ASSERT(request);
@@ -41,7 +41,7 @@ const char* firmware_update_packet_request_get_file_name(firmware_update_packet_
     return request->file_name;
 }
 
-size_t firmware_update_packet_request_get_chunk_index(firmware_update_packet_request_t* request)
+size_t file_management_packet_request_get_chunk_index(file_management_packet_request_t* request)
 {
     /* Sanity check */
     WOLK_ASSERT(request);
@@ -49,7 +49,7 @@ size_t firmware_update_packet_request_get_chunk_index(firmware_update_packet_req
     return request->chunk_index;
 }
 
-size_t firmware_update_packet_request_get_chunk_size(firmware_update_packet_request_t* request)
+size_t file_management_packet_request_get_chunk_size(file_management_packet_request_t* request)
 {
     /* Sanity check */
     WOLK_ASSERT(request);

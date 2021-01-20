@@ -20,9 +20,10 @@
 #include "actuator_command.h"
 #include "configuration_command.h"
 #include "configuration_item.h"
-#include "firmware_update_command.h"
-#include "firmware_update_packet_request.h"
-#include "firmware_update_status.h"
+#include "file_management_packet_request.h"
+#include "file_management_parameter.h"
+#include "file_management_status.h"
+#include "firmware_update.h"
 #include "outbound_message.h"
 #include "reading.h"
 #include "utc_command.h"
@@ -50,16 +51,29 @@ size_t json_serialize_configuration(const char* device_key, char (*reference)[CO
 size_t json_deserialize_configuration_command(char* buffer, size_t buffer_size,
                                               configuration_command_t* commands_buffer, size_t commands_buffer_size);
 
-bool json_serialize_firmware_update_status(const char* device_key, firmware_update_status_t* status,
-                                           outbound_message_t* outbound_message);
+bool json_serialize_file_management_status(const char* device_key,
+                                           file_management_packet_request_t* file_management_packet_request,
+                                           file_management_status_t* status, outbound_message_t* outbound_message);
 
-bool json_deserialize_firmware_update_command(char* buffer, size_t buffer_size, firmware_update_command_t* command);
+bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size,
+                                                file_management_parameter_t* parameter);
 
-bool json_serialize_firmware_update_packet_request(const char* device_key,
-                                                   firmware_update_packet_request_t* firmware_update_packet_request,
+bool json_serialize_file_management_packet_request(const char* device_key,
+                                                   file_management_packet_request_t* file_management_packet_request,
                                                    outbound_message_t* outbound_message);
 
-bool json_serialize_firmware_update_version(const char* device_key, const char* version,
+bool json_serialize_file_management_url_download_status(const char* device_key,
+                                                        file_management_parameter_t* file_management_parameter,
+                                                        file_management_status_t* status,
+                                                        outbound_message_t* outbound_message);
+bool json_serialize_file_management_file_list_update(const char* device_key, char* file_list, size_t file_list_items,
+                                                     outbound_message_t* outbound_message);
+
+bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, size_t buffer_size,
+                                                firmware_update_t* parameter);
+bool json_serialize_firmware_update_status(const char* device_key, firmware_update_t* firmware_update,
+                                           outbound_message_t* outbound_message);
+bool json_serialize_firmware_update_version(const char* device_key, char* firmware_update_version,
                                             outbound_message_t* outbound_message);
 
 bool json_serialize_ping_keep_alive_message(const char* device_key, outbound_message_t* outbound_message);

@@ -100,41 +100,86 @@ bool outbound_message_make_from_configuration(parser_t* parser, const char* devi
                                           outbound_message);
 }
 
-bool outbound_message_make_from_firmware_update_status(parser_t* parser, const char* device_key,
-                                                       firmware_update_status_t* firmware_update_status,
+bool outbound_message_make_from_file_management_status(parser_t* parser, const char* device_key,
+                                                       file_management_packet_request_t* file_management_packet_request,
+                                                       file_management_status_t* file_management_status,
                                                        outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
-    WOLK_ASSERT(firmware_update_status);
+    WOLK_ASSERT(file_management_status);
     WOLK_ASSERT(outbound_message);
 
-    return parser_serialize_firmware_update_status(parser, device_key, firmware_update_status, outbound_message);
+    return parser_serialize_file_management_status(parser, device_key, file_management_packet_request,
+                                                   file_management_status, outbound_message);
 }
 
-bool outbound_message_make_from_firmware_update_packet_request(
-    parser_t* parser, const char* device_key, firmware_update_packet_request_t* firmware_update_packet_request,
+bool outbound_message_make_from_file_management_packet_request(
+    parser_t* parser, const char* device_key, file_management_packet_request_t* file_management_packet_request,
     outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
-    WOLK_ASSERT(firmware_update_packet_request);
+    WOLK_ASSERT(file_management_packet_request);
     WOLK_ASSERT(outbound_message);
 
-    return parser_serialize_firmware_update_packet_request(parser, device_key, firmware_update_packet_request,
+    return parser_serialize_file_management_packet_request(parser, device_key, file_management_packet_request,
                                                            outbound_message);
 }
 
-bool outbound_message_make_from_firmware_version(parser_t* parser, const char* device_key, const char* version,
-                                                 outbound_message_t* outbound_message)
+bool outbound_message_make_from_file_management_url_download_status(
+    parser_t* parser, const char* device_key, file_management_parameter_t* file_management_parameter,
+    file_management_status_t* status, outbound_message_t* outbound_message)
+{
+    /* Sanity check*/
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+    WOLK_ASSERT(file_management_parameter);
+    WOLK_ASSERT(status);
+    WOLK_ASSERT(outbound_message);
+
+    return parser_serialize_file_management_url_download(parser, device_key, file_management_parameter, status,
+                                                         outbound_message);
+}
+
+bool outbound_message_make_from_file_management_file_list(parser_t* parser, const char* device_key, char* file_list,
+                                                          size_t file_list_items, outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
-    WOLK_ASSERT(version);
+    WOLK_ASSERT(file_list);
+    WOLK_ASSERT(outbound_message);
 
-    return parser_serialize_firmware_update_version(parser, device_key, version, outbound_message);
+    return parser_serialize_file_management_file_list(parser, device_key, file_list, file_list_items, outbound_message);
+}
+
+bool outbound_message_make_from_firmware_update_status(parser_t* parser, const char* device_key,
+                                                       firmware_update_t* firmware_update,
+                                                       outbound_message_t* outbound_message)
+{
+    /* Sanity check */
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+    WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(outbound_message);
+
+    return parse_serialize_firmware_update_status(parser, device_key, firmware_update, outbound_message);
+}
+
+
+bool outbound_message_make_from_firmware_update_version(parser_t* parser, const char* device_key,
+                                                        char* firmware_update_version,
+                                                        outbound_message_t* outbound_message)
+{
+    /* Sanity check */
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+    WOLK_ASSERT(firmware_update_version);
+    WOLK_ASSERT(outbound_message);
+
+    return parse_serialize_firmware_update_version(parser, device_key, firmware_update_version, outbound_message);
 }
 
 bool outbound_message_make_from_keep_alive_message(parser_t* parser, const char* device_key,

@@ -3,13 +3,14 @@
 #include "json_parser.h"
 #include "actuator_command.h"
 #include "base64.h"
-#include "firmware_update_command.h"
-#include "firmware_update_packet_request.h"
-#include "firmware_update_status.h"
+#include "file_management_parameter.h"
+#include "file_management_packet_request.h"
+#include "file_management_status.h"
 #include "jsmn.h"
 #include "reading.h"
 #include "size_definitions.h"
 #include "wolk_utils.h"
+#include "firmware_update.h"
 
 #include "manifest_item.h"
 #include "outbound_message.h"
@@ -43,7 +44,7 @@ void test_json_parser_json_serialize_readings_sensor(void)
     uint64_t rtc = 1591621716;
     manifest_item_t string_sensor;
 
-    //Data type String
+    /* Data type String */
     manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_STRING);
     manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
 
@@ -54,7 +55,7 @@ void test_json_parser_json_serialize_readings_sensor(void)
     TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
     TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"TEST SENSOR\"}", buffer);
 
-    //Data type Numeric
+    /* Data type Numeric */
     manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
 
     reading_init(&first_reading, &string_sensor);
@@ -64,7 +65,7 @@ void test_json_parser_json_serialize_readings_sensor(void)
     TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
     TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"32.1\"}", buffer);
 
-    //Data type Boolean
+    /* Data type Boolean */
     manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
 
     reading_init(&first_reading, &string_sensor);
@@ -80,7 +81,7 @@ void test_json_parser_json_serialize_readings_actuator(void)
     char buffer[PAYLOAD_SIZE];
     manifest_item_t string_sensor;
 
-    //Data type String
+    /* Data type String */
     manifest_item_init(&string_sensor, "reference", READING_TYPE_ACTUATOR, DATA_TYPE_STRING);
 
     reading_init(&first_reading, &string_sensor);
@@ -89,7 +90,7 @@ void test_json_parser_json_serialize_readings_actuator(void)
     TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
     TEST_ASSERT_EQUAL_STRING("{\"status\":\"READY\",\"value\":\"TEST ACTUATOR\"}", buffer);
 
-    //Data type Numeric
+    /* Data type Numeric */
     manifest_item_init(&string_sensor, "reference", READING_TYPE_ACTUATOR, DATA_TYPE_NUMERIC);
 
     reading_init(&first_reading, &string_sensor);
@@ -100,7 +101,7 @@ void test_json_parser_json_serialize_readings_actuator(void)
 
     TEST_ASSERT_EQUAL_STRING("{\"status\":\"READY\",\"value\":\"32.1\"}", buffer);
 
-    //Data type Boolean
+    /* Data type Boolean */
     manifest_item_init(&string_sensor, "reference", READING_TYPE_ACTUATOR, DATA_TYPE_BOOLEAN);
 
     reading_init(&first_reading, &string_sensor);
@@ -116,7 +117,7 @@ void test_json_parser_json_serialize_readings_alarm(void)
     uint64_t rtc = 1591621716;
     manifest_item_t string_sensor;
 
-    //Data type String
+    /* Data type String */
     manifest_item_init(&string_sensor, "reference", READING_TYPE_ALARM, DATA_TYPE_STRING);
 
     reading_init(&first_reading, &string_sensor);
@@ -135,7 +136,7 @@ void test_json_parser_json_deserialize_actuator_commands(void)
     actuator_command_t actuator_command;
 
     strncpy(topic, UNIT_TEST_ACTUATOR_SET_TOPIC, strlen(UNIT_TEST_ACTUATOR_SET_TOPIC));
-    strcat(topic, "/r/reference");//"{\"value\":\"32.1\"}"
+    strcat(topic, "/r/reference");
     strncpy(payload, "{\"value\":\"321.1\"}", strlen("{\"value\":\"321.1\"}")+1);
     payload_len = strlen(payload);
 
@@ -151,7 +152,7 @@ void test_json_json_serialize_readings_topic(void)
     char reference[MANIFEST_ITEM_REFERENCE_SIZE] = {"reference"};
     manifest_item_t string_sensor;
 
-    //Data type String
+    /* Data type String */
     manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
     manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
 

@@ -20,9 +20,10 @@
 #include "actuator_command.h"
 #include "configuration_command.h"
 #include "configuration_item.h"
-#include "firmware_update_command.h"
-#include "firmware_update_packet_request.h"
-#include "firmware_update_status.h"
+#include "file_management_packet_request.h"
+#include "file_management_parameter.h"
+#include "file_management_status.h"
+#include "firmware_update.h"
 #include "outbound_message.h"
 #include "reading.h"
 #include "utc_command.h"
@@ -55,13 +56,26 @@ typedef struct {
                                                  configuration_command_t* first_configuration_command,
                                                  size_t num_config_items);
 
-    bool (*serialize_firmware_update_status)(const char* device_key, firmware_update_status_t* status,
-                                             outbound_message_t* outbound_message);
-    bool (*deserialize_firmware_update_command)(char* buffer, size_t buffer_size, firmware_update_command_t* command);
-    bool (*serialize_firmware_update_packet_request)(const char* device_key,
-                                                     firmware_update_packet_request_t* firmware_update_packet_request,
+    bool (*serialize_file_management_status)(const char* device_key,
+                                             file_management_packet_request_t* file_management_packet_request,
+                                             file_management_status_t* status, outbound_message_t* outbound_message);
+    bool (*deserialize_file_management_parameter)(char* buffer, size_t buffer_size,
+                                                  file_management_parameter_t* parameter);
+    bool (*serialize_file_management_packet_request)(const char* device_key,
+                                                     file_management_packet_request_t* file_management_packet_request,
                                                      outbound_message_t* outbound_message);
-    bool (*serialize_firmware_update_version)(const char* device_key, const char* version,
+    bool (*serialize_file_management_url_download_status)(const char* device_key,
+                                                          file_management_parameter_t* file_management_parameter,
+                                                          file_management_status_t* status,
+                                                          outbound_message_t* outbound_message);
+    bool (*serialize_file_management_file_list)(const char* device_key, char* file_list, size_t file_list_items,
+                                                outbound_message_t* outbound_message);
+
+    bool (*deserialize_firmware_update_parameter)(char* device_key, char* buffer, size_t buffer_size,
+                                                  firmware_update_t* parameter);
+    bool (*serialize_firmware_update_status)(const char* device_key, firmware_update_t* firmware_update,
+                                             outbound_message_t* outbound_message);
+    bool (*serialize_firmware_update_version)(const char* device_key, char* firmware_update_version,
                                               outbound_message_t* outbound_message);
 
     bool (*serialize_ping_keep_alive_message)(const char* device_key, outbound_message_t* outbound_message);
@@ -96,20 +110,38 @@ size_t parser_deserialize_configuration_commands(parser_t* parser, char* buffer,
                                                  size_t num_configuration_commands);
 /**** Configuration ****/
 
-/**** Firmware update ****/
-bool parser_serialize_firmware_update_status(parser_t* parser, const char* device_key, firmware_update_status_t* status,
-                                             outbound_message_t* outbound_message);
+/**** File Management ****/
+bool parser_serialize_file_management_status(parser_t* parser, const char* device_key,
+                                             file_management_packet_request_t* file_management_packet_request,
+                                             file_management_status_t* status, outbound_message_t* outbound_message);
 
-bool parser_deserialize_firmware_update_command(parser_t* parser, char* buffer, size_t buffer_size,
-                                                firmware_update_command_t* command);
+bool parser_deserialize_file_management_parameter(parser_t* parser, char* buffer, size_t buffer_size,
+                                                  file_management_parameter_t* parameter);
 
-bool parser_serialize_firmware_update_packet_request(parser_t* parser, const char* device_key,
-                                                     firmware_update_packet_request_t* firmware_update_packet_request,
+bool parser_serialize_file_management_packet_request(parser_t* parser, const char* device_key,
+                                                     file_management_packet_request_t* file_management_packet_request,
                                                      outbound_message_t* outbound_message);
 
-bool parser_serialize_firmware_update_version(parser_t* parser, const char* device_key, const char* version,
-                                              outbound_message_t* outbound_message);
-/**** Firmware update ****/
+bool parser_serialize_file_management_url_download(parser_t* parser, const char* device_key,
+                                                   file_management_parameter_t* parameter,
+                                                   file_management_status_t* status,
+                                                   outbound_message_t* outbound_message);
+
+bool parser_serialize_file_management_file_list(parser_t* parser, const char* device_key, char* file_list,
+                                                size_t file_list_items, outbound_message_t* outbound_message);
+/**** File Management ****/
+
+/**** Firmware Update ****/
+bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* device_key, char* buffer, size_t buffer_size,
+                                                 firmware_update_t* firmware_update_parameter);
+
+bool parse_serialize_firmware_update_status(parser_t* parser, const char* device_key,
+                                            firmware_update_t* firmware_update, outbound_message_t* outbound_message);
+
+bool parse_serialize_firmware_update_version(parser_t* parser, const char* device_key, char* firmware_update_version,
+                                             outbound_message_t* outbound_message);
+/**** Firmware Update ****/
+
 
 /**** PING keep alive ****/
 bool parser_serialize_ping_keep_alive_message(parser_t* parser, const char* device_key,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 WolkAbout Technology s.r.o.
+ * Copyright 2021 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,173 +14,98 @@
  * limitations under the License.
  */
 
-#ifndef FIRMWARE_UPDATE_H
-#define FIRMWARE_UPDATE_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "firmware_update_command.h"
-#include "firmware_update_packet_request.h"
-#include "firmware_update_status.h"
-#include "size_definitions.h"
+#ifndef WOLKCONNECTOR_C_FIRMWARE_UPDATE_H
+#define WOLKCONNECTOR_C_FIRMWARE_UPDATE_H
 
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 
-/**
- * @brief firmware_update_start signature.
- * Initializes firmware update procedure with firmware file named 'file_name' of size 'file_size'.
- *
- * Prepares device for writting received firmware file chunks (via 'firmware_update_write_chunk')
- * to appropriate location.
- *
- * @return true if firmware is able to receive firmware file and perform firmware upgrade at this time, false otherwise
- */
-typedef bool (*firmware_update_start_t)(const char* file_name, size_t file_size);
+#include "size_definitions.h"
 
 /**
- * @brief firmware_update_write_chunk signature.
- * Writes firmware file chunk pointed to by 'data' and of size 'data_size'.
+ * @brief firmware_update_start_installation signature.
+ * Start Firmware update procedure with file named 'file_name'.
  *
- * @return true if firmware file chunk is successfuly written, false otherwise
+ * @return true if Firmware update is able to perform installation, false otherwise
  */
-typedef bool (*firmware_update_write_chunk_t)(uint8_t* data, size_t data_size);
+typedef bool (*firmware_update_start_installation_t)(const char* file_name);
 
 /**
- * @brief firmware_update_read_chunk signature.
- * Reads 'n'-th firmware file chunk of size up to 'data_size' to destination pointed to by 'data'.
+ * @brief firmware_update_start_installation signature.
+ * Start Firmware update procedure with file named 'file_name'.
  *
- * @return number of bytes that are written to destination pointed to by 'data'
+ * @return true if Firmware update is able to perform installation, false otherwise
  */
-typedef size_t (*firmware_update_read_chunk_t)(size_t n, uint8_t* data, size_t data_size);
+typedef bool (*firmware_update_is_installation_completed_t)(bool* success);
+
+/**
+ * @brief firmware_update_version signature.
+ * Get current firmware version.
+ *
+ * @return true if Firmware version is available, false otherwise
+ */
+typedef bool (*firmware_update_get_version_t)(const char* version);
 
 /**
  * @brief firmware_update_abort signature.
- * Aborts initialized firmware update procedure.
+ * Abort current Firmware update procedure.
+ *
+ * @return true if Firmware update can be aborted, false otherwise
  */
-typedef void (*firmware_update_abort_t)(void);
+typedef bool (*firmware_update_abort_t)(void);
 
-/**
- * @brief firmware_update_finalize signature.
- * Finalizes firmware update procedure.
- *
- * Reboots device in order to finish firmware update procedure
- */
-typedef void (*firmware_update_finalize_t)(void);
+typedef enum {
+    FIRMWARE_UPDATE_STATUS_INSTALLATION = 0,
+    FIRMWARE_UPDATE_STATUS_COMPLETED = 1,
+    FIRMWARE_UPDATE_STATUS_ERROR = 2,
+    FIRMWARE_UPDATE_STATUS_ABORTED = 3
+} firmware_update_status_t;
 
-/**
- * @brief firmware_update_persist_firmware_version signature.
- * Saves given 'version' to persistent storage.
- *
- * @return true if firmware version was successfully persisted, false otherwise
- */
-typedef bool (*firmware_update_persist_firmware_version_t)(const char* version);
-
-/**
- * @brief firmware_update_read_firmware_version signature.
- * Reads 'version' from persistent storage.
- *
- * Saved 'version' can be unpersisted only once, eg.
- * after unpersisting 'version' successfile call will return false, until next 'version' is persisted.
- *
- * @return true if firmware version was succesfully unpersisted, false otherwise
- */
-typedef bool (*firmware_update_unpersist_firmware_version_t)(char* version, size_t version_size);
-
-/**
- * @brief firmware_update_start_url_download signature.
- * Starts download of firmware from given URL, in background.
- *
- * @return true if firmware url download is started, false otherwise
- */
-typedef bool (*firmware_update_start_url_download_t)(const char* url);
-
-/**
- * @brief firmware_update_is_url_download_done signature.
- * Sets 'success' argument to true if firmware download successfully completed, false otherwise
- *
- * @return ture if firmware url download is completed, false otherwise
- */
-typedef bool (*firmware_update_is_url_download_done_t)(bool* success);
+typedef enum {
+    FIRMWARE_UPDATE_ERROR_NONE = -1,
+    FIRMWARE_UPDATE_UNSPECIFIED_ERROR = 0,
+    FIRMWARE_UPDATE_FILE_NOT_PRESENT = 1,
+    FIRMWARE_UPDATE_FILE_SYSTEM_ERROR = 2,
+    FIRMWARE_UPDATE_INSTALLATION_FAILED = 3
+} firmware_update_error_t;
 
 typedef struct firmware_update firmware_update_t;
-
-typedef void (*firmware_update_on_status_listener)(firmware_update_t* firmware_update, firmware_update_status_t status);
-typedef void (*firmware_update_on_packet_request_listener)(firmware_update_t* firmware_update,
-                                                           firmware_update_packet_request_t request);
+typedef void (*firmware_update_on_status_listener)(firmware_update_t* firmware_update);
+typedef void (*firmware_update_on_version_listener)(firmware_update_t* firmware_update,
+                                                    firmware_update_get_version_t version);
 
 struct firmware_update {
-    const char* device_key;
+    bool is_initialized;
+    char file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
 
-    char version[FIRMWARE_UPDATE_VERSION_SIZE];
+    int8_t state;
+    int8_t status;
+    int8_t error;
 
-    size_t maximum_firmware_size;
-    size_t chunk_size;
-
-    firmware_update_start_t start;
-    firmware_update_write_chunk_t write_chunk;
-    firmware_update_read_chunk_t read_chunk;
-    firmware_update_abort_t abort;
-    firmware_update_finalize_t finalize;
-
-    firmware_update_persist_firmware_version_t persist_version;
-    firmware_update_unpersist_firmware_version_t unpersist_version;
-
-    firmware_update_start_url_download_t start_url_download;
-    firmware_update_is_url_download_done_t is_url_download_done;
-
-    uint8_t state;
-    uint8_t last_packet_hash[FIRMWARE_UPDATE_HASH_SIZE];
-    size_t next_chunk_index;
-
-    size_t expected_number_of_chunks;
-    uint32_t retry_count;
-
-    /* Firmware update request parameters */
-    char file_name[FIRMWARE_UPDATE_FILE_NAME_SIZE];
-    uint8_t file_hash[FIRMWARE_UPDATE_HASH_SIZE];
-    size_t file_size;
-    bool auto_install;
-    /* Firmware update request parameters */
+    firmware_update_start_installation_t start_installation;
+    firmware_update_is_installation_completed_t is_installation_completed;
+    firmware_update_get_version_t get_version;
+    firmware_update_abort_t abort_installation;
 
     /* Listeners */
-    firmware_update_on_status_listener on_status;
-    firmware_update_on_packet_request_listener on_packet_request;
+    firmware_update_on_status_listener get_status;
+    firmware_update_on_version_listener on_version;
     /* Listeners */
 
     void* wolk_ctx;
-
-    bool has_valid_configuration;
 };
-
-void firmware_update_init(firmware_update_t* firmware_update, const char* device_key, const char* version,
-                          size_t maximum_firmware_size, size_t chunk_size, firmware_update_start_t start,
-                          firmware_update_write_chunk_t write_chunk, firmware_update_read_chunk_t read_chunk,
-                          firmware_update_abort_t abort, firmware_update_finalize_t finalize,
-                          firmware_update_persist_firmware_version_t persist_version,
-                          firmware_update_unpersist_firmware_version_t unpersist_version,
-                          firmware_update_start_url_download_t start_url_download,
-                          firmware_update_is_url_download_done_t is_url_download_done, void* wolk_ctx);
-
-void firmware_update_handle_command(firmware_update_t* firmware_update,
-                                    firmware_update_command_t* firmware_update_command);
-
-void firmware_update_handle_packet(firmware_update_t* firmware_update, uint8_t* packet, size_t packet_size);
-
-const char* firmware_update_get_current_version(firmware_update_t* firmware_update);
-
+void firmware_update_init(firmware_update_t* firmware_update, firmware_update_start_installation_t start_installation,
+                          firmware_update_is_installation_completed_t is_installation_completed,
+                          firmware_update_get_version_t get_version, firmware_update_abort_t abort_installation,
+                          void* wolk_ctx);
+void firmware_update_parameter_init(firmware_update_t* parameter);
+void firmware_update_parameter_set_filename(firmware_update_t* parameter, const char* file_name);
+void firmware_update_handle_parameter(firmware_update_t* firmware_update, firmware_update_t* parameter);
+void firmware_update_handle_abort(firmware_update_t* firmware_update);
+void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
+                                            firmware_update_on_status_listener status);
+void firmware_update_set_on_version_listener(firmware_update_t* firmware_update,
+                                             firmware_update_on_version_listener version);
 void firmware_update_process(firmware_update_t* firmware_update);
 
-void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
-                                            firmware_update_on_status_listener on_status);
-void firmware_update_set_on_packet_request_listener(firmware_update_t* firmware_update,
-                                                    firmware_update_on_packet_request_listener on_packet_request);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
+#endif // WOLKCONNECTOR_C_FIRMWARE_UPDATE_H
