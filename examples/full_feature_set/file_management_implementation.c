@@ -23,7 +23,7 @@ enum { DIRECTORY_NAME_SIZE = 6 };
 
 static FILE* file_management_file;
 static char* directory_name = "files/";
-char file_management_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE];
+char file_management_file_name[FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE + 1];
 static size_t file_management_file_size = 0;
 static char current_file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
 static size_t file_management_current_number_of_files = 0;
