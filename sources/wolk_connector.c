@@ -530,7 +530,7 @@ WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* referenc
 
     char value_str[READING_SIZE];
     memset(value_str, 0, sizeof(value_str));
-    if (snprintf(value_str, READING_SIZE, "%f", value) > READING_SIZE) {
+    if (!snprintf(value_str, READING_SIZE, "%f", value)) {
         return W_TRUE;
     }
 
@@ -563,7 +563,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const ch
     for (uint32_t i = 0; i < values_size; ++i) {
         char value_str[READING_SIZE];
         memset(value_str, 0, sizeof(value_str));
-        if (snprintf(value_str, READING_SIZE, "%f", values[i]) > READING_SIZE) {
+        if (!snprintf(value_str, READING_SIZE, "%f", values[i])) {
             return W_TRUE;
         }
 
