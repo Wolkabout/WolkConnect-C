@@ -50,7 +50,7 @@ static void sending_humidity_reading(wolk_ctx_t* ctx)
         humidity = rand() % 100;
         wolk_add_numeric_sensor_reading(ctx, "H", humidity, 0);
         wolk_publish(ctx);
-        printf("\tHumidity\t: %d%\n", humidity);
+        printf("\tHumidity\t: %d Percent\n", humidity);
     }
 }
 
