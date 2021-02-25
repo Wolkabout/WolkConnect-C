@@ -126,12 +126,14 @@ void test_wolk_connector_wolk_connect(void)
     bool file_management_purge_files(void){};
     bool firmware_update_start_installation(const char* file_name){};
     bool firmware_update_is_installation_completed(bool* success){};
+    bool firmware_update_verification_store(uint8_t parameter){};
+    uint8_t firmware_update_verification_read(void){};
     bool firmware_update_get_version(const char* version){};
     bool firmware_update_abort_installation(void){};
 
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider, configuration_handler, configuration_provider, "device_key", "device_password", PROTOCOL_WOLKABOUT, actuator_references, num_actuator_references));
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_file_management(&wolk, 128 * 1024 * 1024, 500, file_management_start, file_management_chunk_write, file_management_chunk_read, file_management_abort, file_management_finalize, file_management_start_url_download, file_management_is_url_download_done, file_management_get_file_list, file_management_remove_file, file_management_purge_files));
-    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_firmware_update(&wolk, firmware_update_start_installation, firmware_update_is_installation_completed, firmware_update_get_version, firmware_update_abort_installation));
+    TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_init_firmware_update(&wolk, firmware_update_start_installation, firmware_update_is_installation_completed, firmware_update_verification_store, firmware_update_verification_read, firmware_update_get_version, firmware_update_abort_installation));
 
     TEST_ASSERT_EQUAL_INT(W_FALSE, wolk_connect(&wolk));
 }
