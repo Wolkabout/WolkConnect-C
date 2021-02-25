@@ -96,7 +96,7 @@ typedef bool (*file_management_is_url_download_done_t)(bool* success, char* down
  *
  * @return number of file presented in the list
  */
-typedef int8_t (*file_management_get_file_list_t)(char* file_list);
+typedef size_t (*file_management_get_file_list_t)(char* file_list);
 
 /**
  * @brief file_management_remove_file_t signature.
