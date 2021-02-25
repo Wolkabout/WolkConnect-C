@@ -31,8 +31,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#define NON_EXISTING "N/A"
-
 #define MQTT_KEEP_ALIVE_INTERVAL 60 // Unit: s
 
 #define PING_KEEP_ALIVE_INTERVAL (10 * 1000) // Unit: ms
