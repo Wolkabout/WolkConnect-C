@@ -268,6 +268,7 @@ int main(int argc, char* argv[])
     }
 
     if (wolk_init_firmware_update(&wolk, firmware_update_start_installation, firmware_update_is_installation_completed,
+                                  firmware_update_verification_store, firmware_update_verification_read,
                                   firmware_update_get_version, firmware_update_abort_installation)
         != W_FALSE) {
         printf("Error initializing Firmware Update");

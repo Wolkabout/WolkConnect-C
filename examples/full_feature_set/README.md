@@ -187,10 +187,12 @@ WolkAbout C Connector provides mechanism for triggering Firmware Update. Firmwar
 
 By default this feature is disabled.
 See code snippet below on how to enable device file management.
-```
+```c
 wolk_init_firmware_update(&wolk,
                           firmware_update_start_installation,           // Trigger start of the firmware update
                           firmware_update_is_installation_completed,    // Check status of the firmware update
+                          firmware_update_verification_store,           // Store verification parameters into permanent memory, obligatory
+                          firmware_update_verification_read,            // Read verification parameters from permanent memory
                           firmware_update_get_version,                  // Return current version of the firmware
                           firmware_update_abort_installation)           // Abort current installation
 ```
