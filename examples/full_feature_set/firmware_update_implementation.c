@@ -59,6 +59,9 @@ static bool _set_version(char* source, int8_t* version)
     char* version_string = strtok(source, FIRMWARE_UPDATE_VERIFICATION_FILE_DELIMITER);
     version_string = strtok(NULL, FIRMWARE_UPDATE_VERSION_FORMAT_DELIMITER);
 
+    if (version_string == NULL) {
+        return false;
+    }
     *version = atoi(version_string);
     while (version_string != NULL) {
         version_string = strtok(NULL, FIRMWARE_UPDATE_VERSION_FORMAT_DELIMITER);
@@ -147,7 +150,8 @@ static bool _file_read(uint8_t* status, int8_t* version)
 
     FILE* file_pointer = fopen(FIRMWARE_UPDATE_VERIFICATION_FILE_NAME, FIRMWARE_UPDATE_VERIFICATION_FILE_MODE_READ);
     if (file_pointer == NULL) {
-        return false;
+        file_pointer = fopen(FIRMWARE_UPDATE_VERIFICATION_FILE_NAME, FIRMWARE_UPDATE_VERIFICATION_FILE_MODE_WRITE);
+        return true;
     }
 
     if (fread(file_content, FIRMWARE_UPDATE_VERSION_SIZE, 1, file_pointer) < 0) {
