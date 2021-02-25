@@ -68,10 +68,11 @@ static void sending_accl_readings(wolk_ctx_t* ctx)
 
 bool enable_feeds(char* value)
 {
-    const char delimiter[2] = ",";
-    char* element = strtok(value, delimiter);
-    ;
     int8_t elements_counter = 0;
+    const char delimiter[2] = ",";
+    char tmp_value[CONFIGURATION_VALUE_SIZE];
+    strncpy(tmp_value, value, strlen(value));
+    char* element = strtok(tmp_value, delimiter);
 
     for (int i = 0; i < 4; i++) {
         device_configuration_enable_feeds[i][0] = false;
@@ -95,7 +96,7 @@ bool enable_feeds(char* value)
     return 0;
 }
 
-bool sensor_readings_process(wolk_ctx_t* ctx, int* publish_period_seconds, int* default_publish_value)
+bool sensor_readings_process(wolk_ctx_t* ctx, int* publish_period_seconds, int default_publish_value)
 {
     static double publish_period_counter = 0;
 
