@@ -85,10 +85,12 @@ static void _handle_file_management_file_delete(file_management_t* file_manageme
                                                 file_management_parameter_t* parameter);
 static void _handle_file_management_file_purge(file_management_t* file_management);
 
-static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter);
-static void _handle_firmware_update_abort(firmware_update_t* firmware_update);
 static void _listener_on_firmware_update_version(firmware_update_t* firmware_update, char* firmware_update_version);
 static void _listener_on_firmware_update_status(firmware_update_t* firmware_update);
+static void _listener_on_firmware_update_verification(firmware_update_t* firmware_update);
+
+static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter);
+static void _handle_firmware_update_abort(firmware_update_t* firmware_update);
 
 static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
 static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
@@ -212,14 +214,17 @@ WOLK_ERR_T wolk_init_file_management(
 
 WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_installation_t start_installation,
                                      firmware_update_is_installation_completed_t is_installation_completed,
+                                     firmware_update_verification_store_t verification_store,
+                                     firmware_update_verification_read_t verification_read,
                                      firmware_update_get_version_t get_version,
                                      firmware_update_abort_t abort_installation)
 {
-    firmware_update_init(&ctx->firmware_update, start_installation, is_installation_completed, get_version,
-                         abort_installation, ctx);
+    firmware_update_init(&ctx->firmware_update, start_installation, is_installation_completed, verification_store,
+                         verification_read, get_version, abort_installation, ctx);
 
     firmware_update_set_on_status_listener(&ctx->firmware_update, _listener_on_firmware_update_status);
     firmware_update_set_on_version_listener(&ctx->firmware_update, _listener_on_firmware_update_version);
+    firmware_update_set_on_verification_listener(&ctx->firmware_update, _listener_on_firmware_update_verification);
 
     return W_FALSE;
 }
@@ -271,6 +276,9 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     if (transmission_buffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
+
+    /* Enable PING Keepalive */
+    wolk_enable_ping_keep_alive(ctx);
 
     /* Subscribe to PONG */
     memset(topic_buf, '\0', sizeof(topic_buf));
@@ -407,6 +415,8 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 
     char firmware_update_version[FIRMWARE_UPDATE_VERSION_SIZE] = {0};
     if (ctx->firmware_update.is_initialized) {
+        _listener_on_firmware_update_verification(&ctx->firmware_update);
+
         ctx->firmware_update.get_version(firmware_update_version);
         _listener_on_firmware_update_version(&ctx->firmware_update, firmware_update_version);
     }
@@ -1125,15 +1135,6 @@ static void _listener_on_file_list_status(file_management_t* file_management, ch
     _publish(wolk_ctx, &outbound_message);
 }
 
-static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter)
-{
-    /* Sanity check */
-    WOLK_ASSERT(firmware_update);
-    WOLK_ASSERT(parameter);
-
-    firmware_update_handle_parameter(firmware_update, parameter);
-}
-
 static void _listener_on_firmware_update_status(firmware_update_t* firmware_update)
 {
     /* Sanity check */
@@ -1162,6 +1163,23 @@ static void _listener_on_firmware_update_version(firmware_update_t* firmware_upd
                                                        &outbound_message);
 
     _publish(wolk_ctx, &outbound_message);
+}
+
+static void _listener_on_firmware_update_verification(firmware_update_t* firmware_update)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(firmware_update);
+
+    firmware_update_handle_verification(firmware_update);
+}
+
+static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(parameter);
+
+    firmware_update_handle_parameter(firmware_update, parameter);
 }
 
 static void _handle_firmware_update_abort(firmware_update_t* firmware_update)

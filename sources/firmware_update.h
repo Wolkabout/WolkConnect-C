@@ -54,6 +54,24 @@ typedef bool (*firmware_update_get_version_t)(const char* version);
  */
 typedef bool (*firmware_update_abort_t)(void);
 
+/**
+ * @brief firmware_update_verification_store signature.
+ * Verification includes store Firmware update progress parameters.
+ * WolkConnect-C user have to store parameters into permanent memory (flash memory or file system on OS implementations)
+ *
+ * @return true if parameters are written, false otherwise
+ */
+typedef bool (*firmware_update_verification_store_t)(uint8_t parameter);
+
+/**
+ * @brief firmware_update_verification_read signature.
+ * Read to verify Firmware update progress parameters.
+ *
+ * @return value of the particular parameter
+ */
+typedef uint8_t (*firmware_update_verification_read_t)(void);
+
+
 typedef enum {
     FIRMWARE_UPDATE_STATUS_INSTALLATION = 0,
     FIRMWARE_UPDATE_STATUS_COMPLETED = 1,
@@ -73,6 +91,7 @@ typedef struct firmware_update firmware_update_t;
 typedef void (*firmware_update_on_status_listener)(firmware_update_t* firmware_update);
 typedef void (*firmware_update_on_version_listener)(firmware_update_t* firmware_update,
                                                     firmware_update_get_version_t version);
+typedef void (*firmware_update_on_verification_listener)(firmware_update_t* firmware_update);
 
 struct firmware_update {
     bool is_initialized;
@@ -84,28 +103,37 @@ struct firmware_update {
 
     firmware_update_start_installation_t start_installation;
     firmware_update_is_installation_completed_t is_installation_completed;
+    firmware_update_verification_store_t verification_store;
+    firmware_update_verification_read_t verification_read;
     firmware_update_get_version_t get_version;
     firmware_update_abort_t abort_installation;
 
     /* Listeners */
     firmware_update_on_status_listener get_status;
     firmware_update_on_version_listener on_version;
+    firmware_update_on_verification_listener on_verification;
     /* Listeners */
 
     void* wolk_ctx;
 };
+
 void firmware_update_init(firmware_update_t* firmware_update, firmware_update_start_installation_t start_installation,
                           firmware_update_is_installation_completed_t is_installation_completed,
+                          firmware_update_verification_store_t verification_store,
+                          firmware_update_verification_read_t verification_read,
                           firmware_update_get_version_t get_version, firmware_update_abort_t abort_installation,
                           void* wolk_ctx);
 void firmware_update_parameter_init(firmware_update_t* parameter);
 void firmware_update_parameter_set_filename(firmware_update_t* parameter, const char* file_name);
 void firmware_update_handle_parameter(firmware_update_t* firmware_update, firmware_update_t* parameter);
+void firmware_update_handle_verification(firmware_update_t* firmware_update);
 void firmware_update_handle_abort(firmware_update_t* firmware_update);
 void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
                                             firmware_update_on_status_listener status);
 void firmware_update_set_on_version_listener(firmware_update_t* firmware_update,
                                              firmware_update_on_version_listener version);
+void firmware_update_set_on_verification_listener(firmware_update_t* firmware_update,
+                                                  firmware_update_on_verification_listener verification);
 void firmware_update_process(firmware_update_t* firmware_update);
 
 #endif // WOLKCONNECTOR_C_FIRMWARE_UPDATE_H
