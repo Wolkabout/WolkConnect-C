@@ -35,10 +35,10 @@ static int8_t version_minor = 0;
 static int8_t version_patch = 1;
 
 static bool _get_version(char* version);
-static bool _set_version(char* version, int8_t* firmware_update_version);
-static uint8_t _set_status(char* source);
-static bool _file_write(uint8_t firmware_update_installation_status, int8_t* firmware_update_version);
-static bool _file_read(uint8_t* firmware_update_installation_status, int8_t* firmware_update_version);
+static bool _get_version_from_file_content(char* source, int8_t* version);
+static bool _get_status_from_file_content(char* source, int8_t* status);
+static bool _file_write(uint8_t* status, int8_t* version);
+static bool _file_read(uint8_t* status, int8_t* version);
 
 
 static bool _get_version(char* version)
@@ -53,7 +53,7 @@ static bool _get_version(char* version)
     return true;
 }
 
-static bool _set_version(char* source, int8_t* version)
+static bool _get_version_from_file_content(char* source, int8_t* version)
 {
     /* From source extract version */
     char* version_string = strtok(source, FIRMWARE_UPDATE_VERIFICATION_FILE_DELIMITER);
@@ -74,28 +74,29 @@ static bool _set_version(char* source, int8_t* version)
     return true;
 }
 
-static uint8_t _set_status(char* source)
+static bool _get_status_from_file_content(char* source, int8_t* status)
 {
     /* From source extract status */
     char* element = strtok(source, FIRMWARE_UPDATE_VERIFICATION_FILE_DELIMITER);
     if (element == NULL) {
-        return -1;
+        return false;
     }
 
-    uint8_t status = atoi(element);
-    if (!status) {
-        return -1;
+    uint8_t tmp_status = atoi(element);
+    if (!tmp_status) {
+        return false;
     }
+    *status = tmp_status;
 
-    return status;
+    return true;
 }
 
-static bool _file_write(uint8_t status, int8_t* version)
+static bool _file_write(uint8_t* status, int8_t* version)
 {
     char file_content[FIRMWARE_UPDATE_VERSION_SIZE];
     memset(file_content, '\0', FIRMWARE_UPDATE_VERSION_SIZE);
-    int8_t tmp_status, tmp_version[FIRMWARE_UPDATE_VERSION_NUMBER_OF_ELEMENTS];
-    tmp_status = status;
+    int8_t tmp_status = 0;
+    int8_t tmp_version[FIRMWARE_UPDATE_VERSION_NUMBER_OF_ELEMENTS] = {0};
     *tmp_version = version;
 
     if (status == NULL && version == NULL) {
@@ -104,9 +105,16 @@ static bool _file_write(uint8_t status, int8_t* version)
 
     if (status == NULL) {
         _file_read(&tmp_status, NULL);
+    } else {
+        tmp_status = *status;
     }
     if (version == NULL) {
-        _file_read(NULL, &tmp_version);
+        if(!_file_read(NULL, &tmp_version))
+        {
+            tmp_version[0] = version_major;
+            tmp_version[1] = version_minor;
+            tmp_version[2] = version_patch;
+        }
     } else {
         for (int i = 0; i < FIRMWARE_UPDATE_VERSION_NUMBER_OF_ELEMENTS; i++) {
             tmp_version[i] = version[i];
@@ -118,7 +126,7 @@ static bool _file_write(uint8_t status, int8_t* version)
         return false;
     }
 
-    if (tmp_status != NULL) {
+    if (tmp_status) {
         if (snprintf(file_content, FIRMWARE_UPDATE_VERSION_SIZE, "%d", tmp_status) > FIRMWARE_UPDATE_VERSION_SIZE) {
             return false;
         }
@@ -155,15 +163,20 @@ static bool _file_read(uint8_t* status, int8_t* version)
     }
 
     if (fread(file_content, FIRMWARE_UPDATE_VERSION_SIZE, 1, file_pointer) < 0) {
+        printf("Firmware Update verification file read error!\n");
+        return false;
+    }
+    if(strlen(file_content)==0)
+    {
         printf("Firmware Update verification file is empty!\n");
         return false;
     }
 
     if (version != NULL) {
-        _set_version(file_content, version);
+        _get_version_from_file_content(file_content, version);
     }
     if (status != NULL) {
-        *status = _set_status(file_content);
+        _get_status_from_file_content(file_content, status);
     }
 
     if (fclose(file_pointer)) {
@@ -221,7 +234,7 @@ bool firmware_update_is_installation_completed(bool* success)
         printf("Installation is completed\n");
     } else {
         *success = false;
-        printf("Installation is Failed or Downgrade\n");
+        printf("Installation has failed or downgrade\n");
     }
 
     return true;
@@ -229,7 +242,7 @@ bool firmware_update_is_installation_completed(bool* success)
 
 bool firmware_update_verification_store(uint8_t parameter)
 {
-    return _file_write(parameter, NULL);
+    return _file_write(&parameter, NULL);
 }
 
 uint8_t firmware_update_verification_read(void)
