@@ -155,9 +155,7 @@ static actuator_status_t actuator_status_provider(const char* reference)
     actuator_status_t actuator_status;
     actuator_status_init(&actuator_status, "", ACTUATOR_STATE_ERROR);
 
-    if (strcmp(reference, "SW") == 0) {
-        actuator_status_init(&actuator_status, actuator_value, ACTUATOR_STATE_READY);
-    } else if (strcmp(reference, "SL") == 0) {
+    if (strcmp(reference, "SW") == 0 || strcmp(reference, "SL") == 0) {
         actuator_status_init(&actuator_status, actuator_value, ACTUATOR_STATE_READY);
     }
 
@@ -168,14 +166,17 @@ static actuator_status_t actuator_status_provider(const char* reference)
 static int publish_period_seconds = DEFAULT_PUBLISH_PERIOD_SECONDS;
 static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"HB", "LL",
                                                                                                        "EF"};
-static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"", "INFO", "T,H,P,ACL"};
+static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"", "INFO", "P,T,H,ACL"};
 
-int update_default_device_configuration_values(char* default_device_configuration_values[], int default_value)
+static void
+update_default_device_configuration_values(char (*default_device_configuration_values)[CONFIGURATION_VALUE_SIZE],
+                                           int default_value)
 {
     char default_publish_period[10];
 
     int number_size = snprintf(default_publish_period, 10, "%d", default_value);
-    strncpy(&default_device_configuration_values[0], default_publish_period, number_size);
+    strncpy(&default_device_configuration_values[0], default_publish_period, (unsigned long)number_size);
+    enable_feeds(&default_device_configuration_values[2]);
 }
 
 static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
@@ -192,7 +193,7 @@ static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE
                 if (!strcmp(reference[i], device_configuration_references[0])) {
                     publish_period_seconds = atoi(value[i]);
                 } else if (!strcmp(reference[i], device_configuration_references[2])) {
-                    enable_feeds(&value[i]);
+                    enable_feeds(value[i]);
                 }
             } else
                 iteration_counter++;
@@ -212,7 +213,8 @@ static size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_S
 
     for (size_t i = 0; i < CONFIGURATION_ITEMS_SIZE; ++i) {
         strcpy(reference[i], device_configuration_references[i]);
-        strcpy(value[i], device_configuration_values[i]);
+        strncpy(value[i], device_configuration_values[i], CONFIGURATION_VALUE_SIZE);
+        printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
     }
 
     return CONFIGURATION_ITEMS_SIZE;
@@ -268,13 +270,14 @@ int main(int argc, char* argv[])
     }
 
     if (wolk_init_firmware_update(&wolk, firmware_update_start_installation, firmware_update_is_installation_completed,
+                                  firmware_update_verification_store, firmware_update_verification_read,
                                   firmware_update_get_version, firmware_update_abort_installation)
         != W_FALSE) {
         printf("Error initializing Firmware Update");
         return 1;
     }
 
-    update_default_device_configuration_values(&device_configuration_values, DEFAULT_PUBLISH_PERIOD_SECONDS);
+    update_default_device_configuration_values(device_configuration_values, DEFAULT_PUBLISH_PERIOD_SECONDS);
 
     printf("Wolk client - Connecting to server\n");
     if (wolk_connect(&wolk) != W_FALSE) {

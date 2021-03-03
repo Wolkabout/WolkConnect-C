@@ -34,7 +34,7 @@ extern "C" {
  * @brief file_management_start signature.
  * Initializes File Management procedure with file named 'file_name' of size 'file_size'.
  *
- * Prepares device for writting received file chunks (via 'file_management_write_chunk')
+ * Prepares device for writing received file chunks (via 'file_management_write_chunk')
  * to appropriate location.
  *
  * @return true if File Management is able to receive file, false otherwise
@@ -45,7 +45,7 @@ typedef bool (*file_management_start_t)(const char* file_name, size_t file_size)
  * @brief file_management_write_chunk signature.
  * Writes file chunk pointed to by 'data' and of size 'data_size'.
  *
- * @return true if file chunk is successfuly written, false otherwise
+ * @return true if file chunk is successfully written, false otherwise
  */
 typedef bool (*file_management_write_chunk_t)(uint8_t* data, size_t data_size);
 
@@ -96,7 +96,7 @@ typedef bool (*file_management_is_url_download_done_t)(bool* success, char* down
  *
  * @return number of file presented in the list
  */
-typedef int8_t (*file_management_get_file_list_t)(char* file_list);
+typedef size_t (*file_management_get_file_list_t)(char* file_list);
 
 /**
  * @brief file_management_remove_file_t signature.

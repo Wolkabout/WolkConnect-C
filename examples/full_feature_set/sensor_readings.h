@@ -25,6 +25,6 @@
 #include "wolk_connector.h"
 
 bool enable_feeds(char* value);
-bool sensor_readings_process(wolk_ctx_t* ctx, int* publish_period_seconds, int* default_publish_value);
+bool sensor_readings_process(wolk_ctx_t* ctx, int* publish_period_seconds, int default_publish_value);
 
 #endif // WOLKCONNECTOR_C_SENSOR_READINGS_H

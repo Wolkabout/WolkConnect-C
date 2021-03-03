@@ -22,6 +22,8 @@
 
 bool firmware_update_start_installation(const char* file_name);
 bool firmware_update_is_installation_completed(bool* success);
+bool firmware_update_verification_store(uint8_t parameter);
+uint8_t firmware_update_verification_read(void);
 bool firmware_update_get_version(const char* version);
 bool firmware_update_abort_installation(void);
 
