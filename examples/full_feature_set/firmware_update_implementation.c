@@ -24,7 +24,7 @@
 #include "size_definitions.h"
 
 #define FIRMWARE_UPDATE_VERIFICATION_FILE_NAME "firmware_update_verification.txt"
-#define FIRMWARE_UPDATE_VERIFICATION_FILE_MODE_READ "r+"
+#define FIRMWARE_UPDATE_VERIFICATION_FILE_MODE_READ "a+"
 #define FIRMWARE_UPDATE_VERIFICATION_FILE_MODE_WRITE "w+"
 #define FIRMWARE_UPDATE_VERIFICATION_FILE_DELIMITER ","
 #define FIRMWARE_UPDATE_VERSION_FORMAT_DELIMITER "."
@@ -154,7 +154,6 @@ static bool _file_read(uint8_t* status, int8_t* version)
 
     FILE* file_pointer = fopen(FIRMWARE_UPDATE_VERIFICATION_FILE_NAME, FIRMWARE_UPDATE_VERIFICATION_FILE_MODE_READ);
     if (file_pointer == NULL) {
-        file_pointer = fopen(FIRMWARE_UPDATE_VERIFICATION_FILE_NAME, FIRMWARE_UPDATE_VERIFICATION_FILE_MODE_WRITE);
         return true;
     }
 
