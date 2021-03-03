@@ -57,43 +57,48 @@ static const char* FILE_MANAGEMENT_FILE_PURGE_TOPIC = "p2d/file_purge/d/";
 static const char* FIRMWARE_UPDATE_INSTALL_TOPIC = "p2d/firmware_update_install/d/";
 static const char* FIRMWARE_UPDATE_ABORT_TOPIC = "p2d/firmware_update_abort/d/";
 
-static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
-static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
+static WOLK_ERR_T mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
+static WOLK_ERR_T ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
 
-static WOLK_ERR_T _receive(wolk_ctx_t* ctx);
+static WOLK_ERR_T receive(wolk_ctx_t* ctx);
 
-static WOLK_ERR_T _publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message);
-static WOLK_ERR_T _subscribe(wolk_ctx_t* ctx, const char* topic);
+static WOLK_ERR_T publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message);
+static WOLK_ERR_T subscribe(wolk_ctx_t* ctx, const char* topic);
 
-static void _parser_init(wolk_ctx_t* ctx, protocol_t protocol);
+static void parser_init_parameters(wolk_ctx_t* ctx, protocol_t protocol);
 
-static bool _is_wolk_initialized(wolk_ctx_t* ctx);
+static bool is_wolk_initialized(wolk_ctx_t* ctx);
 
-static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command);
-static void _handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command);
-static void _handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc);
+static void handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command);
+static void handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command);
+static void handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc);
 
-static void _handle_file_management_parameter(file_management_t* file_management,
-                                              file_management_parameter_t* file_management_parameter);
-static void _handle_file_management_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
-static void _handle_file_management_abort(file_management_t* file_management);
-static void _handle_file_management_url_download(file_management_t* file_management,
-                                                 file_management_parameter_t* parameter);
-static void _handle_file_management_file_delete(file_management_t* file_management,
+static void handle_file_management_parameter(file_management_t* file_management,
+                                             file_management_parameter_t* file_management_parameter);
+static void handle_file_management_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
+static void handle_file_management_abort(file_management_t* file_management);
+static void handle_file_management_url_download(file_management_t* file_management,
                                                 file_management_parameter_t* parameter);
-static void _handle_file_management_file_purge(file_management_t* file_management);
+static void handle_file_management_file_delete(file_management_t* file_management,
+                                               file_management_parameter_t* parameter);
+static void handle_file_management_file_purge(file_management_t* file_management);
 
-static void _listener_on_firmware_update_version(firmware_update_t* firmware_update, char* firmware_update_version);
-static void _listener_on_firmware_update_status(firmware_update_t* firmware_update);
-static void _listener_on_firmware_update_verification(firmware_update_t* firmware_update);
+static void listener_file_management_on_status(file_management_t* file_management, file_management_status_t status);
+static void listener_file_management_on_packet_request(file_management_t* file_management,
+                                                       file_management_packet_request_t request);
+static void listener_file_management_on_url_download_status(file_management_t* file_management,
+                                                            file_management_status_t status);
 
-static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter);
-static void _handle_firmware_update_abort(firmware_update_t* firmware_update);
+static void listener_file_management_on_file_list_status(file_management_t* file_management, char* file_list,
+                                                         size_t file_list_items);
 
-static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
-static void _listener_on_status(file_management_t* file_management, file_management_status_t status);
-static void _listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request);
-static void _listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t file_list_items);
+static void listener_firmware_update_on_status(firmware_update_t* firmware_update);
+static void listener_firmware_update_on_version(firmware_update_t* firmware_update, char* firmware_update_version);
+static void listener_firmware_update_on_verification(firmware_update_t* firmware_update);
+
+static void handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter);
+static void handle_firmware_update_abort(firmware_update_t* firmware_update);
+
 
 WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler,
                      actuator_status_provider_t actuator_status_provider, configuration_handler_t configuration_handler,
@@ -156,7 +161,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     ctx->configuration_provider = configuration_provider;
 
     ctx->protocol = protocol;
-    _parser_init(ctx, protocol);
+    parser_init_parameters(ctx, protocol);
 
     ctx->actuator_references = actuator_references;
     ctx->num_actuator_references = num_actuator_references;
@@ -203,10 +208,11 @@ WOLK_ERR_T wolk_init_file_management(
                          read_chunk, abort, finalize, start_url_download, is_url_download_done, get_file_list,
                          remove_file, purge_files, ctx);
 
-    file_management_set_on_status_listener(&ctx->file_management, _listener_on_status);
-    file_management_set_on_packet_request_listener(&ctx->file_management, _listener_on_packet_request);
-    file_management_set_on_url_download_status_listener(&ctx->file_management, _listener_on_url_download_status);
-    file_management_set_on_file_list_listener(&ctx->file_management, _listener_on_file_list_status);
+    file_management_set_on_status_listener(&ctx->file_management, listener_file_management_on_status);
+    file_management_set_on_packet_request_listener(&ctx->file_management, listener_file_management_on_packet_request);
+    file_management_set_on_url_download_status_listener(&ctx->file_management,
+                                                        listener_file_management_on_url_download_status);
+    file_management_set_on_file_list_listener(&ctx->file_management, listener_file_management_on_file_list_status);
     return W_FALSE;
 }
 
@@ -220,9 +226,9 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_inst
     firmware_update_init(&ctx->firmware_update, start_installation, is_installation_completed, verification_store,
                          verification_read, get_version, abort_installation, ctx);
 
-    firmware_update_set_on_status_listener(&ctx->firmware_update, _listener_on_firmware_update_status);
-    firmware_update_set_on_version_listener(&ctx->firmware_update, _listener_on_firmware_update_version);
-    firmware_update_set_on_verification_listener(&ctx->firmware_update, _listener_on_firmware_update_verification);
+    firmware_update_set_on_status_listener(&ctx->firmware_update, listener_firmware_update_on_status);
+    firmware_update_set_on_version_listener(&ctx->firmware_update, listener_firmware_update_on_version);
+    firmware_update_set_on_verification_listener(&ctx->firmware_update, listener_firmware_update_on_verification);
 
     return W_FALSE;
 }
@@ -248,7 +254,7 @@ WOLK_ERR_T wolk_disable_ping_keep_alive(wolk_ctx_t* ctx)
 WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
 
     uint64_t i;
     char buf[MQTT_PACKET_SIZE];
@@ -283,7 +289,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], PONG_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -297,7 +303,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         strcat(&topic_buf[0], "/r/");
         strcat(&topic_buf[0], reference);
 
-        if (_subscribe(ctx, topic_buf) != W_FALSE) {
+        if (subscribe(ctx, topic_buf) != W_FALSE) {
             return W_TRUE;
         }
     }
@@ -307,7 +313,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], CONFIGURATION_COMMANDS);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -316,7 +322,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -324,7 +330,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -332,7 +338,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -340,7 +346,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -348,7 +354,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -356,7 +362,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], FILE_MANAGEMENT_FILE_DELETE_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -364,7 +370,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], FILE_MANAGEMENT_FILE_PURGE_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -373,7 +379,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], FIRMWARE_UPDATE_INSTALL_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -381,7 +387,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     strcpy(&topic_buf[0], FIRMWARE_UPDATE_ABORT_TOPIC);
     strcat(&topic_buf[0], ctx->device_key);
 
-    if (_subscribe(ctx, topic_buf) != W_FALSE) {
+    if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -396,27 +402,28 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
             continue;
         }
 
-        if (_publish(ctx, &outbound_message) != W_FALSE) {
+        if (publish(ctx, &outbound_message) != W_FALSE) {
             persistence_push(&ctx->persistence, &outbound_message);
         }
     }
 
     configuration_command_t configuration_command;
     configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_GET);
-    _handle_configuration_command(ctx, &configuration_command);
+    handle_configuration_command(ctx, &configuration_command);
 
     char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
     if (ctx->file_management.has_valid_configuration) {
 
-        _listener_on_file_list_status(&ctx->file_management, file_list, ctx->file_management.get_file_list(file_list));
+        listener_file_management_on_file_list_status(&ctx->file_management, file_list,
+                                                     ctx->file_management.get_file_list(file_list));
     }
 
     char firmware_update_version[FIRMWARE_UPDATE_VERSION_SIZE] = {0};
     if (ctx->firmware_update.is_initialized) {
-        _listener_on_firmware_update_verification(&ctx->firmware_update);
+        listener_firmware_update_on_verification(&ctx->firmware_update);
 
         ctx->firmware_update.get_version(firmware_update_version);
-        _listener_on_firmware_update_version(&ctx->firmware_update, firmware_update_version);
+        listener_firmware_update_on_version(&ctx->firmware_update, firmware_update_version);
     }
 
     return W_FALSE;
@@ -425,7 +432,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
 
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
@@ -463,17 +470,17 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
 WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
 
-    if (_mqtt_keep_alive(ctx, tick) != W_FALSE) {
+    if (mqtt_keep_alive(ctx, tick) != W_FALSE) {
         return W_TRUE;
     }
 
-    if (_ping_keep_alive(ctx, tick) != W_FALSE) {
+    if (ping_keep_alive(ctx, tick) != W_FALSE) {
         return W_TRUE;
     }
 
-    if (_receive(ctx) != W_FALSE) {
+    if (receive(ctx) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -486,7 +493,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
 WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference, const char* value, uint64_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
 
     manifest_item_t string_sensor;
     manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
@@ -507,7 +514,7 @@ WOLK_ERR_T wolk_add_multi_value_string_sensor_reading(wolk_ctx_t* ctx, const cha
                                                       uint64_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
     WOLK_ASSERT(READING_DIMENSIONS > 1);
 
     manifest_item_t string_sensor;
@@ -531,7 +538,7 @@ WOLK_ERR_T wolk_add_multi_value_string_sensor_reading(wolk_ctx_t* ctx, const cha
 WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double value, uint64_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
 
     manifest_item_t numeric_sensor;
     manifest_item_init(&numeric_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
@@ -557,7 +564,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const ch
                                                        uint16_t values_size, uint64_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
     WOLK_ASSERT(READING_DIMENSIONS > 1);
 
     manifest_item_t numeric_sensor;
@@ -587,7 +594,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const ch
 WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool value, uint64_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
 
     manifest_item_t bool_sensor;
     manifest_item_init(&bool_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
@@ -607,7 +614,7 @@ WOLK_ERR_T wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t* ctx, const char*
                                                     uint16_t values_size, uint64_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
     WOLK_ASSERT(READING_DIMENSIONS > 1);
 
     manifest_item_t string_sensor;
@@ -631,7 +638,7 @@ WOLK_ERR_T wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t* ctx, const char*
 WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, bool state, uint64_t utc_time)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
 
     manifest_item_t alarm;
     manifest_item_init(&alarm, reference, READING_TYPE_ALARM, DATA_TYPE_STRING);
@@ -650,7 +657,7 @@ WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, bool state, ui
 WOLK_ERR_T wolk_publish_actuator_status(wolk_ctx_t* ctx, const char* reference)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
 
     if (ctx->actuator_status_provider != NULL) {
         actuator_status_t actuator_status = ctx->actuator_status_provider(reference);
@@ -661,7 +668,7 @@ WOLK_ERR_T wolk_publish_actuator_status(wolk_ctx_t* ctx, const char* reference)
             return W_TRUE;
         }
 
-        if (_publish(ctx, &outbound_message) != W_FALSE) {
+        if (publish(ctx, &outbound_message) != W_FALSE) {
             persistence_push(&ctx->persistence, &outbound_message);
         }
     }
@@ -672,7 +679,7 @@ WOLK_ERR_T wolk_publish_actuator_status(wolk_ctx_t* ctx, const char* reference)
 WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
 {
     /* Sanity check */
-    WOLK_ASSERT(_is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(ctx));
 
     uint8_t i;
     uint16_t batch_size = 50;
@@ -687,7 +694,7 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
             continue;
         }
 
-        if (_publish(ctx, &outbound_message) != W_FALSE) {
+        if (publish(ctx, &outbound_message) != W_FALSE) {
             return W_TRUE;
         }
 
@@ -702,7 +709,8 @@ uint64_t wolk_request_timestamp(wolk_ctx_t* ctx)
     return ctx->utc;
 }
 
-static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
+/* Local function definition */
+static WOLK_ERR_T mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
 {
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
@@ -735,7 +743,7 @@ static WOLK_ERR_T _mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
     } while (true);
 }
 
-static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
+static WOLK_ERR_T ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
 {
     if (!ctx->is_keep_ping_alive_enabled) {
         return W_FALSE;
@@ -748,7 +756,7 @@ static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
 
     outbound_message_t outbound_message;
     outbound_message_make_from_keep_alive_message(&ctx->parser, ctx->device_key, &outbound_message);
-    if (_publish(ctx, &outbound_message) != W_FALSE) {
+    if (publish(ctx, &outbound_message) != W_FALSE) {
         return W_TRUE;
     }
 
@@ -756,7 +764,7 @@ static WOLK_ERR_T _ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
     return W_FALSE;
 }
 
-static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
+static WOLK_ERR_T receive(wolk_ctx_t* ctx)
 {
     unsigned char mqtt_packet[MQTT_PACKET_SIZE];
     int mqtt_packet_len = sizeof(mqtt_packet);
@@ -788,71 +796,71 @@ static WOLK_ERR_T _receive(wolk_ctx_t* ctx)
             const size_t response = parser_deserialize_pong_keep_alive_message(&ctx->parser, (char*)payload,
                                                                                (size_t)payload_len, &utc_command);
             if (response != 0) {
-                _handle_utc_command(ctx, &utc_command);
+                handle_utc_command(ctx, &utc_command);
             }
         } else if (strstr(topic_str, ACTUATOR_COMMANDS_TOPIC) != NULL) {
             actuator_command_t actuator_command;
             const size_t num_deserialized_commands = parser_deserialize_actuator_commands(
                 &ctx->parser, topic_str, strlen(topic_str), (char*)payload, (size_t)payload_len, &actuator_command, 1);
             if (num_deserialized_commands != 0) {
-                _handle_actuator_command(ctx, &actuator_command);
+                handle_actuator_command(ctx, &actuator_command);
             }
         } else if (strstr(topic_str, CONFIGURATION_COMMANDS)) {
             configuration_command_t configuration_command;
             const size_t num_deserialized_commands = parser_deserialize_configuration_commands(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &configuration_command, 1);
             if (num_deserialized_commands != 0) {
-                _handle_configuration_command(ctx, &configuration_command);
+                handle_configuration_command(ctx, &configuration_command);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized_parameter != 0) {
-                _handle_file_management_parameter(&ctx->file_management, &file_management_parameter);
+                handle_file_management_parameter(&ctx->file_management, &file_management_parameter);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC)) {
-            _handle_file_management_packet(&ctx->file_management, (uint8_t*)payload, (size_t)payload_len);
+            handle_file_management_packet(&ctx->file_management, (uint8_t*)payload, (size_t)payload_len);
         } else if ((strstr(topic_str, FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC))
                    || (strstr(topic_str, FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC))) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized_parameter != 0) {
-                _handle_file_management_abort(&ctx->file_management);
+                handle_file_management_abort(&ctx->file_management);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized != 0) {
-                _handle_file_management_url_download(&ctx->file_management, &file_management_parameter);
+                handle_file_management_url_download(&ctx->file_management, &file_management_parameter);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_DELETE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized != 0) {
-                _handle_file_management_file_delete(&ctx->file_management, &file_management_parameter);
+                handle_file_management_file_delete(&ctx->file_management, &file_management_parameter);
             }
         } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_PURGE_TOPIC)) {
-            _handle_file_management_file_purge(&ctx->file_management);
+            handle_file_management_file_purge(&ctx->file_management);
         } else if (strstr(topic_str, FIRMWARE_UPDATE_INSTALL_TOPIC)) {
             firmware_update_t firmware_update_parameter;
             const size_t num_deserialized = parse_deserialize_firmware_update_parameter(
                 &ctx->parser, (char*)ctx->device_key, (char*)payload, (size_t)payload_len, &firmware_update_parameter);
             if (num_deserialized != 0) {
-                _handle_firmware_update_installation(&ctx->firmware_update, &firmware_update_parameter);
+                handle_firmware_update_installation(&ctx->firmware_update, &firmware_update_parameter);
             }
         } else if (strstr(topic_str, FIRMWARE_UPDATE_ABORT_TOPIC)) {
-            _handle_firmware_update_abort(&ctx->firmware_update);
+            handle_firmware_update_abort(&ctx->firmware_update);
         }
     }
 
     return W_FALSE;
 }
 
-static WOLK_ERR_T _publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message)
+static WOLK_ERR_T publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message)
 {
     int len;
     unsigned char buf[MQTT_PACKET_SIZE];
@@ -885,7 +893,7 @@ static WOLK_ERR_T _publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message
     } while (true);
 }
 
-static WOLK_ERR_T _subscribe(wolk_ctx_t* ctx, const char* topic)
+static WOLK_ERR_T subscribe(wolk_ctx_t* ctx, const char* topic)
 {
     unsigned char buf[MQTT_PACKET_SIZE];
     memset(buf, 0, MQTT_PACKET_SIZE);
@@ -917,7 +925,7 @@ static WOLK_ERR_T _subscribe(wolk_ctx_t* ctx, const char* topic)
     } while (true);
 }
 
-static void _parser_init(wolk_ctx_t* ctx, protocol_t protocol)
+static void parser_init_parameters(wolk_ctx_t* ctx, protocol_t protocol)
 {
     switch (protocol) {
     case PROTOCOL_WOLKABOUT:
@@ -930,12 +938,15 @@ static void _parser_init(wolk_ctx_t* ctx, protocol_t protocol)
     }
 }
 
-static bool _is_wolk_initialized(wolk_ctx_t* ctx)
+static bool is_wolk_initialized(wolk_ctx_t* ctx)
 {
+    /* Sanity Check */
+    WOLK_ASSERT(ctx);
+
     return ctx->is_initialized && persistence_is_initialized(&ctx->persistence);
 }
 
-static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command)
+static void handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command)
 {
     const char* reference = actuator_command_get_reference(actuator_command);
     const char* value = actuator_command_get_value(actuator_command);
@@ -959,7 +970,7 @@ static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuat
                 return;
             }
 
-            if (_publish(ctx, &outbound_message) != W_FALSE) {
+            if (publish(ctx, &outbound_message) != W_FALSE) {
                 persistence_push(&ctx->persistence, &outbound_message);
             }
         }
@@ -970,7 +981,7 @@ static void _handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuat
     }
 }
 
-static void _handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command)
+static void handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command)
 {
     switch (configuration_command_get_type(configuration_command)) {
     case CONFIGURATION_COMMAND_TYPE_SET:
@@ -1000,7 +1011,7 @@ static void _handle_configuration_command(wolk_ctx_t* ctx, configuration_command
                 return;
             }
 
-            if (_publish(ctx, &outbound_message) != W_FALSE) {
+            if (publish(ctx, &outbound_message) != W_FALSE) {
                 persistence_push(&ctx->persistence, &outbound_message);
             }
         }
@@ -1011,67 +1022,71 @@ static void _handle_configuration_command(wolk_ctx_t* ctx, configuration_command
     }
 }
 
-static void _handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc)
+static void handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc)
 {
+    /* Sanity check */
+    WOLK_ASSERT(ctx);
+    WOLK_ASSERT(utc);
+
     ctx->utc = utc_command_get(utc);
 }
 
-static void _handle_file_management_parameter(file_management_t* file_management,
-                                              file_management_parameter_t* file_management_parameter)
+static void handle_file_management_parameter(file_management_t* file_management,
+                                             file_management_parameter_t* file_management_parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
-    WOLK_ASSERT(file_management_command);
+    WOLK_ASSERT(file_management_parameter);
 
     file_management_handle_parameter(file_management, file_management_parameter);
 }
 
-static void _handle_file_management_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size)
+static void handle_file_management_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
-    WOLK_ASSERT(packet);
+    WOLK_ASSERT(packet_size);
 
     file_management_handle_packet(file_management, packet, packet_size);
 }
 
-static void _handle_file_management_abort(file_management_t* file_management)
+static void handle_file_management_abort(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
-    handle_file_management_abort(file_management);
+    file_management_handle_abort(file_management);
 }
 
-static void _handle_file_management_url_download(file_management_t* file_management,
-                                                 file_management_parameter_t* parameter)
+static void handle_file_management_url_download(file_management_t* file_management,
+                                                file_management_parameter_t* parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    handle_file_management_url_download(file_management, parameter);
+    file_management_handle_url_download(file_management, parameter);
 }
 
-static void _handle_file_management_file_delete(file_management_t* file_management,
-                                                file_management_parameter_t* parameter)
+static void handle_file_management_file_delete(file_management_t* file_management,
+                                               file_management_parameter_t* parameter)
 {
     /* Sanity Check*/
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    handle_file_management_file_delete(file_management, parameter);
+    file_management_handle_file_delete(file_management, parameter);
 }
 
-static void _handle_file_management_file_purge(file_management_t* file_management)
+static void handle_file_management_file_purge(file_management_t* file_management)
 {
     /* Sanity Check */
     WOLK_ASSERT(file_management);
 
-    handle_file_management_file_purge(file_management);
+    file_management_handle_file_purge(file_management);
 }
 
-static void _listener_on_status(file_management_t* file_management, file_management_status_t status)
+static void listener_file_management_on_status(file_management_t* file_management, file_management_status_t status)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
@@ -1082,23 +1097,27 @@ static void _listener_on_status(file_management_t* file_management, file_managem
     outbound_message_make_from_file_management_status(&wolk_ctx->parser, wolk_ctx->device_key,
                                                       file_management->file_name, &status, &outbound_message);
 
-    _publish(wolk_ctx, &outbound_message);
+    publish(wolk_ctx, &outbound_message);
 }
 
-static void _listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request)
+static void listener_file_management_on_packet_request(file_management_t* file_management,
+                                                       file_management_packet_request_t request)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
+    WOLK_ASSERT(request);
+
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
 
     outbound_message_t outbound_message;
     outbound_message_make_from_file_management_packet_request(&wolk_ctx->parser, wolk_ctx->device_key, &request,
                                                               &outbound_message);
 
-    _publish(wolk_ctx, &outbound_message);
+    publish(wolk_ctx, &outbound_message);
 }
 
-static void _listener_on_url_download_status(file_management_t* file_management, file_management_status_t status)
+static void listener_file_management_on_url_download_status(file_management_t* file_management,
+                                                            file_management_status_t status)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
@@ -1114,10 +1133,11 @@ static void _listener_on_url_download_status(file_management_t* file_management,
     outbound_message_make_from_file_management_url_download_status(
         &wolk_ctx->parser, wolk_ctx->device_key, &file_management_parameter, &status, &outbound_message);
 
-    _publish(wolk_ctx, &outbound_message);
+    publish(wolk_ctx, &outbound_message);
 }
 
-static void _listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t file_list_items)
+static void listener_file_management_on_file_list_status(file_management_t* file_management, char* file_list,
+                                                         size_t file_list_items)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
@@ -1130,10 +1150,10 @@ static void _listener_on_file_list_status(file_management_t* file_management, ch
     outbound_message_make_from_file_management_file_list(&wolk_ctx->parser, wolk_ctx->device_key, file_list,
                                                          file_list_items, &outbound_message);
 
-    _publish(wolk_ctx, &outbound_message);
+    publish(wolk_ctx, &outbound_message);
 }
 
-static void _listener_on_firmware_update_status(firmware_update_t* firmware_update)
+static void listener_firmware_update_on_status(firmware_update_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -1145,10 +1165,10 @@ static void _listener_on_firmware_update_status(firmware_update_t* firmware_upda
     outbound_message_make_from_firmware_update_status(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update,
                                                       &outbound_message);
 
-    _publish(wolk_ctx, &outbound_message);
+    publish(wolk_ctx, &outbound_message);
 }
 
-static void _listener_on_firmware_update_version(firmware_update_t* firmware_update, char* firmware_update_version)
+static void listener_firmware_update_on_version(firmware_update_t* firmware_update, char* firmware_update_version)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -1160,10 +1180,10 @@ static void _listener_on_firmware_update_version(firmware_update_t* firmware_upd
     outbound_message_make_from_firmware_update_version(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update_version,
                                                        &outbound_message);
 
-    _publish(wolk_ctx, &outbound_message);
+    publish(wolk_ctx, &outbound_message);
 }
 
-static void _listener_on_firmware_update_verification(firmware_update_t* firmware_update)
+static void listener_firmware_update_on_verification(firmware_update_t* firmware_update)
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
@@ -1171,7 +1191,7 @@ static void _listener_on_firmware_update_verification(firmware_update_t* firmwar
     firmware_update_handle_verification(firmware_update);
 }
 
-static void _handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter)
+static void handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -1180,7 +1200,7 @@ static void _handle_firmware_update_installation(firmware_update_t* firmware_upd
     firmware_update_handle_parameter(firmware_update, parameter);
 }
 
-static void _handle_firmware_update_abort(firmware_update_t* firmware_update)
+static void handle_firmware_update_abort(firmware_update_t* firmware_update)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);

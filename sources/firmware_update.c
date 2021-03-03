@@ -20,21 +20,22 @@
 
 typedef enum { STATE_IDLE = 1, STATE_INSTALLATION, STATE_COMPLETED, STATE_ERROR } state_t;
 
-static void _handle(firmware_update_t* firmware_update, firmware_update_t* parameter);
-static void _handle_abort(firmware_update_t* firmware_update);
-static void _handle_verification(firmware_update_t* firmware_update);
+static void handle(firmware_update_t* firmware_update, firmware_update_t* parameter);
+static void handle_verification(firmware_update_t* firmware_update);
+static void handle_abort(firmware_update_t* firmware_update);
+static void check_firmware_update(firmware_update_t* firmware_update);
 
-static void _reset_state(firmware_update_t* firmware_update);
-static bool _get_version(firmware_update_t* firmware_update, char* version);
-static bool _update_abort(firmware_update_t* firmware_update);
-static void _set_error(firmware_update_t* firmware_update, firmware_update_error_t error);
-static void _set_status(firmware_update_t* firmware_update, firmware_update_status_t status);
+static void reset_state(firmware_update_t* firmware_update);
+static bool get_version(firmware_update_t* firmware_update, char* version);
+static bool update_abort(firmware_update_t* firmware_update);
+static void set_error(firmware_update_t* firmware_update, firmware_update_error_t error);
+static void set_status(firmware_update_t* firmware_update, firmware_update_status_t status);
 
-static void _listener_on_firmware_update_status(firmware_update_t* firmware_update);
-static void _listener_on_version_status(firmware_update_t* firmware_update, char* version);
+static void listener_on_firmware_update_status(firmware_update_t* firmware_update);
+static void listener_on_version_status(firmware_update_t* firmware_update, char* version);
 
 
-static void _handle(firmware_update_t* firmware_update, firmware_update_t* parameter)
+static void handle(firmware_update_t* firmware_update, firmware_update_t* parameter)
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
@@ -43,8 +44,8 @@ static void _handle(firmware_update_t* firmware_update, firmware_update_t* param
     switch (firmware_update->state) {
     case STATE_IDLE:
         if (firmware_update->start_installation != NULL) {
-            _set_status(firmware_update, FIRMWARE_UPDATE_STATUS_INSTALLATION);
-            _listener_on_firmware_update_status(firmware_update);
+            set_status(firmware_update, FIRMWARE_UPDATE_STATUS_INSTALLATION);
+            listener_on_firmware_update_status(firmware_update);
 
             firmware_update->state = STATE_INSTALLATION;
 
@@ -65,14 +66,14 @@ static void _handle(firmware_update_t* firmware_update, firmware_update_t* param
 
         break;
     case STATE_INSTALLATION:
-        _set_status(firmware_update, FIRMWARE_UPDATE_STATUS_INSTALLATION);
-        _listener_on_firmware_update_status(firmware_update);
+        set_status(firmware_update, FIRMWARE_UPDATE_STATUS_INSTALLATION);
+        listener_on_firmware_update_status(firmware_update);
         break;
     case STATE_COMPLETED:
         break;
     case STATE_ERROR:
-        _set_status(firmware_update, FIRMWARE_UPDATE_STATUS_ERROR);
-        _listener_on_firmware_update_status(firmware_update);
+        set_status(firmware_update, FIRMWARE_UPDATE_STATUS_ERROR);
+        listener_on_firmware_update_status(firmware_update);
         firmware_update->state = STATE_IDLE;
         break;
     default:
@@ -81,7 +82,54 @@ static void _handle(firmware_update_t* firmware_update, firmware_update_t* param
     }
 }
 
-static void _check_firmware_update(firmware_update_t* firmware_update)
+static void handle_verification(firmware_update_t* firmware_update)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(firmware_update);
+
+    uint8_t parameter = firmware_update->verification_read();
+
+    switch (parameter) {
+    case STATE_IDLE:
+        break;
+    case STATE_INSTALLATION:
+        firmware_update->state = STATE_INSTALLATION;
+        break;
+    default:
+        /* Sanity check */
+        WOLK_ASSERT(false);
+
+        firmware_update->state = STATE_ERROR;
+    }
+}
+
+static void handle_abort(firmware_update_t* firmware_update)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(firmware_update);
+
+    switch (firmware_update->state) {
+    case STATE_IDLE:
+    case STATE_COMPLETED:
+    case STATE_ERROR:
+        listener_on_firmware_update_status(firmware_update);
+        break;
+    case STATE_INSTALLATION:
+        if (!update_abort(firmware_update)) {
+            set_error(firmware_update, FIRMWARE_UPDATE_UNSPECIFIED_ERROR);
+            set_status(firmware_update, FIRMWARE_UPDATE_STATUS_ERROR);
+            listener_on_firmware_update_status(firmware_update);
+        }
+        set_status(firmware_update, FIRMWARE_UPDATE_STATUS_ABORTED);
+        listener_on_firmware_update_status(firmware_update);
+        break;
+    default:
+        /* Sanity check */
+        WOLK_ASSERT(false);
+    }
+}
+
+static void check_firmware_update(firmware_update_t* firmware_update)
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
@@ -105,24 +153,24 @@ static void _check_firmware_update(firmware_update_t* firmware_update)
         }
         break;
     case STATE_COMPLETED:
-        _set_status(firmware_update, FIRMWARE_UPDATE_STATUS_COMPLETED);
-        _listener_on_firmware_update_status(firmware_update);
+        set_status(firmware_update, FIRMWARE_UPDATE_STATUS_COMPLETED);
+        listener_on_firmware_update_status(firmware_update);
 
         char firmware_update_version[FIRMWARE_UPDATE_VERSION_SIZE];
-        _get_version(firmware_update, firmware_update_version);
-        _listener_on_version_status(firmware_update, firmware_update_version);
+        get_version(firmware_update, firmware_update_version);
+        listener_on_version_status(firmware_update, firmware_update_version);
 
-        _reset_state(firmware_update);
+        reset_state(firmware_update);
         if (!firmware_update->verification_store(firmware_update->state)) {
             firmware_update->state = STATE_ERROR;
             firmware_update->error = FIRMWARE_UPDATE_FILE_SYSTEM_ERROR;
         }
         break;
     case STATE_ERROR:
-        _set_status(firmware_update, FIRMWARE_UPDATE_STATUS_ERROR);
-        _listener_on_firmware_update_status(firmware_update);
+        set_status(firmware_update, FIRMWARE_UPDATE_STATUS_ERROR);
+        listener_on_firmware_update_status(firmware_update);
 
-        _reset_state(firmware_update);
+        reset_state(firmware_update);
         break;
     default:
         /* Sanity check */
@@ -130,54 +178,33 @@ static void _check_firmware_update(firmware_update_t* firmware_update)
     }
 }
 
-static void _handle_verification(firmware_update_t* firmware_update)
+static void reset_state(firmware_update_t* firmware_update)
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
 
-    uint8_t parameter = firmware_update->verification_read();
-
-    switch (parameter) {
-    case STATE_IDLE:
-        break;
-    case STATE_INSTALLATION:
-        firmware_update->state = STATE_INSTALLATION;
-        break;
-    default:
-        /* Sanity check */
-        WOLK_ASSERT(false);
-
-        firmware_update->state = STATE_ERROR;
-    }
+    firmware_update->state = STATE_IDLE;
+    memset(firmware_update->file_name, '\0', WOLK_ARRAY_LENGTH(firmware_update->file_name));
 }
 
-static void _handle_abort(firmware_update_t* firmware_update)
+static bool get_version(firmware_update_t* firmware_update, char* version)
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(version);
 
-    switch (firmware_update->state) {
-    case STATE_IDLE:
-    case STATE_COMPLETED:
-    case STATE_ERROR:
-        _listener_on_firmware_update_status(firmware_update);
-        break;
-    case STATE_INSTALLATION:
-        if (!_update_abort(firmware_update)) {
-            _set_error(firmware_update, FIRMWARE_UPDATE_UNSPECIFIED_ERROR);
-            _set_status(firmware_update, FIRMWARE_UPDATE_STATUS_ERROR);
-            _listener_on_firmware_update_status(firmware_update);
-        }
-        _set_status(firmware_update, FIRMWARE_UPDATE_STATUS_ABORTED);
-        _listener_on_firmware_update_status(firmware_update);
-        break;
-    default:
-        /* Sanity check */
-        WOLK_ASSERT(false);
-    }
+    return firmware_update->get_version(version);
 }
 
-static void _set_error(firmware_update_t* firmware_update, firmware_update_error_t error)
+static bool update_abort(firmware_update_t* firmware_update)
+{
+    /* Sanity check */
+    WOLK_ASSERT(firmware_update);
+
+    return firmware_update->abort_installation();
+}
+
+static void set_error(firmware_update_t* firmware_update, firmware_update_error_t error)
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
@@ -186,7 +213,7 @@ static void _set_error(firmware_update_t* firmware_update, firmware_update_error
     firmware_update->error = error;
 }
 
-static void _set_status(firmware_update_t* firmware_update, firmware_update_status_t status)
+static void set_status(firmware_update_t* firmware_update, firmware_update_status_t status)
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
@@ -195,7 +222,7 @@ static void _set_status(firmware_update_t* firmware_update, firmware_update_stat
     firmware_update->status = status;
 }
 
-static void _listener_on_firmware_update_status(firmware_update_t* firmware_update)
+static void listener_on_firmware_update_status(firmware_update_t* firmware_update)
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
@@ -205,25 +232,7 @@ static void _listener_on_firmware_update_status(firmware_update_t* firmware_upda
     }
 }
 
-static void _reset_state(firmware_update_t* firmware_update)
-{
-    /* Sanity Check */
-    WOLK_ASSERT(firmware_update);
-
-    firmware_update->state = STATE_IDLE;
-    memset(firmware_update->file_name, '\0', WOLK_ARRAY_LENGTH(firmware_update->file_name));
-}
-
-static bool _get_version(firmware_update_t* firmware_update, char* version)
-{
-    /* Sanity Check */
-    WOLK_ASSERT(firmware_update);
-    WOLK_ASSERT(version);
-
-    return firmware_update->get_version(version);
-}
-
-static void _listener_on_version_status(firmware_update_t* firmware_update, char* version)
+static void listener_on_version_status(firmware_update_t* firmware_update, char* version)
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
@@ -234,13 +243,6 @@ static void _listener_on_version_status(firmware_update_t* firmware_update, char
     }
 }
 
-static bool _update_abort(firmware_update_t* firmware_update)
-{
-    /* Sanity check */
-    WOLK_ASSERT(firmware_update);
-
-    return firmware_update->abort_installation();
-}
 
 /* Public implementations */
 void firmware_update_init(firmware_update_t* firmware_update, firmware_update_start_installation_t start_installation,
@@ -299,7 +301,7 @@ void firmware_update_handle_parameter(firmware_update_t* firmware_update, firmwa
         return;
     }
 
-    _handle(firmware_update, parameter);
+    handle(firmware_update, parameter);
 }
 
 void firmware_update_handle_verification(firmware_update_t* firmware_update)
@@ -311,7 +313,7 @@ void firmware_update_handle_verification(firmware_update_t* firmware_update)
         return;
     }
 
-    _handle_verification(firmware_update);
+    handle_verification(firmware_update);
 }
 
 void firmware_update_handle_abort(firmware_update_t* firmware_update)
@@ -323,7 +325,7 @@ void firmware_update_handle_abort(firmware_update_t* firmware_update)
         return;
     }
 
-    _handle_abort(firmware_update);
+    handle_abort(firmware_update);
 }
 
 void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
@@ -365,5 +367,5 @@ void firmware_update_process(firmware_update_t* firmware_update)
         return;
     }
 
-    _check_firmware_update(firmware_update);
+    check_firmware_update(firmware_update);
 }

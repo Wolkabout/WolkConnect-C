@@ -186,12 +186,12 @@ void file_management_handle_parameter(file_management_t* file_management,
 
 void file_management_handle_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
 
-void handle_file_management_abort(file_management_t* file_management);
+void file_management_handle_abort(file_management_t* file_management);
 
-void handle_file_management_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
+void file_management_handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
 
-void handle_file_management_file_delete(file_management_t* file_management, file_management_t* parameter);
-void handle_file_management_file_purge(file_management_t* file_management);
+void file_management_handle_file_delete(file_management_t* file_management, file_management_t* parameter);
+void file_management_handle_file_purge(file_management_t* file_management);
 
 void file_management_process(file_management_t* file_management);
 
