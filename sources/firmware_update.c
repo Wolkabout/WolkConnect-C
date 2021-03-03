@@ -199,7 +199,6 @@ static void _listener_on_firmware_update_status(firmware_update_t* firmware_upda
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
-    WOLK_ASSERT(status);
 
     if (firmware_update->get_status != NULL) {
         firmware_update->get_status(firmware_update);
@@ -253,6 +252,7 @@ void firmware_update_init(firmware_update_t* firmware_update, firmware_update_st
 {
     /* Sanity check */
     WOLK_ASSERT(firmware_update);
+    WOLK_ASSERT(wolk_ctx);
 
     firmware_update->state = STATE_IDLE;
     firmware_update->start_installation = start_installation;
