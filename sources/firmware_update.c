@@ -55,7 +55,7 @@ static void _handle(firmware_update_t* firmware_update, firmware_update_t* param
 
             if (!firmware_update->start_installation(parameter->file_name)) {
                 firmware_update->state = STATE_ERROR;
-                firmware_update->error = FIRMWARE_UPDATE_FILE_NOT_PRESENT;
+                firmware_update->error = FIRMWARE_UPDATE_FILE_SYSTEM_ERROR;
             }
 
         } else {
