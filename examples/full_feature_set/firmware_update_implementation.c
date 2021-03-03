@@ -62,13 +62,10 @@ static bool _get_version_from_file_content(char* source, int8_t* version)
     if (version_string == NULL) {
         return false;
     }
-    *version = atoi(version_string);
     while (version_string != NULL) {
+        *version = atoi(version_string);
+        version++;
         version_string = strtok(NULL, FIRMWARE_UPDATE_VERSION_FORMAT_DELIMITER);
-        if (version_string != NULL) {
-            version++;
-            *version = atoi(version_string);
-        }
     }
 
     return true;
@@ -109,8 +106,7 @@ static bool _file_write(uint8_t* status, int8_t* version)
         tmp_status = *status;
     }
     if (version == NULL) {
-        if(!_file_read(NULL, &tmp_version))
-        {
+        if (!_file_read(NULL, &tmp_version)) {
             tmp_version[0] = version_major;
             tmp_version[1] = version_minor;
             tmp_version[2] = version_patch;
@@ -166,8 +162,7 @@ static bool _file_read(uint8_t* status, int8_t* version)
         printf("Firmware Update verification file read error!\n");
         return false;
     }
-    if(strlen(file_content)==0)
-    {
+    if (strlen(file_content) == 0) {
         printf("Firmware Update verification file is empty!\n");
         return false;
     }
