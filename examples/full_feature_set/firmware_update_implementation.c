@@ -182,7 +182,7 @@ static bool file_read(uint8_t* status, int8_t* version)
 
 bool firmware_update_start_installation(const char* file_name)
 {
-    printf("Starting installation of file with name: %s \n", file_name);
+    printf("Starting firmware installation of file with name: %s \n", file_name);
 
     char* env_argv[] = {NULL};
     char* env_args[] = {NULL};
@@ -198,10 +198,12 @@ bool firmware_update_start_installation(const char* file_name)
 
     snprintf(file_name_with_path, FILE_MANAGEMENT_FILE_NAME_SIZE, "files/%s", file_name);
     if (chmod(file_name_with_path, S_IRUSR | S_IWUSR | S_IXUSR) == -1) {
+        printf("Can't prepare file for installation.\n");
         return false;
     }
 
     if (execve(file_name_with_path, env_argv, env_args) == -1) {
+        printf("Starting firmware installation failed!\n");
         return false;
     }
 
