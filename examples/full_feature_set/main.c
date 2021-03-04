@@ -214,7 +214,7 @@ static size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_S
     for (size_t i = 0; i < CONFIGURATION_ITEMS_SIZE; ++i) {
         strcpy(reference[i], device_configuration_references[i]);
         strncpy(value[i], device_configuration_values[i], CONFIGURATION_VALUE_SIZE);
-        printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
+        printf("Configuration provider - Reference: %s | Value: %s\n", reference[i], value[i]);
     }
 
     return CONFIGURATION_ITEMS_SIZE;

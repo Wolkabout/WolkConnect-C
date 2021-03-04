@@ -34,14 +34,14 @@ static int8_t version_major = 0;
 static int8_t version_minor = 0;
 static int8_t version_patch = 1;
 
-static bool _get_version(char* version);
-static bool _get_version_from_file_content(char* source, int8_t* version);
-static bool _get_status_from_file_content(char* source, int8_t* status);
-static bool _file_write(uint8_t* status, int8_t* version);
-static bool _file_read(uint8_t* status, int8_t* version);
+static bool get_version(char* version);
+static bool get_version_from_file_content(char* source, int8_t* version);
+static bool get_status_from_file_content(char* source, int8_t* status);
+static bool file_write(uint8_t* status, int8_t* version);
+static bool file_read(uint8_t* status, int8_t* version);
 
 
-static bool _get_version(char* version)
+static bool get_version(char* version)
 {
     if (snprintf(version, FIRMWARE_UPDATE_VERSION_SIZE, "%d%s%d%s%d", version_major,
                  FIRMWARE_UPDATE_VERSION_FORMAT_DELIMITER, version_minor, FIRMWARE_UPDATE_VERSION_FORMAT_DELIMITER,
@@ -53,7 +53,7 @@ static bool _get_version(char* version)
     return true;
 }
 
-static bool _get_version_from_file_content(char* source, int8_t* version)
+static bool get_version_from_file_content(char* source, int8_t* version)
 {
     /* From source extract version */
     char* version_string = strtok(source, FIRMWARE_UPDATE_VERIFICATION_FILE_DELIMITER);
@@ -71,7 +71,7 @@ static bool _get_version_from_file_content(char* source, int8_t* version)
     return true;
 }
 
-static bool _get_status_from_file_content(char* source, int8_t* status)
+static bool get_status_from_file_content(char* source, int8_t* status)
 {
     /* From source extract status */
     char* element = strtok(source, FIRMWARE_UPDATE_VERIFICATION_FILE_DELIMITER);
@@ -88,7 +88,7 @@ static bool _get_status_from_file_content(char* source, int8_t* status)
     return true;
 }
 
-static bool _file_write(uint8_t* status, int8_t* version)
+static bool file_write(uint8_t* status, int8_t* version)
 {
     char file_content[FIRMWARE_UPDATE_VERSION_SIZE];
     memset(file_content, '\0', FIRMWARE_UPDATE_VERSION_SIZE);
@@ -101,12 +101,12 @@ static bool _file_write(uint8_t* status, int8_t* version)
     }
 
     if (status == NULL) {
-        _file_read(&tmp_status, NULL);
+        file_read(&tmp_status, NULL);
     } else {
         tmp_status = *status;
     }
     if (version == NULL) {
-        if (!_file_read(NULL, &tmp_version)) {
+        if (!file_read(NULL, &tmp_version)) {
             tmp_version[0] = version_major;
             tmp_version[1] = version_minor;
             tmp_version[2] = version_patch;
@@ -147,7 +147,7 @@ static bool _file_write(uint8_t* status, int8_t* version)
     return true;
 }
 
-static bool _file_read(uint8_t* status, int8_t* version)
+static bool file_read(uint8_t* status, int8_t* version)
 {
     char file_content[FIRMWARE_UPDATE_VERSION_SIZE];
     memset(file_content, '\0', FIRMWARE_UPDATE_VERSION_SIZE);
@@ -167,10 +167,10 @@ static bool _file_read(uint8_t* status, int8_t* version)
     }
 
     if (version != NULL) {
-        _get_version_from_file_content(file_content, version);
+        get_version_from_file_content(file_content, version);
     }
     if (status != NULL) {
-        _get_status_from_file_content(file_content, status);
+        get_status_from_file_content(file_content, status);
     }
 
     if (fclose(file_pointer)) {
@@ -182,7 +182,7 @@ static bool _file_read(uint8_t* status, int8_t* version)
 
 bool firmware_update_start_installation(const char* file_name)
 {
-    printf("Starting installation of file with name: %s \n", file_name);
+    printf("Starting firmware installation of file with name: %s \n", file_name);
 
     char* env_argv[] = {NULL};
     char* env_args[] = {NULL};
@@ -192,16 +192,18 @@ bool firmware_update_start_installation(const char* file_name)
     int8_t firmware_update_version[FIRMWARE_UPDATE_VERSION_NUMBER_OF_ELEMENTS] = {version_major, version_minor,
                                                                                   version_patch};
 
-    if (!_file_write(NULL, &firmware_update_version)) {
+    if (!file_write(NULL, &firmware_update_version)) {
         return false;
     }
 
     snprintf(file_name_with_path, FILE_MANAGEMENT_FILE_NAME_SIZE, "files/%s", file_name);
     if (chmod(file_name_with_path, S_IRUSR | S_IWUSR | S_IXUSR) == -1) {
+        printf("Can't prepare file for installation.\n");
         return false;
     }
 
     if (execve(file_name_with_path, env_argv, env_args) == -1) {
+        printf("Starting firmware installation failed!\n");
         return false;
     }
 
@@ -212,7 +214,7 @@ bool firmware_update_is_installation_completed(bool* success)
 {
     int8_t firmware_update_version[FIRMWARE_UPDATE_VERSION_NUMBER_OF_ELEMENTS];
 
-    if (!_file_read(NULL, &firmware_update_version)) {
+    if (!file_read(NULL, &firmware_update_version)) {
         return false;
     }
 
@@ -222,7 +224,7 @@ bool firmware_update_is_installation_completed(bool* success)
         int8_t firmware_update_version[FIRMWARE_UPDATE_VERSION_NUMBER_OF_ELEMENTS] = {version_major, version_minor,
                                                                                       version_patch};
 
-        if (!_file_write(NULL, &firmware_update_version)) {
+        if (!file_write(NULL, &firmware_update_version)) {
             return false;
         }
         printf("Installation is completed\n");
@@ -236,14 +238,14 @@ bool firmware_update_is_installation_completed(bool* success)
 
 bool firmware_update_verification_store(uint8_t parameter)
 {
-    return _file_write(&parameter, NULL);
+    return file_write(&parameter, NULL);
 }
 
 uint8_t firmware_update_verification_read(void)
 {
     uint8_t parameter = 0;
 
-    if (!_file_read(&parameter, NULL)) {
+    if (!file_read(&parameter, NULL)) {
         return false;
     }
 
@@ -252,7 +254,7 @@ uint8_t firmware_update_verification_read(void)
 
 bool firmware_update_get_version(const char* version)
 {
-    if (!_get_version(version)) {
+    if (!get_version(version)) {
         return false;
     }
     printf("Current Firmware Version is: %s\n", version);
