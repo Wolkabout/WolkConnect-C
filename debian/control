@@ -8,5 +8,5 @@ Standards-Version: 4.1.2
 Package: wolkconnect-c
 Architecture: any
 Section: main
-Depends: ${shlibs:Depends}, ${misc:Depends}, libssl1.0.0 | libssl1.1
+Depends: ${shlibs:Depends}, ${misc:Depends}, libssl1.0.0 | libssl1.1, clang-format
 Description: WolkAbout C99 Connector library for connecting devices to WolkAbout IoT platform.
