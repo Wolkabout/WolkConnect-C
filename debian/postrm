@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#remove installed
+if [ "$1" = "purge" ] ; then
+    rm -rf /usr/bin/full-feature-set
+
+fi

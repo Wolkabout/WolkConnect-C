@@ -15,14 +15,15 @@
 #
 
 [Unit]
- Description=WolkAbout C99 Connector library for connecting devices to WolkAbout IoT platform.
- After=multi-user.target
+Description=WolkAbout C99 Connector library for connecting devices to WolkAbout IoT platform.
+After=multi-user.target
 
 [Service]
- Type=idle
- WorkingDirectory=/usr/bin/
- ExecStart=/usr/bin/WolkConnect-C
- #Restart=always
+Type=idle
+WorkingDirectory=/usr/bin/
+ExecStart=/usr/bin/full-feature-set
+TimeoutSec=5
+#Restart=always
 
 [Install]
- WantedBy=multi-user.target
+WantedBy=multi-user.target
