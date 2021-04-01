@@ -2,7 +2,7 @@
 DH_VERBOSE = 1
 
 %:
-	dh $@ --builddirectory/build
+	dh $@ --builddirectory/
 override_dh_auto_clean:
 override_dh_auto_test:
 override_dh_shlibdeps:
