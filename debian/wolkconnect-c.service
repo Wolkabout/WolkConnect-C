@@ -22,8 +22,10 @@ After=multi-user.target
 Type=idle
 WorkingDirectory=/usr/bin/
 ExecStart=/usr/bin/full-feature-set
+StandardOutput=append:/var/log/wolkconnect-c/log.log
+StandardError=append:/var/log/wolkconnect-c/error.log
 TimeoutSec=5
-#Restart=always
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

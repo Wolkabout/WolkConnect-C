@@ -2,6 +2,8 @@
 
 #remove installed
 if [ "$1" = "purge" ] ; then
-    rm -rf /usr/bin/full-feature-set
+    rm -rf /var/log/wolkconnect-c/*.log
 
 fi
+
+#DEBHELPER#
