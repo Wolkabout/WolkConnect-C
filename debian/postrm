@@ -2,8 +2,7 @@
 
 #remove installed
 if [ "$1" = "purge" ] ; then
-    rm -rf /var/log/wolkconnect-c/*.log
-
+    rm -rf /var/log/wolkconnect-c/
 fi
 
 #DEBHELPER#
