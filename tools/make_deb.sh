@@ -9,4 +9,4 @@ tar -zxvf wolkconnect-c_0.0.orig.tar.gz
 cd WolkConnect-C && debuild -us -uc -b -j$(nproc)
 
 #Remove unnecessary
-cd ../ && rm -r WolkConnect-C && rm *.ddeb *.build *.buildinfo *.changes *.tar.gz
+cd ../ && rm -r -f WolkConnect-C && rm *.ddeb *.build *.buildinfo *.changes *.tar.gz
