@@ -17,7 +17,7 @@ jobs:
       run: sudo apt update && sudo apt-get install -y libz-dev wget gcc g++ cmake libssl-dev clang-format ruby
 
     - name: Install Unit Test toolset
-      run: gem install ceedling
+      run: sudo gem install ceedling
 
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
