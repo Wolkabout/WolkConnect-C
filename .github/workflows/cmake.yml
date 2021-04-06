@@ -14,10 +14,10 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Install dependencies
-      shell: bash
-      working-directory: ${{github.workspace}}
-      #Install build dependencies and Unit Test toolset
-      run: sudo apt-get install libz-dev wget gcc g++ cmake libssl-dev clang-format ruby && gem install ceedling
+      run: sudo apt update && sudo apt-get install -y libz-dev wget gcc g++ cmake libssl-dev clang-format ruby
+
+    - name: Install Unit Test toolset
+      run: gem install ceedling
 
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
