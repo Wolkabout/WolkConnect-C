@@ -87,13 +87,14 @@ add_custom_target(format ALL
                   VERBATIM)
 
 # Run Unit tests
+set(CEEDLING_INSTALL_LIB_DIR "/usr/local/bin")
 set(TEST_FILES "${CMAKE_SOURCE_DIR}/tests")
 
 add_custom_target(tests ALL
         WORKING_DIRECTORY "${TEST_FILES}"
         DEPENDS pahomqttembeddedc
-        COMMAND ceedling clean
-        COMMAND ceedling test:all
+        COMMAND ${CEEDLING_INSTALL_LIB_DIR}/ceedling clean
+        COMMAND ${CEEDLING_INSTALL_LIB_DIR}/ceedling test:all
         COMMENT "[Run Unit tests]"
         VERBATIM)
 

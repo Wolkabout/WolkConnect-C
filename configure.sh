@@ -13,7 +13,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-mkdir -p build
-
-cd build || exit
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+cd out && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..

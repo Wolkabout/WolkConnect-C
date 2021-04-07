@@ -173,6 +173,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     ctx->is_initialized = true;
 
     wolk_init_file_management(ctx, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    wolk_init_firmware_update(ctx, NULL, NULL, NULL, NULL, NULL, NULL);
     return W_FALSE;
 }
 

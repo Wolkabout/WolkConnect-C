@@ -1,0 +1,3 @@
+out/bin/full-feature-set /usr/bin/
+out/lib/*.so /usr/lib/
+out/ca.crt /usr/
