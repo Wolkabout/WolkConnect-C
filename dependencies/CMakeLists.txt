@@ -23,7 +23,7 @@ endif(NOT DEFINED CMAKE_PREFIX_PATH)
 include_directories(SYSTEM "${CMAKE_PREFIX_PATH}/include")
 
 ExternalProject_Add(pahomqttembeddedc
-        SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/pahomqttembeddedc"
+        SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/pahomqttembeddedc"
         GIT_REPOSITORY "https://github.com/eclipse/paho.mqtt.embedded-c"
         GIT_TAG "v${PAHO_MQTT_EMBEDDED_C_VERSION}"
         UPDATE_COMMAND ""
