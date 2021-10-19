@@ -45,13 +45,10 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic                         \
                                     -Wcast-qual                       \
                                     -Wstrict-prototypes               \
                                     -Wmissing-prototypes              \
-                                    -Wconversion                      \
-                                    -fsanitize=address                \
-                                    -static-libasan")
+                                    -Wconversion")
 
 set(LIBRARY_NAME "WolkConnector-C")
 
-include_directories("sources")
 file(GLOB_RECURSE HEADER_FILES "sources/*.h")
 file(GLOB_RECURSE SOURCE_FILES "sources/*.c")
 
@@ -68,9 +65,10 @@ link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 #Dependencies
 add_subdirectory(dependencies)
-include_directories(dependencies/pahomqttembeddedc/MQTTPacket/src)
 
 add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+target_include_directories(${LIBRARY_NAME} PUBLIC sources)
+target_include_directories(${LIBRARY_NAME} PUBLIC dependencies/pahomqttembeddedc/MQTTPacket/src)
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
@@ -87,7 +85,7 @@ add_custom_target(format ALL
                   VERBATIM)
 
 # Run Unit tests
-set(TEST_FILES "${CMAKE_SOURCE_DIR}/tests")
+set(TEST_FILES "${CMAKE_CURRENT_LIST_DIR}/tests")
 
 add_custom_target(tests ALL
         WORKING_DIRECTORY "${TEST_FILES}"
@@ -96,6 +94,14 @@ add_custom_target(tests ALL
         COMMAND ceedling test:all
         COMMENT "[Run Unit tests]"
         VERBATIM)
+
+file(GLOB_RECURSE PAHO_MQTT_HEADER_FILES "dependencies/pahomqttembeddedc/MQTTPacket/src/*.h")
+#install library at /usr/lib
+install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} DESTINATION /usr
+        FILES_MATCHING
+        PATTERN "*so*")
+install(FILES ${HEADER_FILES} ${PAHO_MQTT_HEADER_FILES} DESTINATION /usr/include)
+install(CODE "MESSAGE(\"Installed WolkConnector-C\")")
 
 # Examples
 add_subdirectory(examples/simple)
