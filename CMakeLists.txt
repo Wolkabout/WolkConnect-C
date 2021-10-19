@@ -95,6 +95,14 @@ add_custom_target(tests ALL
         COMMENT "[Run Unit tests]"
         VERBATIM)
 
+file(GLOB_RECURSE PAHO_MQTT_HEADER_FILES "dependencies/pahomqttembeddedc/MQTTPacket/src/*.h")
+#install library at /usr/lib
+install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} DESTINATION /usr
+        FILES_MATCHING
+        PATTERN "*so*")
+install(FILES ${HEADER_FILES} ${PAHO_MQTT_HEADER_FILES} DESTINATION /usr/include)
+install(CODE "MESSAGE(\"Installed WolkConnector-C\")")
+
 # Examples
 add_subdirectory(examples/simple)
 add_subdirectory(examples/full_feature_set)
