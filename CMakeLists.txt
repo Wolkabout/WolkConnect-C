@@ -65,11 +65,11 @@ link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 #Dependencies
 add_subdirectory(dependencies)
-file(GLOB_RECURSE DEPENDENCIES_HEADER_FILES "dependencies/pahomqttembeddedc/MQTTPacket/src/*.h")
 
+file(GLOB_RECURSE PAHO_MQTT_HEADER_FILES "dependencies/pahomqttembeddedc/MQTTPacket/src/*.h")
 add_library(${LIBRARY_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_include_directories(${LIBRARY_NAME} PUBLIC sources)
-target_include_directories(${LIBRARY_NAME} PUBLIC ${DEPENDENCIES_HEADER_FILES})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${PAHO_MQTT_HEADER_FILES})
 target_link_libraries(${LIBRARY_NAME} paho-embed-mqtt3c ssl crypto)
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
@@ -100,7 +100,7 @@ add_custom_target(tests ALL
 install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} DESTINATION /usr
         FILES_MATCHING
         PATTERN "*so*")
-install(FILES ${HEADER_FILES} ${DEPENDENCIES_HEADER_FILES} DESTINATION /usr/include)
+install(FILES ${HEADER_FILES} ${PAHO_MQTT_HEADER_FILES} DESTINATION /usr/include)
 install(CODE "MESSAGE(\"Installed WolkConnector-C\")")
 
 # Examples
