@@ -159,7 +159,7 @@ bool file_management_is_url_download_done(bool* success, char* downloaded_file_n
     memset(file_management_file_name, '\0', FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE);
     char after_url_download_file_list[FILE_MANAGEMENT_FILE_NAME_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
     size_t file_management_after_url_download_number_of_files =
-        file_management_get_file_list(after_url_download_file_list);
+        file_management_get_file_list((char*)after_url_download_file_list);
 
     if (file_management_after_url_download_number_of_files - file_management_current_number_of_files < 1) {
         return false;

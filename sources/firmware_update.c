@@ -239,7 +239,7 @@ static void listener_on_version_status(firmware_update_t* firmware_update, char*
     WOLK_ASSERT(version);
 
     if (firmware_update->on_version != NULL) {
-        firmware_update->on_version(firmware_update, version);
+        firmware_update->on_version(firmware_update, (const)version);
     }
 }
 

@@ -219,7 +219,7 @@ static bool deserialize_actuator_command(char* topic, size_t topic_size, char* b
         return false;
     }
     strncpy(command_buffer, strtok(command_start, "/"), COMMAND_MAX_SIZE);
-    if (strlen(command_buffer) == NULL) {
+    if (strlen(command_buffer) == 0) {
         return false;
     }
 
@@ -728,7 +728,7 @@ bool json_deserialize_pong_keep_alive_message(char* buffer, size_t buffer_size, 
                 }
 
                 uint64_t conversion_result = strtod(value_buffer, NULL);
-                if (conversion_result == NULL) {
+                if (conversion_result == 0.0f) {
                     return false;
                 }
                 utc_command->utc = conversion_result;

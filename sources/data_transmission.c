@@ -75,7 +75,7 @@ int transmission_buffer_nb(int socket)
 
 int transmission_buffer(int socket, unsigned char* buffer, int buffer_length)
 {
-    int response = NULL;
+    int response = 0;
 
     transmission_buffer_nb_start(socket, buffer, buffer_length);
     while ((response = transmission_buffer_nb(socket)) == TRANSPORT_AGAIN) {
