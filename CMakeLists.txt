@@ -100,7 +100,8 @@ file(GLOB_RECURSE PAHO_MQTT_HEADER_FILES "dependencies/pahomqttembeddedc/MQTTPac
 install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} DESTINATION /usr
         FILES_MATCHING
         PATTERN "*so*")
-install(FILES ${HEADER_FILES} ${PAHO_MQTT_HEADER_FILES} DESTINATION /usr/include)
+install(FILES ${HEADER_FILES} DESTINATION /usr/include)
+install(FILES ${PAHO_MQTT_HEADER_FILES} DESTINATION /usr/include)
 install(CODE "MESSAGE(\"Installed WolkConnector-C\")")
 
 # Examples
