@@ -38,10 +38,11 @@ Following tools/libraries are required in order to build WolkConnect-C Connector
 * clang-format
 * ruby
 * ceedling
+* valgrind
 
 Former can be installed on Debian based system from terminal by invoking
 
-`sudo apt-get install libz-dev wget gcc g++ cmake libssl-dev clang-format ruby`
+`sudo apt-get install libz-dev wget gcc g++ cmake libssl-dev clang-format ruby valgrind`
 
 `gem install ceedling`
 

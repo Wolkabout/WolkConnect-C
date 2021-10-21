@@ -87,7 +87,7 @@ add_custom_target(format ALL
 # Run Unit tests
 set(TEST_FILES "${CMAKE_CURRENT_LIST_DIR}/tests")
 
-add_custom_target(tests ALL
+add_custom_target(tests
         WORKING_DIRECTORY "${TEST_FILES}"
         DEPENDS pahomqttembeddedc
         COMMAND ceedling clean
