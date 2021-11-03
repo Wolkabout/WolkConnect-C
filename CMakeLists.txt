@@ -106,5 +106,8 @@ install(FILES ${HEADER_FILES} DESTINATION /usr/include)
 install(CODE "MESSAGE(\"Installed WolkConnector-C\")")
 
 # Examples
-add_subdirectory(examples/simple)
-add_subdirectory(examples/full_feature_set)
+OPTION(BUILD_EXAMPLES "Build the library examples" ON)
+if (${BUILD_EXAMPLES})
+    add_subdirectory(examples/simple)
+    add_subdirectory(examples/full_feature_set)
+endif()
