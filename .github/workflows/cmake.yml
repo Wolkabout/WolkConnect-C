@@ -33,7 +33,7 @@ jobs:
       working-directory: ${{github.workspace}}/out
       shell: bash
       # Execute the out.  You can specify a specific target with "--target <NAME>"
-      run: make all -j$(nproc)
+      run: sudo make all -j$(nproc)
 
     - name: Test
       working-directory: ${{github.workspace}}/out
