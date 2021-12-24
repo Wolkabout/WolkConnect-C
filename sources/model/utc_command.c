@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "utc_command.h"
+#include "model/utc_command.h"
 
 uint64_t utc_command_get(utc_command_t* utc_command)
 {

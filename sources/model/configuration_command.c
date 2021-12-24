@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "configuration_command.h"
+#include "model/configuration_command.h"
 #include "size_definitions.h"
-#include "wolk_utils.h"
+#include "utility/wolk_utils.h"
 
 #include <string.h>
 

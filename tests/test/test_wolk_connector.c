@@ -10,27 +10,27 @@ TEST_FILE("MQTTDeserializePublish.c")
 TEST_FILE("MQTTSubscribeClient.c")
 
 #include "wolk_connector.h"
-#include "wolk_utils.h"
+#include "utility/wolk_utils.h"
 
 #include "MQTTPacket.h"
 
-#include "sha256.h"
+#include "utility/sha256.h"
 #include "base64.h"
 #include "data_transmission.h"
 #include "size_definitions.h"
-#include "parser.h"
+#include "protocol/parser.h"
 #include "json_parser.h"
 #include "jsmn.h"
 #include "manifest_item.h"
-#include "circular_buffer.h"
-#include "outbound_message.h"
+#include "utility/circular_buffer.h"
+#include "model/outbound_message.h"
 #include "outbound_message_factory.h"
 
-#include "reading.h"
-#include "actuator_command.h"
+#include "model/reading.h"
+#include "model/actuator_command.h"
 #include "actuator_status.h"
-#include "configuration_command.h"
-#include "utc_command.h"
+#include "model/configuration_command.h"
+#include "model/utc_command.h"
 
 #include "persistence.h"
 #include "in_memory_persistence.h"
@@ -38,8 +38,8 @@ TEST_FILE("MQTTSubscribeClient.c")
 #include "file_management.h"
 #include "file_management_packet.h"
 #include "file_management_parameter.h"
-#include "file_management_status.h"
-#include "file_management_packet_request.h"
+#include "model/file_management/file_management_status.h"
+#include "model/file_management/file_management_packet_request.h"
 #include "file_management_implementation.h"
 
 #include "firmware_update.h"

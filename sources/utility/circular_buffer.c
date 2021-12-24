@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "circular_buffer.h"
+#include "utility/circular_buffer.h"
 
 #include <stdbool.h>
 #include <stdint.h>

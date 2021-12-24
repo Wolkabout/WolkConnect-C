@@ -21,9 +21,9 @@
 extern "C" {
 #endif
 
-#include "file_management_packet_request.h"
 #include "file_management_parameter.h"
-#include "file_management_status.h"
+#include "model/file_management/file_management_packet_request.h"
+#include "model/file_management/file_management_status.h"
 #include "size_definitions.h"
 
 #include <stdbool.h>

@@ -48,6 +48,7 @@ release
 cmake-build-release
 build
 cmake-build-debug
+.vscode
 
 # Out directory
 out

@@ -1,20 +1,20 @@
 #include "unity.h"
 
 #include "json_parser.h"
-#include "actuator_command.h"
+#include "model/actuator_command.h"
 #include "base64.h"
 #include "file_management_parameter.h"
-#include "file_management_packet_request.h"
-#include "file_management_status.h"
+#include "model/file_management/file_management_packet_request.h"
+#include "model/file_management/file_management_status.h"
 #include "jsmn.h"
-#include "reading.h"
+#include "model/reading.h"
 #include "size_definitions.h"
-#include "wolk_utils.h"
+#include "utility/wolk_utils.h"
 #include "firmware_update.h"
 
 #include "manifest_item.h"
-#include "outbound_message.h"
-#include "configuration_command.h"
+#include "model/outbound_message.h"
+#include "model/configuration_command.h"
 
 #include "string.h"
 

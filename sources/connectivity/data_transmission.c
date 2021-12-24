@@ -16,7 +16,7 @@
 #include <string.h>
 
 #include "data_transmission.h"
-#include "wolk_utils.h"
+#include "utility/wolk_utils.h"
 
 static transmission_io_functions_t* io_functions = NULL;
 static unsigned char* starting_add = NULL;

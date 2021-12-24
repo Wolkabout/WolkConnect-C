@@ -15,9 +15,9 @@
  */
 
 #include "in_memory_persistence.h"
-#include "circular_buffer.h"
-#include "outbound_message.h"
-#include "wolk_utils.h"
+#include "model/outbound_message.h"
+#include "utility/circular_buffer.h"
+#include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stdint.h>

@@ -15,9 +15,9 @@
  */
 
 #include "file_management_packet.h"
-#include "sha256.h"
 #include "size_definitions.h"
-#include "wolk_utils.h"
+#include "utility/sha256.h"
+#include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stddef.h>

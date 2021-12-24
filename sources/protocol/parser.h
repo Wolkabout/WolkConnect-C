@@ -17,16 +17,16 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "actuator_command.h"
-#include "configuration_command.h"
-#include "configuration_item.h"
-#include "file_management_packet_request.h"
-#include "file_management_parameter.h"
-#include "file_management_status.h"
-#include "firmware_update.h"
-#include "outbound_message.h"
-#include "reading.h"
-#include "utc_command.h"
+#include "model/actuator_command.h"
+#include "model/configuration_command.h"
+#include "model/configuration_item.h"
+#include "model/file_management/file_management_packet_request.h"
+#include "model/file_management/file_management_parameter.h"
+#include "model/file_management/file_management_status.h"
+#include "model/firmware_update.h"
+#include "model/outbound_message.h"
+#include "model/reading.h"
+#include "model/utc_command.h"
 
 #include <stdbool.h>
 #include <stddef.h>

@@ -14,26 +14,30 @@
  * limitations under the License.
  */
 
-#include "actuator_status.h"
-#include "wolk_utils.h"
+#ifndef IN_MEMORY_PERSISTENCE_H
+#define IN_MEMORY_PERSISTENCE_H
 
-#include <string.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void actuator_status_init(actuator_status_t* actuator_status, char* value, actuator_state_t state)
-{
-    /* Sanity check */
-    WOLK_ASSERT(strlen(value) < READING_SIZE);
+#include "model/outbound_message.h"
 
-    strcpy(&actuator_status->value[0], value);
-    actuator_status->state = state;
+#include <stdbool.h>
+#include <stdint.h>
+
+void in_memory_persistence_init(void* storage, uint32_t num_elements, bool wrap);
+
+bool in_memory_persistence_push(outbound_message_t* outbound_message);
+
+bool in_memory_persistence_peek(outbound_message_t* outbound_message);
+
+bool in_memory_persistence_pop(outbound_message_t* outbound_message);
+
+bool in_memory_persistence_is_empty(void);
+
+#ifdef __cplusplus
 }
+#endif
 
-char* actuator_status_get_value(actuator_status_t* actuator_status)
-{
-    return actuator_status->value;
-}
-
-actuator_state_t actuator_status_get_state(actuator_status_t* actuator_status)
-{
-    return actuator_status->state;
-}
+#endif

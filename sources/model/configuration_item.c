@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "configuration_item.h"
-#include "wolk_utils.h"
+#include "model/configuration_item.h"
+#include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stddef.h>

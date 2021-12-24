@@ -1,6 +1,6 @@
 #include "unity.h"
 
-#include "reading.h"
+#include "model/reading.h"
 #include "manifest_item.h"
 #include "actuator_status.h"
 

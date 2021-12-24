@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "reading.h"
+#include "model/reading.h"
 #include "manifest_item.h"
-#include "wolk_utils.h"
+#include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stddef.h>

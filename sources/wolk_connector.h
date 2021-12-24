@@ -28,13 +28,13 @@ extern "C" {
 #endif
 
 #include "MQTTPacket.h"
-#include "actuator_status.h"
-#include "data_transmission.h"
-#include "file_management.h"
-#include "parser.h"
-#include "persistence.h"
+#include "connectivity/data_transmission.h"
+#include "model/actuator_status.h"
+#include "model/file_management/file_management.h"
+#include "model/utc_command.h"
+#include "persistence/persistence.h"
+#include "protocol/parser.h"
 #include "size_definitions.h"
-#include "utc_command.h"
 
 #include <stdbool.h>
 #include <stdint.h>

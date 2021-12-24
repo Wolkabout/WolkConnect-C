@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+#include "utility/wolk_utils.h"
 #include "wolk_connector.h"
-#include "wolk_utils.h"
 
 #include <signal.h>
 #include <stdbool.h>

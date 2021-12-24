@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-#include "outbound_message.h"
-#include "wolk_utils.h"
+#include "actuator_status.h"
+#include "utility/wolk_utils.h"
 
 #include <string.h>
 
-void outbound_message_init(outbound_message_t* outbound_message, const char* topic, const char* payload)
+void actuator_status_init(actuator_status_t* actuator_status, char* value, actuator_state_t state)
 {
     /* Sanity check */
-    WOLK_ASSERT(strlen(topic) <= TOPIC_SIZE);
-    WOLK_ASSERT(strlen(payload) <= PAYLOAD_SIZE);
+    WOLK_ASSERT(strlen(value) < READING_SIZE);
 
-    strcpy(outbound_message->topic, topic);
-    strcpy(outbound_message->payload, payload);
+    strcpy(&actuator_status->value[0], value);
+    actuator_status->state = state;
 }
 
-char* outbound_message_get_topic(outbound_message_t* outbound_message)
+char* actuator_status_get_value(actuator_status_t* actuator_status)
 {
-    return outbound_message->topic;
+    return actuator_status->value;
 }
 
-char* outbound_message_get_payload(outbound_message_t* outbound_message)
+actuator_state_t actuator_status_get_state(actuator_status_t* actuator_status)
 {
-    return outbound_message->payload;
+    return actuator_status->state;
 }

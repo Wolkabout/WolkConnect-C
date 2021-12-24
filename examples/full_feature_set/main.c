@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "utility/wolk_utils.h"
 #include "wolk_connector.h"
-#include "wolk_utils.h"
 
 #include <signal.h>
 #include <stdbool.h>

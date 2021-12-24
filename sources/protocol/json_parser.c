@@ -15,16 +15,16 @@
  */
 
 #include "json_parser.h"
-#include "actuator_command.h"
-#include "base64.h"
-#include "file_management_packet_request.h"
-#include "file_management_parameter.h"
-#include "file_management_status.h"
-#include "firmware_update.h"
-#include "jsmn.h"
-#include "reading.h"
+#include "model/actuator_command.h"
+#include "model/file_management/file_management_packet_request.h"
+#include "model/file_management/file_management_parameter.h"
+#include "model/file_management/file_management_status.h"
+#include "model/firmware_update.h"
+#include "model/reading.h"
 #include "size_definitions.h"
-#include "wolk_utils.h"
+#include "utility/base64.h"
+#include "utility/jsmn.h"
+#include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stddef.h>

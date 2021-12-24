@@ -15,7 +15,7 @@
  */
 
 #include "file_management_parameter.h"
-#include "wolk_utils.h"
+#include "utility/wolk_utils.h"
 
 #include <stddef.h>
 #include <stdint.h>

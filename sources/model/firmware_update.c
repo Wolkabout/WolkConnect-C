@@ -16,7 +16,7 @@
 #include <string.h>
 
 #include "firmware_update.h"
-#include "wolk_utils.h"
+#include "utility/wolk_utils.h"
 
 typedef enum { STATE_IDLE = 1, STATE_INSTALLATION, STATE_COMPLETED, STATE_ERROR } state_t;
 

@@ -16,7 +16,7 @@
 
 #include "manifest_item.h"
 #include "size_definitions.h"
-#include "wolk_utils.h"
+#include "utility/wolk_utils.h"
 
 #include <stddef.h>
 #include <string.h>

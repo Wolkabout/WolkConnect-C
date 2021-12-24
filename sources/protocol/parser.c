@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#include "parser.h"
-#include "actuator_command.h"
-#include "file_management_parameter.h"
-#include "file_management_status.h"
-#include "json_parser.h"
-#include "wolk_utils.h"
+#include "protocol/parser.h"
+#include "model/actuator_command.h"
+#include "model/file_management/file_management_parameter.h"
+#include "model/file_management/file_management_status.h"
+#include "protocol/json_parser.h"
+#include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stddef.h>

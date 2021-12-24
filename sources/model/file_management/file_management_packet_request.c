@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "file_management_packet_request.h"
-#include "wolk_utils.h"
+#include "model/file_management/file_management_packet_request.h"
+#include "utility/wolk_utils.h"
 
 #include <stddef.h>
 #include <string.h>

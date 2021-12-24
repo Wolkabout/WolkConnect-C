@@ -1,7 +1,7 @@
 #include "unity.h"
 #include "string.h"
 
-#include "actuator_command.h"
+#include "model/actuator_command.h"
 
 void setUp(void)
 {

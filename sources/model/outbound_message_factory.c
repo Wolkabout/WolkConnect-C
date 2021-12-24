@@ -15,10 +15,10 @@
  */
 
 #include "outbound_message_factory.h"
-#include "outbound_message.h"
-#include "parser.h"
-#include "reading.h"
-#include "wolk_utils.h"
+#include "model/outbound_message.h"
+#include "model/reading.h"
+#include "protocol/parser.h"
+#include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stddef.h>

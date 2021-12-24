@@ -16,16 +16,16 @@
 
 #include "wolk_connector.h"
 #include "MQTTPacket.h"
-#include "actuator_command.h"
-#include "file_management.h"
-#include "file_management_parameter.h"
-#include "firmware_update.h"
-#include "in_memory_persistence.h"
-#include "outbound_message.h"
-#include "outbound_message_factory.h"
-#include "parser.h"
-#include "persistence.h"
-#include "wolk_utils.h"
+#include "model/actuator_command.h"
+#include "model/file_management/file_management.h"
+#include "model/file_management/file_management_parameter.h"
+#include "model/firmware_update.h"
+#include "model/outbound_message.h"
+#include "model/outbound_message_factory.h"
+#include "persistence/in_memory_persistence.h"
+#include "persistence/persistence.h"
+#include "protocol/parser.h"
+#include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stdint.h>

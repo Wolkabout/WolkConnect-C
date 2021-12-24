@@ -15,7 +15,7 @@
  */
 
 #include "actuator_command.h"
-#include "wolk_utils.h"
+#include "utility/wolk_utils.h"
 
 #include <string.h>
 

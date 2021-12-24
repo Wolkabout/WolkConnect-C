@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "file_management_status.h"
-#include "wolk_utils.h"
+#include "model/file_management/file_management_status.h"
+#include "utility/wolk_utils.h"
 
 file_management_status_t file_management_status_ok(file_management_state_t state)
 {
