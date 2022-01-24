@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef PARAMETER_MESSAGE_H
-#define PARAMETER_MESSAGE_H
+#ifndef PARAMETER_H
+#define PARAMETER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,18 +25,15 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stddef.h>
-// TODO Refactor to parameter
+
 typedef struct {
     char name[PARAMETER_TYPE_SIZE];
     char value[READING_SIZE];
-} parameter_message_t;
+} parameter_t;
 
-void parameter_message_init(parameter_message_t* parameter_message, char* name, char* value);
+void parameter_init(parameter_t* parameter_message, char* name, char* value);
 
-char* parameter_message_get_name(parameter_message_t* parameter_message);
-
-char* parameter_message_get_value(parameter_message_t* parameter_message);
-void parameter_message_set_value(parameter_message_t* parameter_message, char* buffer);
+void parameter_set_value(parameter_t* parameter_message, char* buffer);
 
 #ifdef __cplusplus
 }
