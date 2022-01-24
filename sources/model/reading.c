@@ -15,7 +15,6 @@
  */
 
 #include "model/reading.h"
-#include "manifest_item.h"
 #include "utility/wolk_utils.h"
 
 #include <stdbool.h>
@@ -24,69 +23,34 @@
 #include <stdio.h>
 #include <string.h>
 
-void reading_init(reading_t* reading, manifest_item_t* item)
+void reading_init(reading_t* reading, uint16_t reading_dimensions, char* reference)
 {
     uint16_t i;
-    uint8_t reading_dimensions = (uint8_t)manifest_item_get_data_dimensions(item);
+    reading->reading_dimensions = reading_dimensions > READING_DIMENSIONS ? READING_DIMENSIONS : reading_dimensions;
 
-    memcpy(&reading->manifest_item, item, sizeof(reading->manifest_item));
-    reading->actuator_status = ACTUATOR_STATE_READY;
     reading->rtc = 0;
 
     for (i = 0; i < reading_dimensions; ++i) {
         reading_set_data(reading, "");
     }
+    strcpy(reading->reference, reference);
 }
 
 void reading_clear(reading_t* reading)
 {
-    reading_init(reading, reading_get_manifest_item(reading));
-}
-
-void reading_clear_array(reading_t* first_reading, size_t readings_count)
-{
-    size_t i;
-
-    reading_t* current_reading = first_reading;
-    for (i = 0; i < readings_count; ++i, ++current_reading) {
-        reading_clear(current_reading);
+    for (int i = 0; i < reading->reading_dimensions; ++i) {
+        reading_set_data_at(reading, "", i);
     }
 }
 
-void reading_set_data(reading_t* reading, const char* data)
+void reading_set_data(reading_t* reading, const char** data)
 {
-    reading_set_data_at(reading, data, 0);
-}
+    for(int i = 0; i < reading->reading_dimensions; ++i)
+    {
+        WOLK_ASSERT(strlen(data[i]) < READING_SIZE);
 
-char* reading_get_data(reading_t* reading)
-{
-    return reading_get_data_at(reading, 0);
-}
-
-bool reading_get_delimited_data(reading_t* reading, char* buffer, size_t buffer_size)
-{
-    size_t i;
-    size_t data_dimensions = manifest_item_get_data_dimensions(reading_get_manifest_item(reading));
-    char* data_delimiter = manifest_item_get_data_delimiter(reading_get_manifest_item(reading));
-
-    memset(buffer, '\0', buffer_size);
-    for (i = 0; i < data_dimensions; ++i) {
-        if (i != 0) {
-            size_t num_bytes_to_write = buffer_size - strlen(buffer);
-            if (snprintf(buffer + strlen(buffer), (int)num_bytes_to_write, "%s", data_delimiter)
-                >= (int)num_bytes_to_write) {
-                return false;
-            }
-        }
-
-        size_t num_bytes_to_write = buffer_size - strlen(buffer);
-        if (snprintf(buffer + strlen(buffer), (int)num_bytes_to_write, "%s", reading_get_data_at(reading, i))
-            >= (int)num_bytes_to_write) {
-            return false;
-        }
+        strcpy(reading->reading_data[i], data[i]);
     }
-
-    return true;
 }
 
 void reading_set_data_at(reading_t* reading, const char* data, size_t data_position)
@@ -98,17 +62,17 @@ void reading_set_data_at(reading_t* reading, const char* data, size_t data_posit
     strcpy(reading->reading_data[data_position], data);
 }
 
+char** reading_get_data(reading_t* reading)
+{
+    return reading->reading_data;
+}
+
 char* reading_get_data_at(reading_t* reading, size_t data_position)
 {
     /* Sanity check */
     WOLK_ASSERT(data_position < reading->manifest_item.data_dimensions);
 
     return reading->reading_data[data_position];
-}
-
-manifest_item_t* reading_get_manifest_item(reading_t* reading)
-{
-    return &reading->manifest_item;
 }
 
 void reading_set_rtc(reading_t* reading, uint64_t rtc)
@@ -119,20 +83,4 @@ void reading_set_rtc(reading_t* reading, uint64_t rtc)
 uint64_t reading_get_rtc(reading_t* reading)
 {
     return reading->rtc;
-}
-
-void reading_set_actuator_state(reading_t* reading, actuator_state_t actuator_status)
-{
-    /* Sanity check */
-    WOLK_ASSERT(manifest_item_get_reading_type(reading_get_manifest_item(reading)) & READING_TYPE_ACTUATOR);
-
-    reading->actuator_status = actuator_status;
-}
-
-actuator_state_t reading_get_actuator_state(reading_t* reading)
-{
-    /* Sanity check */
-    WOLK_ASSERT(manifest_item_get_reading_type(reading_get_manifest_item(reading)) & READING_TYPE_ACTUATOR);
-
-    return reading->actuator_status;
 }

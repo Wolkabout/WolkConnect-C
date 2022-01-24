@@ -17,8 +17,6 @@
 #ifndef READING_H
 #define READING_H
 
-#include "actuator_status.h"
-#include "manifest_item.h"
 #include "size_definitions.h"
 
 #include <stdbool.h>
@@ -30,35 +28,26 @@ extern "C" {
 #endif
 
 typedef struct {
-    manifest_item_t manifest_item;
-
-    actuator_state_t actuator_status;
-
     char reading_data[READING_DIMENSIONS][READING_SIZE];
+    uint16_t reading_dimensions;
+
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
 
     uint64_t rtc;
 } reading_t;
 
-void reading_init(reading_t* reading, manifest_item_t* item);
+void reading_init(reading_t* reading, uint16_t reading_dimensions, char* reference);
 
 void reading_clear(reading_t* reading);
-void reading_clear_array(reading_t* first_reading, size_t readings_count);
 
-void reading_set_data(reading_t* reading, const char* data);
-char* reading_get_data(reading_t* reading);
-
-bool reading_get_delimited_data(reading_t* reading, char* buffer, size_t buffer_size);
+void reading_set_data(reading_t* reading, const char** data);
+char** reading_get_data(reading_t* reading);
 
 void reading_set_data_at(reading_t* reading, const char* data, size_t data_position);
 char* reading_get_data_at(reading_t* reading, size_t data_position);
 
-manifest_item_t* reading_get_manifest_item(reading_t* reading);
-
 void reading_set_rtc(reading_t* reading, uint64_t rtc);
 uint64_t reading_get_rtc(reading_t* reading);
-
-void reading_set_actuator_state(reading_t* reading, actuator_state_t actuator_status);
-actuator_state_t reading_get_actuator_state(reading_t* reading);
 
 #ifdef __cplusplus
 }
