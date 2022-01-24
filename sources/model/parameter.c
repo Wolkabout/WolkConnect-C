@@ -14,33 +14,33 @@
  * limitations under the License.
  */
 
-#include "model/configuration_item.h"
+#include "model/parameter_message.h"
 #include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 
-void configuration_item_init(configuration_item_t* configuration_item, char* name, char* value)
+void parameter_message_init(parameter_message_t* message, char* name, char* value)
 {
-    strcpy(configuration_item->name, name);
-    strcpy(configuration_item->value, value);
+    strcpy(message->name, name);
+    parameter_message_set_value(message, value);
 }
 
-char* configuration_item_get_name(configuration_item_t* configuration_item)
+char* parameter_message_get_name(parameter_message_t* message)
 {
-    return configuration_item->name;
+    return message->name;
 }
 
-char* configuration_item_get_value(configuration_item_t* configuration_item)
+char* parameter_message_get_value(parameter_message_t* message)
 {
-    return configuration_item->value;
+    return message->value;
 }
 
-void configuration_item_set_value(configuration_item_t* configuration_item, char* buffer)
+void parameter_message_set_value(parameter_message_t* message, char* buffer)
 {
     /* Sanity check */
     WOLK_ASSERT(strlen(buffer) < CONFIGURATION_VALUE_SIZE);
 
-    strcpy(configuration_item->value, buffer);
+    strcpy(message->value, buffer);
 }

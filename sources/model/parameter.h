@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef CONFIGURATION_ITEM_H
-#define CONFIGURATION_ITEM_H
+#ifndef PARAMETER_MESSAGE_H
+#define PARAMETER_MESSAGE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,18 +25,18 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stddef.h>
-
+// TODO Refactor to parameter
 typedef struct {
-    char name[CONFIGURATION_REFERENCE_SIZE];
-    char value[CONFIGURATION_VALUE_SIZE];
-} configuration_item_t;
+    char name[PARAMETER_TYPE_SIZE];
+    char value[READING_SIZE];
+} parameter_message_t;
 
-void configuration_item_init(configuration_item_t* configuration_item, char* name, char* value);
+void parameter_message_init(parameter_message_t* parameter_message, char* name, char* value);
 
-char* configuration_item_get_name(configuration_item_t* configuration_item);
+char* parameter_message_get_name(parameter_message_t* parameter_message);
 
-char* configuration_item_get_value(configuration_item_t* configuration_item);
-void configuration_item_set_value(configuration_item_t* configuration_item, char* buffer);
+char* parameter_message_get_value(parameter_message_t* parameter_message);
+void parameter_message_set_value(parameter_message_t* parameter_message, char* buffer);
 
 #ifdef __cplusplus
 }

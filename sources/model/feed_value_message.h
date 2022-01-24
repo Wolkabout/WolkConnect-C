@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef ACTUATOR_STATUS_H
-#define ACTUATOR_STATUS_H
+#ifndef FEED_VALUE_MESSAGE_H
+#define FEED_VALUE_MESSAGE_H
 
 #include "size_definitions.h"
 
@@ -23,18 +23,17 @@
 extern "C" {
 #endif
 
-typedef enum { ACTUATOR_STATE_READY = 0, ACTUATOR_STATE_BUSY, ACTUATOR_STATE_ERROR } actuator_state_t;
-
 typedef struct {
-    char value[READING_SIZE];
-    actuator_state_t state;
-} actuator_status_t;
+    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char argument[COMMAND_ARGUMENT_SIZE];
+} feed_value_message_t;
 
-void actuator_status_init(actuator_status_t* actuator_status, char* value, actuator_state_t state);
+void feed_value_message_init(feed_value_message_t* command, const char* reference, const char* argument);
 
-char* actuator_status_get_value(actuator_status_t* actuator_status);
+char* feed_value_message_get_reference(feed_value_message_t* command);
+void feed_value_message_set_reference(feed_value_message_t* command, const char* reference);
 
-actuator_state_t actuator_status_get_state(actuator_status_t* actuator_status);
+char* feed_value_message_get_value(feed_value_message_t* command);
 
 #ifdef __cplusplus
 }

@@ -14,34 +14,27 @@
  * limitations under the License.
  */
 
-#include "actuator_command.h"
+#include "feed_value_message.h"
 #include "utility/wolk_utils.h"
 
 #include <string.h>
 
-void actuator_command_init(actuator_command_t* command, actuator_command_type_t type, const char* reference,
+void feed_value_message_init(feed_value_message_t* command, const char* reference,
                            const char* argument)
 { /* Sanity check */
     WOLK_ASSERT(strlen(reference) <= MANIFEST_ITEM_REFERENCE_SIZE);
     WOLK_ASSERT(strlen(argument) <= COMMAND_ARGUMENT_SIZE);
 
-    command->type = type;
-
     strcpy(command->reference, reference);
     strcpy(command->argument, argument);
 }
 
-actuator_command_type_t actuator_command_get_type(actuator_command_t* command)
-{
-    return command->type;
-}
-
-char* actuator_command_get_reference(actuator_command_t* command)
+char* feed_value_message_get_reference(feed_value_message_t* command)
 {
     return command->reference;
 }
 
-void actuator_command_set_reference(actuator_command_t* command, const char* reference)
+void feed_value_message_set_reference(feed_value_message_t* command, const char* reference)
 {
     /* Sanity check */
     WOLK_ASSERT(strlen(reference) < MANIFEST_ITEM_REFERENCE_SIZE);
@@ -49,7 +42,7 @@ void actuator_command_set_reference(actuator_command_t* command, const char* ref
     strcpy(command->reference, reference);
 }
 
-char* actuator_command_get_value(actuator_command_t* command)
+char* feed_value_message_get_value(feed_value_message_t* command)
 {
     return command->argument;
 }
