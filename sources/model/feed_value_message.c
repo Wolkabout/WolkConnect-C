@@ -19,30 +19,29 @@
 
 #include <string.h>
 
-void feed_value_message_init(feed_value_message_t* command, const char* reference,
-                           const char* argument)
+void feed_value_message_init(feed_value_message_t* message, const char* reference, const char* value)
 { /* Sanity check */
     WOLK_ASSERT(strlen(reference) <= MANIFEST_ITEM_REFERENCE_SIZE);
     WOLK_ASSERT(strlen(argument) <= COMMAND_ARGUMENT_SIZE);
 
-    strcpy(command->reference, reference);
-    strcpy(command->argument, argument);
+    strcpy(message->reference, reference);
+    strcpy(message->value, value);
 }
 
-char* feed_value_message_get_reference(feed_value_message_t* command)
+char* feed_value_message_get_reference(feed_value_message_t* message)
 {
-    return command->reference;
+    return message->reference;
 }
 
-void feed_value_message_set_reference(feed_value_message_t* command, const char* reference)
+void feed_value_message_set_reference(feed_value_message_t* message, const char* reference)
 {
     /* Sanity check */
     WOLK_ASSERT(strlen(reference) < MANIFEST_ITEM_REFERENCE_SIZE);
 
-    strcpy(command->reference, reference);
+    strcpy(message->reference, reference);
 }
 
-char* feed_value_message_get_value(feed_value_message_t* command)
+char* feed_value_message_get_value(feed_value_message_t* message)
 {
-    return command->argument;
+    return message->value;
 }

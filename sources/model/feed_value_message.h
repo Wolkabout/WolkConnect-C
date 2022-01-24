@@ -25,15 +25,15 @@ extern "C" {
 
 typedef struct {
     char reference[MANIFEST_ITEM_REFERENCE_SIZE];
-    char argument[COMMAND_ARGUMENT_SIZE];
+    char value[COMMAND_ARGUMENT_SIZE];
 } feed_value_message_t;
 
-void feed_value_message_init(feed_value_message_t* command, const char* reference, const char* argument);
+void feed_value_message_init(feed_value_message_t* message, const char* reference, const char* value);
 
-char* feed_value_message_get_reference(feed_value_message_t* command);
-void feed_value_message_set_reference(feed_value_message_t* command, const char* reference);
+char* feed_value_message_get_reference(feed_value_message_t* message);
+void feed_value_message_set_reference(feed_value_message_t* message, const char* reference);
 
-char* feed_value_message_get_value(feed_value_message_t* command);
+char* feed_value_message_get_value(feed_value_message_t* message);
 
 #ifdef __cplusplus
 }
