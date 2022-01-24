@@ -17,7 +17,8 @@
 #ifndef OUTBOUND_MESSAGE_FACTORY_H
 #define OUTBOUND_MESSAGE_FACTORY_H
 
-#include "actuator_status.h"
+#include "model/attribute.h"
+#include "model/feed.h"
 #include "model/file_management/file_management_status.h"
 #include "model/outbound_message.h"
 #include "model/reading.h"
@@ -30,18 +31,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* first_reading,
-                                           size_t num_readings, outbound_message_t* outbound_message);
-
-bool outbound_message_make_from_actuator_status(parser_t* parser, const char* device_key,
-                                                actuator_status_t* actuator_status, const char* reference,
-                                                outbound_message_t* outbound_message);
-
-bool outbound_message_make_from_configuration(parser_t* parser, const char* device_key,
-                                              char (*reference)[CONFIGURATION_REFERENCE_SIZE],
-                                              char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items,
-                                              outbound_message_t* outbound_message);
 
 bool outbound_message_make_from_file_management_status(parser_t* parser, const char* device_key,
                                                        file_management_packet_request_t* file_management_packet_request,
@@ -67,8 +56,27 @@ bool outbound_message_make_from_firmware_update_version(parser_t* parser, const 
                                                         char* firmware_update_version,
                                                         outbound_message_t* outbound_message);
 
-bool outbound_message_make_from_keep_alive_message(parser_t* parser, const char* device_key,
-                                                   outbound_message_t* outbound_message);
+bool outbound_message_feed_registration(parser_t* parser, const char* device_key, feed_t* feed,
+                                        outbound_message_t* outbound_message);
+
+bool outbound_message_feed_removal(parser_t* parser, const char* device_key, feed_t* feed,
+                                   outbound_message_t* outbound_message);
+
+size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key,
+                                           reading_t* first_reading, size_t num_readings,
+                                           outbound_message_t* outbound_message);
+
+bool outbound_message_pull_feed_values(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
+
+bool outbound_message_attribute_registration(parser_t* parser, const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message);
+
+bool outbound_message_update_parameters(parser_t* parser, const char* device_key, parameter_t* parameter, outbound_message_t* outbound_message);
+
+bool outbound_message_pull_parameters(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
+
+bool outbound_message_synchronize_parameters(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
+
+bool outbound_message_synchronize_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
 #ifdef __cplusplus
 }
