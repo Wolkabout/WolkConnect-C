@@ -28,16 +28,28 @@ enum {
     /* Maximum number of characters in device key string */
     DEVICE_KEY_SIZE = 64,
 
+    MESSAGE_TYPE_SIZE = 64,
+
+    DIRECTION_SIZE = 4,
+
     /* Maximum number of characters in device password string */
     DEVICE_PASSWORD_SIZE = 64,
 
     /* Maximum number of characters in topic string */
-    TOPIC_SIZE = 64 + DEVICE_KEY_SIZE,
+    TOPIC_SIZE = DIRECTION_SIZE + MESSAGE_TYPE_SIZE + DEVICE_KEY_SIZE + 3 /* for the delimiters */,
     /* Maximum number of bytes in payload string */
     PAYLOAD_SIZE = 448,
 
+    /* Maximum number of characters in name string */
+    MANIFEST_ITEM_NAME_SIZE = 64,
     /* Maximum number of characters in reference string */
     MANIFEST_ITEM_REFERENCE_SIZE = 64,
+    /* Maximum number of characters in unit string */
+    MANIFEST_ITEM_UNIT_SIZE = 25,
+    /* Maximum number of characters in feed type string */
+    MANIFEST_ITEM_FEED_TYPE_SIZE = 5,
+    /* Maximum number of characters in type string */
+    MANIFEST_ITEM_DATA_TYPE_SIZE = 10,
     /* Maximum number of characters in delimiter string */
     MANIFEST_ITEM_DATA_DELIMITER_SIZE = 3,
 
@@ -46,15 +58,17 @@ enum {
     /* Maximum number of reading dimensions (Data size on DV-Tool) */
     READING_DIMENSIONS = 3,
 
+    /* Maximum number of characters in parameter type string */
+    PARAMETER_TYPE_SIZE = 3,
+    /* Maximum number of characters in parameter value */
+    PARAMETER_VALUE_SIZE = READING_SIZE,
+    ATTRIBUTE_VALUE_SIZE = READING_SIZE,
+
     /* Maximum number of characters in command name */
     COMMAND_MAX_SIZE = 15,
     /* Maximum number of characters in actuation value string */
     COMMAND_ARGUMENT_SIZE = READING_SIZE,
 
-    /* Maximum number of characters in configuration item name string */
-    CONFIGURATION_REFERENCE_SIZE = MANIFEST_ITEM_REFERENCE_SIZE,
-    /* Maximum number of characters in configuration item value string */
-    CONFIGURATION_VALUE_SIZE = READING_SIZE,
     /* Maximum number of configuration items for device */
     CONFIGURATION_ITEMS_SIZE = 3,
 

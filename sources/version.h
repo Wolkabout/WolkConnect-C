@@ -1,8 +1,9 @@
-//
-// Created by lazar on 15.1.22..
-//
+#ifndef VERSION_H
+#define VERSION_H
 
-#ifndef WOLKCONNECTOR_C_VERSION_H
-#define WOLKCONNECTOR_C_VERSION_H
+/**
+ * @brief Library versioning
+ */
+enum { WOLK_VERSION_MAJOR = 5, WOLK_VERSION_MINOR = 0, WOLK_VERSION_PATCH = 0 };
 
-#endif // WOLKCONNECTOR_C_VERSION_H
+#endif // VERSION_H
