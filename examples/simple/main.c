@@ -154,8 +154,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init(&wolk, send_buffer, receive_buffer, NULL, ACTUATOR_STATE_READY, NULL, NULL, device_key,
-                  device_password, PROTOCOL_WOLKABOUT, NULL, 0)
+    if (wolk_init(&wolk, send_buffer, receive_buffer, NULL, NULL, device_key, device_password, PUSH, PROTOCOL_WOLKABOUT)
         != W_FALSE) {
         printf("Error initializing WolkConnect-C\n");
         return 1;
@@ -173,15 +172,35 @@ int main(int argc, char* argv[])
     }
     printf("Wolk client - Connected to server\n");
 
-    wolk_add_numeric_sensor_reading(&wolk, "T", rand() % 100 - 20, 0);
-    wolk_publish(&wolk);
+    feed_t feed;
+    initialize_feed(&feed, "Petar", "Petrovic", UNIT_CELSIUS, IN);
+    wolk_register_feed(&wolk, &feed);
 
+    attribute_t version;
+    strcpy(version.name, "VERSION");
+    strcpy(version.data_type, DATA_TYPE_STRING);
+    strcpy(version.value, "1.2.1");
+
+    wolk_register_attribute(&wolk, &version);
+
+    wolk_add_numeric_reading(&wolk, feed.reference, rand() % 100 - 20, 0);
+
+    parameter_t some_parameter;
+    parameter_init(&some_parameter, PARAMETER_EXTERNAL_ID, "NIKOPOLIDIS");
+
+    wolk_sync_parameters(&wolk);
+    wolk_sync_time_request(&wolk);
+    wolk_publish(&wolk);
 
     while (keep_running) {
         // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
         // you can change this parameters, but keep it's multiplication
         usleep(1000);
         wolk_process(&wolk, 1);
+
+        usleep(1000000);
+        wolk_remove_feed(&wolk, &feed);
+        wolk_publish(&wolk);
     }
 
     printf("Wolk client - Diconnecting\n");
