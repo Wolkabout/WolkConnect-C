@@ -922,7 +922,7 @@ static void handle_firmware_update_abort(firmware_update_t* firmware_update)
 
 static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[MESSAGE_TYPE_SIZE])
 {
-    char topic[TOPIC_SIZE];
+    char topic[TOPIC_SIZE] = "";
     parser_create_topic(&ctx->parser, ctx->parser.P2D_TOPIC, ctx->device_key, message_type, topic);
     if (subscribe(ctx, topic) != W_FALSE) {
         return W_TRUE;
