@@ -444,8 +444,8 @@ bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_
     for (int i = 1; i < parser_result; i++) {
 
         if (tokens[i].type == JSMN_PRIMITIVE) {
-            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s",
-                         tokens[i].end - tokens[i].start, buffer + tokens[i].start)
+            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i].end - tokens[i].start,
+                         buffer + tokens[i].start)
                 >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
                 return false;
             }
@@ -460,7 +460,7 @@ bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_
     return true;
 }
 
-bool json_create_topic(char direction[DIRECTION_SIZE], char device_key[DEVICE_KEY_SIZE],
+bool json_create_topic(char direction[DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                        char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE])
 {
     topic[0] = '/0';
@@ -473,7 +473,7 @@ bool json_create_topic(char direction[DIRECTION_SIZE], char device_key[DEVICE_KE
     return true;
 }
 size_t json_deserialize_feed_value_message(char* buffer, size_t buffer_size, feed_value_message_t* feed_value_message,
-                                         size_t msg_buffer_size)
+                                           size_t msg_buffer_size)
 {
     jsmn_parser parser;
     jsmntok_t tokens[10]; /* No more than 10 JSON token(s) are expected, check
@@ -486,10 +486,9 @@ size_t json_deserialize_feed_value_message(char* buffer, size_t buffer_size, fee
         return false;
     }
     // TODO Figure out the JSMN parser
-
 }
 size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message,
-                                        size_t msg_buffer_size)
+                                          size_t msg_buffer_size)
 {
     // TODO
     return 0;
@@ -518,8 +517,7 @@ static size_t serialize_readings(reading_t* readings, size_t num_readings, char*
 {
     WOLK_UNUSED(num_readings);
 
-    for(int i = 0; i < num_readings; i++)
-    {
+    for (int i = 0; i < num_readings; i++) {
         //        readings[i].
     }
 }
@@ -540,16 +538,15 @@ bool json_serialize_attribute(const char* device_key, attribute_t* attribute, ou
     char topic[TOPIC_SIZE];
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_ATTRIBUTE_REGISTRATION_TOPIC, topic);
     char payload[PAYLOAD_SIZE];
-    sprintf(payload, "[{\"name\": \"%s\", \"dataType\": \"%s\", \"value\": \"%s\"}]",
-            attribute->name, attribute->data_type, attribute->value);
+    sprintf(payload, "[{\"name\": \"%s\", \"dataType\": \"%s\", \"value\": \"%s\"}]", attribute->name,
+            attribute->data_type, attribute->value);
 
     strncpy(outbound_message->topic, topic, TOPIC_SIZE);
     strncpy(outbound_message->payload, payload, PAYLOAD_SIZE);
 
     return true;
 }
-bool json_serialize_parameter(const char* device_key, parameter_t* parameter,
-                              outbound_message_t* outbound_message)
+bool json_serialize_parameter(const char* device_key, parameter_t* parameter, outbound_message_t* outbound_message)
 {
     char topic[TOPIC_SIZE];
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_PARAMETERS_TOPIC, topic);
@@ -567,8 +564,8 @@ bool json_serialize_feed_registration(const char* device_key, feed_t* feed, outb
     char topic[TOPIC_SIZE];
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FEED_REGISTRATION_TOPIC, topic);
     char payload[PAYLOAD_SIZE];
-    sprintf(payload, "{[\"name\": %s, \"type\": %s, \"unitGuid\": %s, \"reference\": %s]}",
-            feed->name, feed_type_to_string(feed->feedType), feed->unit, feed->reference);
+    sprintf(payload, "{[\"name\": %s, \"type\": %s, \"unitGuid\": %s, \"reference\": %s]}", feed->name,
+            feed_type_to_string(feed->feedType), feed->unit, feed->reference);
 
     strncpy(outbound_message->topic, topic, TOPIC_SIZE);
     strncpy(outbound_message->payload, payload, PAYLOAD_SIZE);

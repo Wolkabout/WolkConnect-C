@@ -40,8 +40,6 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx);
 static WOLK_ERR_T publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message);
 static WOLK_ERR_T subscribe(wolk_ctx_t* ctx, const char* topic);
 
-static void parser_init_parameters(wolk_ctx_t* ctx, protocol_t protocol);
-
 static bool is_wolk_initialized(wolk_ctx_t* ctx);
 
 static void handle_feed_value(wolk_ctx_t* ctx, feed_value_message_t* feed_value_msg);
@@ -78,7 +76,7 @@ static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[MESSAGE_TYPE_S
 
 WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, feed_handler_t feed_handler,
                      parameter_handler_t parameter_handler, const char* device_key, const char* device_password,
-                     outbound_mode_t outbound_mode, protocol_t protocol)
+                     outbound_mode_t outbound_mode)
 {
     /* Sanity check */
     WOLK_ASSERT(snd_func != NULL);
@@ -89,8 +87,6 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
 
     WOLK_ASSERT(strlen(device_key) < DEVICE_KEY_SIZE);
     WOLK_ASSERT(strlen(device_password) < DEVICE_PASSWORD_SIZE);
-
-    WOLK_ASSERT(protocol == PROTOCOL_WOLKABOUT);
 
     /* Sanity check */
 
@@ -123,8 +119,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
 
     ctx->outbound_mode = outbound_mode;
 
-    ctx->protocol = protocol;
-    parser_init_parameters(ctx, protocol);
+    parser_init(&ctx->parser);
 
     ctx->utc = 0;
 
@@ -317,8 +312,9 @@ WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t* ctx, const char* reference, const
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_add_multi_value_string_reading(wolk_ctx_t* ctx, const char* reference, const char (*values)[READING_SIZE],
-                                               uint16_t values_size, uint64_t utc_time)
+WOLK_ERR_T wolk_add_multi_value_string_reading(wolk_ctx_t* ctx, const char* reference,
+                                               const char (*values)[READING_SIZE], uint16_t values_size,
+                                               uint64_t utc_time)
 {
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
@@ -465,7 +461,7 @@ WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_t* feed)
 }
 WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx)
 {
-    if(ctx->outbound_mode == PULL) {
+    if (ctx->outbound_mode == PULL) {
         outbound_message_t outbound_message;
         outbound_message_pull_feed_values(&ctx->parser, ctx->device_key, &outbound_message);
 
@@ -475,7 +471,7 @@ WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx)
 }
 WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx)
 {
-    if(ctx->outbound_mode == PULL) {
+    if (ctx->outbound_mode == PULL) {
         outbound_message_t outbound_message;
         outbound_message_pull_parameters(&ctx->parser, ctx->device_key, &outbound_message);
 
@@ -708,19 +704,6 @@ static WOLK_ERR_T subscribe(wolk_ctx_t* ctx, const char* topic)
             return W_TRUE;
         }
     } while (true);
-}
-
-static void parser_init_parameters(wolk_ctx_t* ctx, protocol_t protocol)
-{
-    switch (protocol) {
-    case PROTOCOL_WOLKABOUT:
-        parser_init(&ctx->parser, PARSER_TYPE_WOLKABOUT);
-        break;
-
-    default:
-        /* Sanity check */
-        WOLK_ASSERT(false);
-    }
 }
 
 static bool is_wolk_initialized(wolk_ctx_t* ctx)

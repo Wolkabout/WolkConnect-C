@@ -148,19 +148,22 @@ static void actuation_handler(const char* reference, const char* value)
     }
 }
 
-static actuator_status_t actuator_status_provider(const char* reference)
-{
-    printf("Actuator status provider - Reference: %s\n", reference);
+// static actuator_status_t actuator_status_provider(const char* reference)
+//{
+//    printf("Actuator status provider - Reference: %s\n", reference);
+//
+//    actuator_status_t actuator_status;
+//    actuator_status_init(&actuator_status, "", ACTUATOR_STATE_ERROR);
+//
+//    if (strcmp(reference, "SW") == 0 || strcmp(reference, "SL") == 0) {
+//        actuator_status_init(&actuator_status, actuator_value, ACTUATOR_STATE_READY);
+//    }
+//
+//    return actuator_status;
+//}
 
-    actuator_status_t actuator_status;
-    actuator_status_init(&actuator_status, "", ACTUATOR_STATE_ERROR);
-
-    if (strcmp(reference, "SW") == 0 || strcmp(reference, "SL") == 0) {
-        actuator_status_init(&actuator_status, actuator_value, ACTUATOR_STATE_READY);
-    }
-
-    return actuator_status;
-}
+#define CONFIGURATION_REFERENCE_SIZE 128
+#define CONFIGURATION_VALUE_SIZE 128
 
 /* Configuration setup and call-backs */
 static int publish_period_seconds = DEFAULT_PUBLISH_PERIOD_SECONDS;
@@ -246,9 +249,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider,
-                  configuration_handler, configuration_provider, device_key, device_password, PROTOCOL_WOLKABOUT,
-                  actuator_references, num_actuator_references)
+    if (wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, configuration_handler, device_key,
+                  device_password, PUSH)
         != W_FALSE) {
         printf("Error initializing WolkConnect-C\n");
         return 1;
@@ -286,7 +288,6 @@ int main(int argc, char* argv[])
     }
     printf("Wolk client - Connected to server\n");
 
-    wolk_add_alarm(&wolk, "HH", true, 0);
     wolk_publish(&wolk);
 
     while (keep_running) {

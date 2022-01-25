@@ -25,9 +25,8 @@
 #include <stddef.h>
 #include <string.h>
 
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key,
-                                           reading_t* first_reading, size_t num_readings,
-                                           outbound_message_t* outbound_message)
+size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* first_reading,
+                                           size_t num_readings, outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
@@ -159,14 +158,16 @@ bool outbound_message_pull_feed_values(parser_t* parser, const char* device_key,
 
     return parser_serialize_pull_feed_values(parser, device_key, outbound_message);
 }
-bool outbound_message_attribute_registration(parser_t* parser, const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message)
+bool outbound_message_attribute_registration(parser_t* parser, const char* device_key, attribute_t* attribute,
+                                             outbound_message_t* outbound_message)
 {
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
 
     return parser_serialize_attribute(parser, device_key, attribute, outbound_message);
 }
-bool outbound_message_update_parameters(parser_t* parser, const char* device_key, parameter_t* parameter, outbound_message_t* outbound_message)
+bool outbound_message_update_parameters(parser_t* parser, const char* device_key, parameter_t* parameter,
+                                        outbound_message_t* outbound_message)
 {
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
@@ -179,7 +180,8 @@ bool outbound_message_pull_parameters(parser_t* parser, const char* device_key, 
     WOLK_ASSERT(device_key);
     return parser_serialize_pull_parameters(parser, device_key, outbound_message);
 }
-bool outbound_message_synchronize_parameters(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
+bool outbound_message_synchronize_parameters(parser_t* parser, const char* device_key,
+                                             outbound_message_t* outbound_message)
 {
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);

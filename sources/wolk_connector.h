@@ -42,11 +42,6 @@ extern "C" {
 #include <stdint.h>
 
 /**
- * @brief Supported protocols, WolkConnect libararies currently support only PROTOCOL_WOLKABOUT
- */
-typedef enum { PROTOCOL_WOLKABOUT = 0 } protocol_t;
-
-/**
  * @brief WOLK_ERR_T Boolean used for error handling in WolkConnect-C library
  */
 typedef unsigned char WOLK_ERR_T;
@@ -107,7 +102,6 @@ typedef struct wolk_ctx {
     char device_password[DEVICE_PASSWORD_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as
                                                    a result of device creation on the platform.*/
 
-    protocol_t protocol; /**<  Used protocol for communication with WolkAbout IoT Platform. @see protocol_t*/
     parser_t parser;
 
     persistence_t persistence;
@@ -138,14 +132,13 @@ typedef struct wolk_ctx {
  * creation
  * @param password Device password provided by WolkAbout IoT Platform device
  * upon device creation
- * @param protocol Protocol specified for device
  *
  *
  * @return Error code
  */
 WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, feed_handler_t feed_handler,
                      parameter_handler_t parameter_handler, const char* device_key, const char* device_password,
-                     outbound_mode_t outbound_mode, protocol_t protocol);
+                     outbound_mode_t outbound_mode);
 
 /**
  * @brief Initializes persistence mechanism with in-memory implementation
@@ -282,8 +275,9 @@ WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t* ctx, const char* reference, const
  *
  *  @return Error code
  */
-WOLK_ERR_T wolk_add_multi_value_string_reading(wolk_ctx_t* ctx, const char* reference, const char (*values)[READING_SIZE],
-                                               uint16_t values_size, uint64_t utc_time);
+WOLK_ERR_T wolk_add_multi_value_string_reading(wolk_ctx_t* ctx, const char* reference,
+                                               const char (*values)[READING_SIZE], uint16_t values_size,
+                                               uint64_t utc_time);
 
 /**
  * @brief Add numeric reading

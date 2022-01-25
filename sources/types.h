@@ -200,6 +200,8 @@ typedef struct {
     file_management_error_t error;
 } file_management_status_t;
 
+const char* file_management_status_as_str(file_management_status_t* status);
+
 #ifdef __cplusplus
 }
 #endif

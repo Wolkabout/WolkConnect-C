@@ -17,6 +17,8 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "model/attribute.h"
+#include "model/feed.h"
 #include "model/feed_value_message.h"
 #include "model/file_management/file_management_packet_request.h"
 #include "model/file_management/file_management_parameter.h"
@@ -26,8 +28,6 @@
 #include "model/parameter.h"
 #include "model/reading.h"
 #include "model/utc_command.h"
-#include "model/feed.h"
-#include "model/attribute.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -37,37 +37,34 @@
 extern "C" {
 #endif
 
-typedef enum { PARSER_TYPE_WOLKABOUT = 0 } parser_type_t;
-
 typedef struct {
-    parser_type_t type;
     bool is_initialized;
 
-    char FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC[MESSAGE_TYPE_SIZE];
-    char FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC[MESSAGE_TYPE_SIZE];
-    char FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC[MESSAGE_TYPE_SIZE];
+    char FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC[TOPIC_SIZE];
+    char FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC[TOPIC_SIZE];
+    char FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC[TOPIC_SIZE];
 
-    char FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC[MESSAGE_TYPE_SIZE];
-    char FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC[MESSAGE_TYPE_SIZE];
+    char FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC[TOPIC_SIZE];
+    char FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC[TOPIC_SIZE];
 
-    char FILE_MANAGEMENT_FILE_DELETE_TOPIC[MESSAGE_TYPE_SIZE];
-    char FILE_MANAGEMENT_FILE_PURGE_TOPIC[MESSAGE_TYPE_SIZE];
+    char FILE_MANAGEMENT_FILE_DELETE_TOPIC[TOPIC_SIZE];
+    char FILE_MANAGEMENT_FILE_PURGE_TOPIC[TOPIC_SIZE];
 
-    char FIRMWARE_UPDATE_INSTALL_TOPIC[MESSAGE_TYPE_SIZE];
-    char FIRMWARE_UPDATE_ABORT_TOPIC[MESSAGE_TYPE_SIZE];
+    char FIRMWARE_UPDATE_INSTALL_TOPIC[TOPIC_SIZE];
+    char FIRMWARE_UPDATE_ABORT_TOPIC[TOPIC_SIZE];
 
-    char P2D_TOPIC[MESSAGE_TYPE_SIZE];
-    char D2P_TOPIC[MESSAGE_TYPE_SIZE];
-    char FEED_REGISTRATION_TOPIC[MESSAGE_TYPE_SIZE];
-    char FEED_REMOVAL_TOPIC[MESSAGE_TYPE_SIZE];
-    char FEED_VALUES_MESSAGE_TOPIC[MESSAGE_TYPE_SIZE];
-    char PULL_FEED_VALUES_TOPIC[MESSAGE_TYPE_SIZE];
-    char ATTRIBUTE_REGISTRATION_TOPIC[MESSAGE_TYPE_SIZE];
-    char PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE];
-    char PULL_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE];
-    char SYNC_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE];
-    char SYNC_TIME_TOPIC[MESSAGE_TYPE_SIZE];
-    char ERROR_TOPIC[MESSAGE_TYPE_SIZE];
+    char P2D_TOPIC[TOPIC_SIZE];
+    char D2P_TOPIC[TOPIC_SIZE];
+    char FEED_REGISTRATION_TOPIC[TOPIC_SIZE];
+    char FEED_REMOVAL_TOPIC[TOPIC_SIZE];
+    char FEED_VALUES_MESSAGE_TOPIC[TOPIC_SIZE];
+    char PULL_FEED_VALUES_TOPIC[TOPIC_SIZE];
+    char ATTRIBUTE_REGISTRATION_TOPIC[TOPIC_SIZE];
+    char PARAMETERS_TOPIC[TOPIC_SIZE];
+    char PULL_PARAMETERS_TOPIC[TOPIC_SIZE];
+    char SYNC_PARAMETERS_TOPIC[TOPIC_SIZE];
+    char SYNC_TIME_TOPIC[TOPIC_SIZE];
+    char ERROR_TOPIC[TOPIC_SIZE];
 
     size_t (*serialize_readings)(reading_t* first_reading, size_t num_readings, char* buffer, size_t buffer_size);
 
@@ -95,12 +92,12 @@ typedef struct {
 
     bool (*deserialize_time)(char* buffer, size_t buffer_size, utc_command_t* utc_command);
 
-    bool (*create_topic)(char direction[DIRECTION_SIZE], char device_key[DEVICE_KEY_SIZE],
+    bool (*create_topic)(char direction[DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                          char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
     size_t (*deserialize_feed_value_message)(char* buffer, size_t buffer_size, feed_value_message_t* feed_value_message,
-                                           size_t msg_buffer_size);
+                                             size_t msg_buffer_size);
     size_t (*deserialize_parameter_message)(char* buffer, size_t buffer_size, parameter_t* parameter_message,
-                                          size_t msg_buffer_size);
+                                            size_t msg_buffer_size);
     bool (*serialize_feed_registration)(const char* device_key, feed_t* feed, outbound_message_t* outbound_message);
     bool (*serialize_feed_removal)(const char* device_key, feed_t* feed, outbound_message_t* outbound_message);
     bool (*serialize_pull_feed_values)(const char* device_key, outbound_message_t* outbound_message);
@@ -112,10 +109,10 @@ typedef struct {
 
 } parser_t;
 
-void parser_init(parser_t* parser, parser_type_t parser_type);
+void parser_init(parser_t* parser);
 
 /**** Reading ****/
-/* Note: Actuator status is considered reading, henece it's serialization is tied to funcions in this section */
+/* Note: Actuator status is considered reading, hence it's serialization is tied to functions in this section */
 size_t parser_serialize_readings(parser_t* parser, reading_t* first_reading, size_t num_readings, char* buffer,
                                  size_t buffer_size);
 /**** Reading ****/
@@ -152,7 +149,6 @@ bool parse_serialize_firmware_update_version(parser_t* parser, const char* devic
                                              outbound_message_t* outbound_message);
 /**** Firmware Update ****/
 
-parser_type_t parser_get_type(parser_t* parser);
 bool parser_is_initialized(parser_t* parser);
 
 /**** Utility ****/
@@ -162,16 +158,16 @@ bool parser_create_topic(parser_t* parser, char direction[DIRECTION_SIZE], char 
                          char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
 
 size_t parser_deserialize_feed_value_message(parser_t* parser, char* buffer, size_t buffer_size,
-                                           feed_value_message_t* feed_value_message, size_t msg_buffer_size);
+                                             feed_value_message_t* feed_value_message, size_t msg_buffer_size);
 
 size_t parser_deserialize_parameter_message(parser_t* parser, char* buffer, size_t buffer_size,
-                                          parameter_t* parameter_message, size_t msg_buffer_size);
+                                            parameter_t* parameter_message, size_t msg_buffer_size);
 
 bool parser_serialize_feed_registration(parser_t* parser, const char* device_key, feed_t* feed,
                                         outbound_message_t* outbound_message);
 
 bool parser_serialize_feed_removal(parser_t* parser, const char* device_key, feed_t* feed,
-                                        outbound_message_t* outbound_message);
+                                   outbound_message_t* outbound_message);
 bool parser_serialize_pull_feed_values(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
 bool parser_serialize_pull_parameters(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
@@ -180,9 +176,11 @@ bool parser_serialize_sync_parameters(parser_t* parser, const char* device_key, 
 
 bool parser_serialize_sync_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
-bool parser_serialize_attribute(parser_t* parser, const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message);
+bool parser_serialize_attribute(parser_t* parser, const char* device_key, attribute_t* attribute,
+                                outbound_message_t* outbound_message);
 
-bool parser_serialize_parameter(parser_t* parser, const char* device_key, parameter_t* parameter, outbound_message_t* outbound_message);
+bool parser_serialize_parameter(parser_t* parser, const char* device_key, parameter_t* parameter,
+                                outbound_message_t* outbound_message);
 
 #ifdef __cplusplus
 }

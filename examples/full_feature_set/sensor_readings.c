@@ -24,7 +24,7 @@ static void sending_pressure_reading(wolk_ctx_t* ctx)
         int8_t pressure = 0;
 
         pressure = (rand() % 800) + 300;
-        wolk_add_numeric_sensor_reading(ctx, "P", pressure, 0);
+        //        wolk_add_numeric_sensor_reading(ctx, "P", pressure, 0);
         wolk_publish(ctx);
         printf("\tPressure\t: %dmb\n", pressure);
     }
@@ -36,7 +36,7 @@ static void sending_temperature_reading(wolk_ctx_t* ctx)
         int8_t temperature = 0;
 
         temperature = (rand() % 125) - 40;
-        wolk_add_numeric_sensor_reading(ctx, "T", temperature, 0);
+        //        wolk_add_numeric_sensor_reading(ctx, "T", temperature, 0);
         wolk_publish(ctx);
         printf("\tTemperature\t: %d°C\n", temperature);
     }
@@ -48,7 +48,7 @@ static void sending_humidity_reading(wolk_ctx_t* ctx)
         int8_t humidity = 0;
 
         humidity = rand() % 100;
-        wolk_add_numeric_sensor_reading(ctx, "H", humidity, 0);
+        //        wolk_add_numeric_sensor_reading(ctx, "H", humidity, 0);
         wolk_publish(ctx);
         printf("\tHumidity\t: %d%%\n", humidity);
     }
@@ -59,7 +59,7 @@ static void sending_accl_readings(wolk_ctx_t* ctx)
     if (device_configuration_enable_feeds[3][0]) {
         double accl_readings[3] = {1, 0, 0};
 
-        wolk_add_multi_value_numeric_sensor_reading(ctx, "ACL", &accl_readings[0], 3, 0);
+        //        wolk_add_multi_value_numeric_sensor_reading(ctx, "ACL", &accl_readings[0], 3, 0);
         printf("\tAcceleration on XYZ\t: %fg, %fg, %fg\n", accl_readings[0], accl_readings[1], accl_readings[2]);
         wolk_publish(ctx);
     }
@@ -70,7 +70,8 @@ bool enable_feeds(char* value)
 {
     int8_t elements_counter = 0;
     const char delimiter[2] = ",";
-    char tmp_value[CONFIGURATION_VALUE_SIZE];
+    //    char tmp_value[CONFIGURATION_VALUE_SIZE];
+    char tmp_value[128];
     strncpy(tmp_value, value, strlen(value));
     char* element = strtok(tmp_value, delimiter);
 

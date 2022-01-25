@@ -17,6 +17,8 @@
 #ifndef JSON_PARSER_H
 #define JSON_PARSER_H
 
+#include "model/attribute.h"
+#include "model/feed.h"
 #include "model/feed_value_message.h"
 #include "model/file_management/file_management_packet_request.h"
 #include "model/file_management/file_management_parameter.h"
@@ -26,8 +28,6 @@
 #include "model/parameter.h"
 #include "model/reading.h"
 #include "model/utc_command.h"
-#include "model/feed.h"
-#include "model/attribute.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -93,11 +93,11 @@ bool json_serialize_firmware_update_version(const char* device_key, char* firmwa
 bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_command);
 
 size_t json_deserialize_feed_value_message(char* buffer, size_t buffer_size, feed_value_message_t* feed_value_message,
-                                         size_t msg_buffer_size);
+                                           size_t msg_buffer_size);
 size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message,
-                                        size_t msg_buffer_size);
+                                          size_t msg_buffer_size);
 
-bool json_create_topic(char direction[DIRECTION_SIZE], char device_key[DEVICE_KEY_SIZE],
+bool json_create_topic(char direction[DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                        char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
 
 bool json_serialize_feed_registration(const char* device_key, feed_t* feed, outbound_message_t* outbound_message);

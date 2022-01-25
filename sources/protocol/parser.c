@@ -27,71 +27,64 @@
 #include <string.h>
 
 
-void parser_init(parser_t* parser, parser_type_t parser_type)
+void parser_init(parser_t* parser)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
 
-    parser->type = parser_type;
     parser->is_initialized = true;
 
-    switch (parser->type) {
-    case PARSER_TYPE_WOLKABOUT:
-        parser->serialize_readings = json_serialize_readings;
+    parser->serialize_readings = json_serialize_readings;
 
-        parser->serialize_file_management_status = json_serialize_file_management_status;
-        parser->deserialize_file_management_parameter = json_deserialize_file_management_parameter;
-        parser->serialize_file_management_packet_request = json_serialize_file_management_packet_request;
-        parser->serialize_file_management_url_download_status = json_serialize_file_management_url_download_status;
-        parser->serialize_file_management_file_list = json_serialize_file_management_file_list_update;
+    parser->serialize_file_management_status = json_serialize_file_management_status;
+    parser->deserialize_file_management_parameter = json_deserialize_file_management_parameter;
+    parser->serialize_file_management_packet_request = json_serialize_file_management_packet_request;
+    parser->serialize_file_management_url_download_status = json_serialize_file_management_url_download_status;
+    parser->serialize_file_management_file_list = json_serialize_file_management_file_list_update;
 
-        parser->deserialize_firmware_update_parameter = json_deserialize_firmware_update_parameter;
-        parser->serialize_firmware_update_status = json_serialize_firmware_update_status;
-        parser->serialize_firmware_update_version = json_serialize_firmware_update_version;
+    parser->deserialize_firmware_update_parameter = json_deserialize_firmware_update_parameter;
+    parser->serialize_firmware_update_status = json_serialize_firmware_update_status;
+    parser->serialize_firmware_update_version = json_serialize_firmware_update_version;
 
-        parser->deserialize_time = json_deserialize_time;
-        parser->deserialize_feed_value_message = json_deserialize_feed_value_message;
-        parser->deserialize_parameter_message = json_deserialize_parameter_message;
+    parser->deserialize_time = json_deserialize_time;
+    parser->deserialize_feed_value_message = json_deserialize_feed_value_message;
+    parser->deserialize_parameter_message = json_deserialize_parameter_message;
 
-        parser->create_topic = json_create_topic;
+    parser->create_topic = json_create_topic;
 
-        parser->serialize_feed_registration = json_serialize_feed_registration;
-        parser->serialize_feed_removal = json_serialize_feed_removal;
-        parser->serialize_pull_feed_values = json_serialize_pull_feed_values;
-        parser->serialize_pull_parameters = json_serialize_pull_parameters;
-        parser->serialize_sync_parameters = json_serialize_sync_parameters;
-        parser->serialize_sync_time = json_serialize_sync_time;
-        parser->serialize_attribute = json_serialize_attribute;
-        parser->serialize_parameter = json_serialize_parameter;
+    parser->serialize_feed_registration = json_serialize_feed_registration;
+    parser->serialize_feed_removal = json_serialize_feed_removal;
+    parser->serialize_pull_feed_values = json_serialize_pull_feed_values;
+    parser->serialize_pull_parameters = json_serialize_pull_parameters;
+    parser->serialize_sync_parameters = json_serialize_sync_parameters;
+    parser->serialize_sync_time = json_serialize_sync_time;
+    parser->serialize_attribute = json_serialize_attribute;
+    parser->serialize_parameter = json_serialize_parameter;
 
-        strncpy(parser->FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC, JSON_FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC, JSON_FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FILE_MANAGEMENT_FILE_DELETE_TOPIC, JSON_FILE_MANAGEMENT_FILE_DELETE_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FILE_MANAGEMENT_FILE_PURGE_TOPIC, JSON_FILE_MANAGEMENT_FILE_PURGE_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FIRMWARE_UPDATE_INSTALL_TOPIC, JSON_FIRMWARE_UPDATE_INSTALL_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FIRMWARE_UPDATE_ABORT_TOPIC, JSON_FIRMWARE_UPDATE_ABORT_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->P2D_TOPIC, JSON_P2D_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->D2P_TOPIC, JSON_D2P_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FEED_REGISTRATION_TOPIC, JSON_FEED_REGISTRATION_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FEED_REMOVAL_TOPIC, JSON_FEED_REMOVAL_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->FEED_VALUES_MESSAGE_TOPIC, JSON_FEED_VALUES_MESSAGE_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->PULL_FEED_VALUES_TOPIC, JSON_PULL_FEEDS_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->ATTRIBUTE_REGISTRATION_TOPIC, JSON_ATTRIBUTE_REGISTRATION_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->PARAMETERS_TOPIC, JSON_PARAMETERS_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->PULL_PARAMETERS_TOPIC, JSON_PULL_PARAMETERS_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->SYNC_PARAMETERS_TOPIC, JSON_SYNC_PARAMETERS_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->SYNC_TIME_TOPIC, JSON_SYNC_TIME_TOPIC, MESSAGE_TYPE_SIZE);
-        strncpy(parser->ERROR_TOPIC, JSON_ERROR_TOPIC, MESSAGE_TYPE_SIZE);
-
-        break;
-
-    default:
-        /* Sanity check */
-        WOLK_ASSERT(false);
-    }
+    strncpy(parser->FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC, JSON_FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC,
+            MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC, JSON_FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC,
+            MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC,
+            MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_FILE_DELETE_TOPIC, JSON_FILE_MANAGEMENT_FILE_DELETE_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_FILE_PURGE_TOPIC, JSON_FILE_MANAGEMENT_FILE_PURGE_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->FIRMWARE_UPDATE_INSTALL_TOPIC, JSON_FIRMWARE_UPDATE_INSTALL_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->FIRMWARE_UPDATE_ABORT_TOPIC, JSON_FIRMWARE_UPDATE_ABORT_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->P2D_TOPIC, JSON_P2D_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->D2P_TOPIC, JSON_D2P_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->FEED_REGISTRATION_TOPIC, JSON_FEED_REGISTRATION_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->FEED_REMOVAL_TOPIC, JSON_FEED_REMOVAL_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->FEED_VALUES_MESSAGE_TOPIC, JSON_FEED_VALUES_MESSAGE_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->PULL_FEED_VALUES_TOPIC, JSON_PULL_FEEDS_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->ATTRIBUTE_REGISTRATION_TOPIC, JSON_ATTRIBUTE_REGISTRATION_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->PARAMETERS_TOPIC, JSON_PARAMETERS_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->PULL_PARAMETERS_TOPIC, JSON_PULL_PARAMETERS_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->SYNC_PARAMETERS_TOPIC, JSON_SYNC_PARAMETERS_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->SYNC_TIME_TOPIC, JSON_SYNC_TIME_TOPIC, MESSAGE_TYPE_SIZE);
+    strncpy(parser->ERROR_TOPIC, JSON_ERROR_TOPIC, MESSAGE_TYPE_SIZE);
 }
 
 size_t parser_serialize_readings(parser_t* parser, reading_t* first_reading, size_t num_readings, char* buffer,
@@ -208,14 +201,6 @@ bool parse_serialize_firmware_update_version(parser_t* parser, const char* devic
     return parser->serialize_firmware_update_version(device_key, firmware_update_version, outbound_message);
 }
 
-parser_type_t parser_get_type(parser_t* parser)
-{
-    /* Sanity check */
-    WOLK_ASSERT(parser);
-
-    return parser->type;
-}
-
 bool parser_is_initialized(parser_t* parser)
 {
     /* Sanity check */
@@ -234,12 +219,12 @@ bool parser_create_topic(parser_t* parser, char* direction, char* device_key, ch
     return parser->create_topic(direction, device_key, message_type, topic);
 }
 size_t parser_deserialize_feed_value_message(parser_t* parser, char* buffer, size_t buffer_size,
-                                           feed_value_message_t* feed_value_message, size_t msg_buffer_size)
+                                             feed_value_message_t* feed_value_message, size_t msg_buffer_size)
 {
     return parser->deserialize_feed_value_message(buffer, buffer_size, feed_value_message, msg_buffer_size);
 }
 size_t parser_deserialize_parameter_message(parser_t* parser, char* buffer, size_t buffer_size,
-                                          parameter_t* parameter_message, size_t msg_buffer_size)
+                                            parameter_t* parameter_message, size_t msg_buffer_size)
 {
     return parser->deserialize_parameter_message(buffer, buffer_size, parameter_message, msg_buffer_size);
 }

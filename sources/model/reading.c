@@ -45,8 +45,7 @@ void reading_clear(reading_t* reading)
 
 void reading_set_data(reading_t* reading, const char** data)
 {
-    for(int i = 0; i < reading->reading_dimensions; ++i)
-    {
+    for (int i = 0; i < reading->reading_dimensions; ++i) {
         WOLK_ASSERT(strlen(data[i]) < READING_SIZE);
 
         strcpy(reading->reading_data[i], data[i]);

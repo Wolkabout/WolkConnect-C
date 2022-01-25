@@ -32,9 +32,9 @@
 static SSL_CTX* ctx;
 static BIO* sockfd;
 
-static const char* device_key = "device_key";
-static const char* device_password = "some_password";
-static const char* hostname = "api-demo.wolkabout.com";
+static const char* device_key = "DigitalTwinWolkC-C";
+static const char* device_password = "5C3FRRDSSH";
+static const char* hostname = "integration5.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
 
@@ -154,8 +154,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init(&wolk, send_buffer, receive_buffer, NULL, NULL, device_key, device_password, PUSH, PROTOCOL_WOLKABOUT)
-        != W_FALSE) {
+    if (wolk_init(&wolk, send_buffer, receive_buffer, NULL, NULL, device_key, device_password, PUSH) != W_FALSE) {
         printf("Error initializing WolkConnect-C\n");
         return 1;
     }
@@ -172,25 +171,29 @@ int main(int argc, char* argv[])
     }
     printf("Wolk client - Connected to server\n");
 
-    feed_t feed;
-    initialize_feed(&feed, "Petar", "Petrovic", UNIT_CELSIUS, IN);
-    wolk_register_feed(&wolk, &feed);
+    //    feed_t feed;
+    //    initialize_feed(&feed, "Petar", "Petrovic", UNIT_CELSIUS, IN);
+    //    if (wolk_register_feed(&wolk, &feed) != W_FALSE) {
+    //        printf("Wolk client -  Failed to register feed");
+    //    }
+    //    printf("Wolk client - Feed registrated\n");
 
-    attribute_t version;
-    strcpy(version.name, "VERSION");
-    strcpy(version.data_type, DATA_TYPE_STRING);
-    strcpy(version.value, "1.2.1");
+    //    attribute_t version;
+    //    strcpy(version.name, "VERSION");
+    //    strcpy(version.data_type, DATA_TYPE_STRING);
+    //    strcpy(version.value, "1.2.1");
+    //
+    //    wolk_register_attribute(&wolk, &version);
+    //
+    //    wolk_add_numeric_reading(&wolk, feed.reference, rand() % 100 - 20, 0);
+    //
+    //    parameter_t some_parameter;
+    //    parameter_init(&some_parameter, PARAMETER_EXTERNAL_ID, "NIKOPOLIDIS");
+    //
+    //    wolk_sync_parameters(&wolk);
+    //    wolk_sync_time_request(&wolk);
+    //    wolk_publish(&wolk);
 
-    wolk_register_attribute(&wolk, &version);
-
-    wolk_add_numeric_reading(&wolk, feed.reference, rand() % 100 - 20, 0);
-
-    parameter_t some_parameter;
-    parameter_init(&some_parameter, PARAMETER_EXTERNAL_ID, "NIKOPOLIDIS");
-
-    wolk_sync_parameters(&wolk);
-    wolk_sync_time_request(&wolk);
-    wolk_publish(&wolk);
 
     while (keep_running) {
         // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
@@ -199,7 +202,7 @@ int main(int argc, char* argv[])
         wolk_process(&wolk, 1);
 
         usleep(1000000);
-        wolk_remove_feed(&wolk, &feed);
+        //        wolk_remove_feed(&wolk, &feed);
         wolk_publish(&wolk);
     }
 

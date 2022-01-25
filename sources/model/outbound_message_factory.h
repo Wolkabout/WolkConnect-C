@@ -62,19 +62,21 @@ bool outbound_message_feed_registration(parser_t* parser, const char* device_key
 bool outbound_message_feed_removal(parser_t* parser, const char* device_key, feed_t* feed,
                                    outbound_message_t* outbound_message);
 
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key,
-                                           reading_t* first_reading, size_t num_readings,
-                                           outbound_message_t* outbound_message);
+size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* first_reading,
+                                           size_t num_readings, outbound_message_t* outbound_message);
 
 bool outbound_message_pull_feed_values(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
-bool outbound_message_attribute_registration(parser_t* parser, const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message);
+bool outbound_message_attribute_registration(parser_t* parser, const char* device_key, attribute_t* attribute,
+                                             outbound_message_t* outbound_message);
 
-bool outbound_message_update_parameters(parser_t* parser, const char* device_key, parameter_t* parameter, outbound_message_t* outbound_message);
+bool outbound_message_update_parameters(parser_t* parser, const char* device_key, parameter_t* parameter,
+                                        outbound_message_t* outbound_message);
 
 bool outbound_message_pull_parameters(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
-bool outbound_message_synchronize_parameters(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
+bool outbound_message_synchronize_parameters(parser_t* parser, const char* device_key,
+                                             outbound_message_t* outbound_message);
 
 bool outbound_message_synchronize_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
