@@ -30,9 +30,7 @@ void reading_init(reading_t* reading, uint16_t reading_dimensions, char* referen
 
     reading->rtc = 0;
 
-    for (i = 0; i < reading_dimensions; ++i) {
-        reading_set_data(reading, "");
-    }
+    reading_clear(reading);
     strcpy(reading->reference, reference);
 }
 
