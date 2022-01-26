@@ -345,7 +345,7 @@ WOLK_ERR_T wolk_add_numeric_reading(wolk_ctx_t* ctx, const char* reference, doub
 
     reading_t reading;
     reading_init(&reading, 1, reference);
-    reading_set_data(&reading, value_str);
+    reading_set_data_at(&reading, value_str, 0);
     reading_set_rtc(&reading, utc_time);
 
     outbound_message_t outbound_message;
@@ -366,8 +366,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_reading(wolk_ctx_t* ctx, const char* ref
     reading_set_rtc(&reading, utc_time);
 
     for (uint32_t i = 0; i < values_size; ++i) {
-        char value_str[READING_SIZE];
-        memset(value_str, 0, sizeof(value_str));
+        char value_str[READING_SIZE] = "";
         if (!snprintf(value_str, READING_SIZE, "%f", values[i])) {
             return W_TRUE;
         }

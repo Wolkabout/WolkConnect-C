@@ -63,7 +63,7 @@ const char JSON_SYNC_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_SYNC_TIME_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_ERROR_TOPIC[MESSAGE_TYPE_SIZE];
 
-size_t json_serialize_readings(reading_t* first_reading, size_t num_readings, char* buffer, size_t buffer_size);
+size_t json_serialize_readings(reading_t* readings, size_t num_readings, char* buffer, size_t buffer_size);
 
 bool json_serialize_file_management_status(const char* device_key,
                                            file_management_packet_request_t* file_management_packet_request,
