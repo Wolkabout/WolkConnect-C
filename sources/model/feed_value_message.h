@@ -24,7 +24,7 @@ extern "C" {
 #endif
 
 typedef struct {
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
     char value[COMMAND_ARGUMENT_SIZE];
 } feed_value_message_t;
 

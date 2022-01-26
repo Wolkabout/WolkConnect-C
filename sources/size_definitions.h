@@ -43,7 +43,7 @@ enum {
     /* Maximum number of characters in name string */
     MANIFEST_ITEM_NAME_SIZE = 64,
     /* Maximum number of characters in reference string */
-    MANIFEST_ITEM_REFERENCE_SIZE = 64,
+    REFERENCE_SIZE = 64,
     /* Maximum number of characters in unit string */
     MANIFEST_ITEM_UNIT_SIZE = 25,
     /* Maximum number of characters in feed type string */

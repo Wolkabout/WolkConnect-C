@@ -10,7 +10,7 @@ extern "C" {
 
 typedef struct {
     char name[MANIFEST_ITEM_NAME_SIZE];
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
     char unit[MANIFEST_ITEM_UNIT_SIZE];
 
     feed_type_t feedType;

@@ -183,7 +183,7 @@ void test_wolk_connector_wolk_process(void)
 void test_wolk_connector_wolk_add_string_sensor_reading(void)
 {
     wolk_ctx_t wolk;
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
     char value[READING_SIZE];
     uint64_t utc_time = 1592574949;
     uint8_t persistence_storage[1024 * 1024];
@@ -203,7 +203,7 @@ void test_wolk_connector_wolk_add_string_sensor_reading(void)
 void test_wolkconnector_wolk_add_multi_value_string_sensor_reading(void)
 {
     wolk_ctx_t wolk;
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
     char value[READING_DIMENSIONS][READING_SIZE];
     uint64_t utc_time = 1592574949;
     uint8_t persistence_storage[1024 * 1024];
@@ -225,7 +225,7 @@ void test_wolkconnector_wolk_add_multi_value_string_sensor_reading(void)
 void test_wolk_connector_wolk_add_numeric_sensor_reading(void)
 {
     wolk_ctx_t wolk;
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
     double value = 32.1;
     uint64_t utc_time = 1592574949;
     uint8_t persistence_storage[1024 * 1024];
@@ -244,7 +244,7 @@ void test_wolk_connector_wolk_add_numeric_sensor_reading(void)
 void test_wolk_connector_wolk_add_multi_value_numeric_sensor_reading(void)
 {
     wolk_ctx_t wolk;
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
     double value[READING_SIZE];
     uint64_t utc_time = 1592574949;
     uint8_t persistence_storage[1024 * 1024];
@@ -266,7 +266,7 @@ void test_wolk_connector_wolk_add_multi_value_numeric_sensor_reading(void)
 void test_wolk_connector_wolk_add_bool_sensor_reading(void)
 {
     wolk_ctx_t wolk;
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
     bool value = 1;
     uint64_t utc_time = 1592574949;
     uint8_t persistence_storage[1024 * 1024];
@@ -285,7 +285,7 @@ void test_wolk_connector_wolk_add_bool_sensor_reading(void)
 void test_wolk_connector_wolk_add_multi_value_bool_sensor_reading(void)
 {
     wolk_ctx_t wolk;
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
     bool value[READING_SIZE];
     uint64_t utc_time = 1592574949;
     uint8_t persistence_storage[1024 * 1024];
@@ -307,7 +307,7 @@ void test_wolk_connector_wolk_add_multi_value_bool_sensor_reading(void)
 void  test_wolk_connector_wolk_add_alarm(void)
 {
     wolk_ctx_t wolk;
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
     bool value;
     uint64_t utc_time = 1592574949;
     uint8_t persistence_storage[1024 * 1024];

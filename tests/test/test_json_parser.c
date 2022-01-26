@@ -149,7 +149,7 @@ void test_json_json_serialize_readings_topic(void)
     char device_key[DEVICE_KEY_SIZE];
     char buffer[PAYLOAD_SIZE];
     char topic[TOPIC_SIZE];
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE] = {"reference"};
+    char reference[REFERENCE_SIZE] = {"reference"};
     manifest_item_t string_sensor;
 
     /* Data type String */

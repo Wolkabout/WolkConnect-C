@@ -31,7 +31,7 @@ typedef struct {
     char reading_data[READING_DIMENSIONS][READING_SIZE];
     uint16_t reading_dimensions;
 
-    char reference[MANIFEST_ITEM_REFERENCE_SIZE];
+    char reference[REFERENCE_SIZE];
 
     uint64_t rtc;
 } reading_t;

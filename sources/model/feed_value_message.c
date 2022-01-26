@@ -21,7 +21,7 @@
 
 void feed_value_message_init(feed_value_message_t* message, const char* reference, const char* value)
 { /* Sanity check */
-    WOLK_ASSERT(strlen(reference) <= MANIFEST_ITEM_REFERENCE_SIZE);
+    WOLK_ASSERT(strlen(reference) <= REFERENCE_SIZE);
     WOLK_ASSERT(strlen(argument) <= COMMAND_ARGUMENT_SIZE);
 
     strcpy(message->reference, reference);
@@ -36,7 +36,7 @@ char* feed_value_message_get_reference(feed_value_message_t* message)
 void feed_value_message_set_reference(feed_value_message_t* message, const char* reference)
 {
     /* Sanity check */
-    WOLK_ASSERT(strlen(reference) < MANIFEST_ITEM_REFERENCE_SIZE);
+    WOLK_ASSERT(strlen(reference) < REFERENCE_SIZE);
 
     strcpy(message->reference, reference);
 }
