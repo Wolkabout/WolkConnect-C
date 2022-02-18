@@ -92,7 +92,7 @@ typedef struct {
 
     bool (*deserialize_time)(char* buffer, size_t buffer_size, utc_command_t* utc_command);
 
-    bool (*create_topic)(char direction[DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
+    bool (*create_topic)(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                          char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
     size_t (*deserialize_feed_value_message)(char* buffer, size_t buffer_size, feed_value_message_t* feed_value_message,
                                              size_t msg_buffer_size);
@@ -154,7 +154,7 @@ bool parser_is_initialized(parser_t* parser);
 /**** Utility ****/
 bool parser_deserialize_time(parser_t* parser, char* buffer, size_t buffer_size, utc_command_t* utc_command);
 
-bool parser_create_topic(parser_t* parser, char direction[DIRECTION_SIZE], char device_key[DEVICE_KEY_SIZE],
+bool parser_create_topic(parser_t* parser, char direction[TOPIC_DIRECTION_SIZE], char device_key[DEVICE_KEY_SIZE],
                          char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
 
 size_t parser_deserialize_feed_value_message(parser_t* parser, char* buffer, size_t buffer_size,

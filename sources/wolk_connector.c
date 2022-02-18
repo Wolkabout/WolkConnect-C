@@ -301,10 +301,16 @@ WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t* ctx, const char* reference, const
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
 
+    if (utc_time < 1000000000000 && utc_time != 0) // Unit ms and zero is valid value
+    {
+        printf("Failed UTC attached to readings. It has to be in ms!\n");
+        return W_TRUE;
+    }
+
     reading_t reading;
     reading_init(&reading, 1, reference);
     reading_set_data(&reading, value);
-    reading_set_rtc(&reading, utc_time);
+    reading_set_utc(&reading, utc_time);
 
     outbound_message_t outbound_message;
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
@@ -312,17 +318,23 @@ WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t* ctx, const char* reference, const
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
+// TODO: should be removed
 WOLK_ERR_T wolk_add_multi_value_string_reading(wolk_ctx_t* ctx, const char* reference,
-                                               const char (*values)[READING_SIZE], uint16_t values_size,
+                                               const char (*values)[READING_ELEMENT_SIZE], uint16_t values_size,
                                                uint64_t utc_time)
 {
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
-    WOLK_ASSERT(READING_DIMENSIONS > 1);
+
+    if (utc_time < 1000000000000 && utc_time != 0) // Unit ms and zero is valid value
+    {
+        printf("Failed UTC attached to readings. It has to be in ms!\n");
+        return W_TRUE;
+    }
 
     reading_t reading;
     reading_init(&reading, values_size, reference);
-    reading_set_rtc(&reading, utc_time);
+    reading_set_utc(&reading, utc_time);
 
     reading_set_data(&reading, values);
 
@@ -332,48 +344,70 @@ WOLK_ERR_T wolk_add_multi_value_string_reading(wolk_ctx_t* ctx, const char* refe
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_add_numeric_reading(wolk_ctx_t* ctx, const char* reference, double value, uint64_t utc_time)
+WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_readings_t* readings,
+                                 size_t number_of_readings)
 {
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(reference));
+    WOLK_ASSERT(is_wolk_initialized(readings));
+    WOLK_ASSERT(is_wolk_initialized(num_readings));
 
-    char value_str[READING_SIZE];
-    memset(value_str, 0, sizeof(value_str));
-    if (!snprintf(value_str, READING_SIZE, "%f", value)) {
-        return W_TRUE;
+    char value_str[READING_ELEMENT_SIZE] = "";
+    reading_t reading[READING_MAX_NUMBER];
+
+    for (int i = 0; i < number_of_readings; ++i) {
+        if (readings->utc_time < 1000000000000 && readings->utc_time != 0) // Unit ms and zero is valid value
+        {
+            printf("Failed UTC attached to reading with reference %s. It has to be in ms!\n", reference);
+            return W_TRUE;
+        }
+
+        if (!snprintf(value_str, READING_ELEMENT_SIZE, "%f", readings->value)) {
+            return W_TRUE;
+        }
+
+        reading_init(&reading[i], 1, reference);
+        reading_set_data_at(&reading[i], value_str, i);//TODO: 0 is questionable
+        reading_set_utc(&reading[i], readings->utc_time);
+        readings++;
     }
 
-    reading_t reading;
-    reading_init(&reading, 1, reference);
-    reading_set_data_at(&reading, value_str, 0);
-    reading_set_rtc(&reading, utc_time);
-
     outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, number_of_readings, &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_add_multi_value_numeric_reading(wolk_ctx_t* ctx, const char* reference, double* values,
-                                                uint16_t values_size, uint64_t utc_time)
+WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* reference, double* values,
+                                             uint16_t values_size, uint64_t utc_time)
 {
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
-    WOLK_ASSERT(READING_DIMENSIONS > 1);
 
-    reading_t reading;
-    reading_init(&reading, values_size, reference);
-    reading_set_rtc(&reading, utc_time);
-
-    for (uint32_t i = 0; i < values_size; ++i) {
-        char value_str[READING_SIZE] = "";
-        if (!snprintf(value_str, READING_SIZE, "%f", values[i])) {
-            return W_TRUE;
-        }
-
-        reading_set_data_at(&reading, value_str, i);
+    if (utc_time < 1000000000000 && utc_time != 0) // Unit ms and zero is valid value
+    {
+        printf("Failed UTC attached to readings. It has to be in ms!\n");
+        return W_TRUE;
     }
 
+    reading_t reading;
+    reading_init(&reading, 1, reference); // one reading consisting of N numeric values
+    reading_set_utc(&reading, utc_time);
+
+    char value_string_representation[READING_ELEMENT_SIZE] = "";
+    char vector_values[READING_ELEMENT_SIZE] = "[";
+    for (uint32_t i = 0; i < values_size; ++i) {
+        if (!snprintf(value_string_representation, READING_ELEMENT_SIZE, "%f", values[i])) {
+            return W_TRUE;
+        }
+        strcat(vector_values, value_string_representation);
+        if (i<(values_size-1))
+            strcat(vector_values, ",");
+    }
+    strcat(vector_values, "]");
+    reading_set_data_at(&reading, vector_values, 0);
+//TODO: it is not here place to set vector size: {"Voltage": [1.00000, 2.00000, 3.000000]}
     outbound_message_t outbound_message;
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
 
@@ -385,10 +419,16 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, bool va
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
 
+    if (utc_time < 1000000000000 && utc_time != 0) // Unit ms and zero is valid value
+    {
+        printf("Failed UTC attached to readings. It has to be in ms!\n");
+        return W_TRUE;
+    }
+
     reading_t reading;
     reading_init(&reading, 1, reference);
     reading_set_data(&reading, BOOL_TO_STR(value));
-    reading_set_rtc(&reading, utc_time);
+    reading_set_utc(&reading, utc_time);
 
     outbound_message_t outbound_message;
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
@@ -396,26 +436,6 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, bool va
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_add_multi_value_bool_reading(wolk_ctx_t* ctx, const char* reference, bool* values, uint16_t values_size,
-                                             uint64_t utc_time)
-{
-    /* Sanity check */
-    WOLK_ASSERT(is_wolk_initialized(ctx));
-    WOLK_ASSERT(READING_DIMENSIONS > 1);
-
-    reading_t reading;
-    reading_init(&reading, values_size, reference);
-    reading_set_rtc(&reading, utc_time);
-
-    for (uint32_t i = 0; i < values_size; ++i) {
-        reading_set_data_at(&reading, BOOL_TO_STR(values[i]), i);
-    }
-
-    outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
-
-    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
-}
 
 WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
 {
@@ -423,14 +443,26 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
     WOLK_ASSERT(is_wolk_initialized(ctx));
 
     uint16_t i;
-    uint16_t batch_size = 50;
+    uint16_t batch_size = 50; // TODO have to be constant, or until persistance is empty
     outbound_message_t outbound_message;
 
-    for (i = 0; i < batch_size; ++i) {
-        if (persistence_is_empty(&ctx->persistence)) {
-            return W_FALSE;
-        }
+    //    for (i = 0; i < batch_size; ++i) {
+    //        if (persistence_is_empty(&ctx->persistence)) {
+    //            return W_FALSE;
+    //        }
+    //
+    //        if (!persistence_peek(&ctx->persistence, &outbound_message)) {
+    //            continue;
+    //        }
+    //
+    //        if (publish(ctx, &outbound_message) != W_FALSE) {
+    //            return W_TRUE;
+    //        }
+    //
+    //        persistence_pop(&ctx->persistence, &outbound_message);
+    //    }
 
+    while (!persistence_is_empty(&ctx->persistence)) {
         if (!persistence_peek(&ctx->persistence, &outbound_message)) {
             continue;
         }
@@ -444,6 +476,7 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
 
     return W_FALSE;
 }
+
 WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_t* feed)
 {
     outbound_message_t outbound_message;

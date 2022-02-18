@@ -28,15 +28,15 @@ extern "C" {
 #endif
 
 typedef struct {
-    char reading_data[READING_DIMENSIONS][READING_SIZE];
-    uint16_t reading_dimensions;
+    char reading_data[READING_MAX_NUMBER][READING_ELEMENT_SIZE];
+    uint16_t reading_size;
 
     char reference[REFERENCE_SIZE];
 
-    uint64_t rtc;
+    uint64_t utc;
 } reading_t;
 
-void reading_init(reading_t* reading, uint16_t reading_dimensions, char* reference);
+void reading_init(reading_t* reading, uint16_t reading_size, char* reference);
 
 void reading_clear(reading_t* reading);
 
@@ -46,8 +46,8 @@ char** reading_get_data(reading_t* reading);
 void reading_set_data_at(reading_t* reading, const char* data, size_t data_position);
 char* reading_get_data_at(reading_t* reading, size_t data_position);
 
-void reading_set_rtc(reading_t* reading, uint64_t rtc);
-uint64_t reading_get_rtc(reading_t* reading);
+void reading_set_utc(reading_t* reading, uint64_t utc);
+uint64_t reading_get_utc(reading_t* reading);
 
 #ifdef __cplusplus
 }

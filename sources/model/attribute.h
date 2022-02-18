@@ -8,9 +8,9 @@ extern "C" {
 #endif
 
 typedef struct {
-    char name[MANIFEST_ITEM_NAME_SIZE];
-    char data_type[MANIFEST_ITEM_DATA_TYPE_SIZE];
-    char value[READING_SIZE];
+    char name[ITEM_NAME_SIZE];
+    char data_type[ITEM_DATA_TYPE_SIZE];
+    char value[READING_ELEMENT_SIZE];
 } attribute_t;
 
 void attribute_init(attribute_t* attribute, char* name, char* data_type, char* value);

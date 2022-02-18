@@ -32,10 +32,9 @@ size_t outbound_message_make_from_readings(parser_t* parser, const char* device_
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
     WOLK_ASSERT(readings);
+    WOLK_ASSERT(num_readings);
     WOLK_ASSERT(outbound_message);
 
-    //TODO:
-    //  remove num_readings
     char topic[TOPIC_SIZE] = "";
     char payload[PAYLOAD_SIZE] = "";
     size_t num_serialized = 0;
@@ -43,7 +42,9 @@ size_t outbound_message_make_from_readings(parser_t* parser, const char* device_
     parser->create_topic(parser->D2P_TOPIC, device_key, parser->FEED_VALUES_MESSAGE_TOPIC, topic);
 
     num_serialized = parser_serialize_readings(parser, readings, num_readings, payload, sizeof(payload));
-    outbound_message_init(outbound_message, topic, payload);
+    if (num_serialized != 0)
+        outbound_message_init(outbound_message, topic, payload);
+
     return num_serialized;
 }
 

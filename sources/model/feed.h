@@ -9,9 +9,9 @@ extern "C" {
 #endif
 
 typedef struct {
-    char name[MANIFEST_ITEM_NAME_SIZE];
+    char name[ITEM_NAME_SIZE];
     char reference[REFERENCE_SIZE];
-    char unit[MANIFEST_ITEM_UNIT_SIZE];
+    char unit[ITEM_UNIT_SIZE];
 
     feed_type_t feedType;
 } feed_t;

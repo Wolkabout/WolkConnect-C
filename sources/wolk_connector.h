@@ -41,6 +41,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+
 /**
  * @brief WOLK_ERR_T Boolean used for error handling in WolkConnect-C library
  */
@@ -114,6 +115,16 @@ typedef struct wolk_ctx {
 
     bool is_initialized;
 } wolk_ctx_t;
+
+/**
+ * @brief  WolkAbout IoT Platform readings type.
+ */
+typedef struct wolk_readings {
+    double value;
+    uint64_t utc_time;
+} wolk_readings_t;
+
+typedef feed_t wolk_feed_t;
 
 /**
  * @brief Initializes WolkAbout IoT Platform connector context
@@ -259,7 +270,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick);
  *  @param ctx Context
  *  @param reference Sensor reference
  *  @param value Sensor value
- *  @param utc_time UTC time of sensor value acquisition [seconds]
+ *  @param utc_time UTC time of sensor value acquisition [miliseconds]
  *
  *  @return Error code
  */
@@ -271,12 +282,12 @@ WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t* ctx, const char* reference, const
  *  @param reference Sensor reference
  *  @param values Sensor values
  *  @param values_size Number of sensor dimensions
- *  @param utc_time UTC time of sensor value acquisition [seconds]
+ *  @param utc_time UTC time of sensor value acquisition [miliseconds]
  *
  *  @return Error code
  */
 WOLK_ERR_T wolk_add_multi_value_string_reading(wolk_ctx_t* ctx, const char* reference,
-                                               const char (*values)[READING_SIZE], uint16_t values_size,
+                                               const char (*values)[READING_ELEMENT_SIZE], uint16_t values_size,
                                                uint64_t utc_time);
 
 /**
@@ -284,26 +295,28 @@ WOLK_ERR_T wolk_add_multi_value_string_reading(wolk_ctx_t* ctx, const char* refe
  *
  * @param ctx Context
  * @param reference Sensor reference
- * @param value Sensor value
- * @param utc_time UTC time of sensor value acquisition [seconds]
+ * @param readings Sensor values, one or more values organized as value utc pairs. Utc time has to be in milliseconds.
+ * @param number_of_readings Number of readings that is captured
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_numeric_reading(wolk_ctx_t* ctx, const char* reference, double value, uint64_t utc_time);
+WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_readings_t* readings,
+                                 size_t number_of_readings);
 
 /**
- * @brief Add multi-value numeric reading
+ * @brief Add multi-value numeric reading. For feeds that has more than one numeric number associated as value, like
+ * location is. Max number of numeric values is define with READING_MAX_NUMBER from size_definition
  *
  * @param ctx Context
  * @param reference Sensor reference
  * @param values Sensor values
- * @param values_size Number of sensor dimensions
- * @param utc_time UTC time of sensor value acquisition [seconds]
+ * @param values_size Number of numeric values limited by
+ * @param utc_time UTC time of sensor value acquisition [miliseconds]
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_multi_value_numeric_reading(wolk_ctx_t* ctx, const char* reference, double* values,
-                                                uint16_t values_size, uint64_t utc_time);
+WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* reference, double* values,
+                                             uint16_t values_size, uint64_t utc_time);
 
 /**
  * @brief Add bool reading
@@ -311,7 +324,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_reading(wolk_ctx_t* ctx, const char* ref
  * @param ctx Context
  * @param reference Sensor reference
  * @param value Sensor value
- * @param utc_time UTC time of sensor value acquisition [seconds]
+ * @param utc_time UTC time of sensor value acquisition [miliseconds]
  *
  * @return Error code
  */
@@ -324,7 +337,7 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, bool va
  * @param reference Sensor reference
  * @param values Sensor values
  * @param values_size Number of sensor dimensions
- * @param utc_time UTC time of sensor value acquisition [seconds]
+ * @param utc_time UTC time of sensor value acquisition [miliseconds]
  *
  * @return Error code
  */

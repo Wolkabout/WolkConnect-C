@@ -50,8 +50,8 @@ const char JSON_FILE_MANAGEMENT_FILE_PURGE_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_FIRMWARE_UPDATE_INSTALL_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_FIRMWARE_UPDATE_ABORT_TOPIC[MESSAGE_TYPE_SIZE];
 
-const char JSON_P2D_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_D2P_TOPIC[MESSAGE_TYPE_SIZE];
+const char JSON_P2D_TOPIC[TOPIC_DIRECTION_SIZE];
+const char JSON_D2P_TOPIC[TOPIC_DIRECTION_SIZE];
 const char JSON_FEED_REGISTRATION_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_FEED_REMOVAL_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_FEED_VALUES_MESSAGE_TOPIC[MESSAGE_TYPE_SIZE];
@@ -63,7 +63,7 @@ const char JSON_SYNC_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_SYNC_TIME_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_ERROR_TOPIC[MESSAGE_TYPE_SIZE];
 
-size_t json_serialize_readings(reading_t* readings, size_t num_readings, char* buffer, size_t buffer_size);
+size_t json_serialize_readings(reading_t* readings, size_t number_of_readings, char* buffer, size_t buffer_size);
 
 bool json_serialize_file_management_status(const char* device_key,
                                            file_management_packet_request_t* file_management_packet_request,
@@ -97,7 +97,7 @@ size_t json_deserialize_feed_value_message(char* buffer, size_t buffer_size, fee
 size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message,
                                           size_t msg_buffer_size);
 
-bool json_create_topic(char direction[DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
+bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                        char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
 
 bool json_serialize_feed_registration(const char* device_key, feed_t* feed, outbound_message_t* outbound_message);

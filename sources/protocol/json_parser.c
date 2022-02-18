@@ -43,8 +43,8 @@ const char* JSON_FILE_MANAGEMENT_FILE_LIST_UPDATE = "d2p/file_list_update/d/";
 const char* JSON_FIRMWARE_UPDATE_STATUS_TOPIC = "d2p/firmware_update_status/d/";
 const char* JSON_FIRMWARE_UPDATE_VERSION_TOPIC = "d2p/firmware_version_update/d/";
 
-const char JSON_P2D_TOPIC[MESSAGE_TYPE_SIZE] = "p2d";
-const char JSON_D2P_TOPIC[MESSAGE_TYPE_SIZE] = "d2p";
+const char JSON_P2D_TOPIC[TOPIC_DIRECTION_SIZE] = "p2d";
+const char JSON_D2P_TOPIC[TOPIC_DIRECTION_SIZE] = "d2p";
 const char JSON_FEED_REGISTRATION_TOPIC[MESSAGE_TYPE_SIZE] = "feed_registration";
 const char JSON_FEED_REMOVAL_TOPIC[MESSAGE_TYPE_SIZE] = "feed_removal";
 const char JSON_FEED_VALUES_MESSAGE_TOPIC[MESSAGE_TYPE_SIZE] = "feed_values";
@@ -56,16 +56,16 @@ const char JSON_SYNC_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE] = "synchronize_paramete
 const char JSON_SYNC_TIME_TOPIC[MESSAGE_TYPE_SIZE] = "time";
 const char JSON_ERROR_TOPIC[MESSAGE_TYPE_SIZE] = "error";
 
-static bool all_readings_have_equal_rtc(reading_t* readings, size_t num_readings)
+static bool all_readings_have_equal_utc(reading_t* readings, size_t num_readings)
 {
     reading_t* current_reading = readings;
-    uint64_t rtc = reading_get_rtc(current_reading);
-
-    for (size_t i = 0; i < num_readings; ++i, ++current_reading) {
-        if (rtc != reading_get_rtc(current_reading)) {
-            return false;
-        }
-    }
+    uint64_t utc = reading_get_utc(current_reading);
+    // TODO: this is not good
+    //    for (size_t i = 0; i < num_readings; ++i, ++current_reading) {
+    //        if (utc != reading_get_utc(current_reading)) {
+    //            return false;
+    //        }
+    //    }
 
     return true;
 }
@@ -439,7 +439,7 @@ bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_
         return false;
     }
 
-    char value_buffer[READING_SIZE];
+    char value_buffer[READING_ELEMENT_SIZE];
     /*Obtain values*/
     for (int i = 1; i < parser_result; i++) {
 
@@ -460,7 +460,7 @@ bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_
     return true;
 }
 
-bool json_create_topic(char direction[DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
+bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                        char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE])
 {
     topic[0] = '\0';
@@ -493,18 +493,17 @@ size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, para
     // TODO
     return 0;
 }
-//TODO
+
 static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_size)
 {
-    char data_buffer[PARSER_INTERNAL_BUFFER_SIZE]="";
-    strcpy(data_buffer, reading->reading_data[0]);
-
-    if (reading_get_rtc(reading) > 0
-        && snprintf(buffer, buffer_size, "[{\"%s\":%s,\"timestamp\":%ld}]", reading->reference, data_buffer, reading_get_rtc(reading))
+    if (reading_get_utc(reading) > 0
+        && snprintf(buffer, buffer_size, "[{\"%s\":%s,\"timestamp\":%ld}]", reading->reference,
+                    reading->reading_data[0], reading_get_utc(reading))
                >= (int)buffer_size) {
         return false;
-    } else if (reading_get_rtc(reading) == 0
-               && snprintf(buffer, buffer_size, "[{\"%s\":%s}]", reading->reference, data_buffer) >= (int)buffer_size) {
+    } else if (reading_get_utc(reading) == 0
+               && snprintf(buffer, buffer_size, "[{\"%s\":%s}]", reading->reference, reading->reading_data[0])
+                      >= (int)buffer_size) {
         return false;
     }
 
@@ -515,19 +514,38 @@ static size_t serialize_readings(reading_t* readings, size_t num_readings, char*
 {
     WOLK_UNUSED(num_readings);
 
-    for (int i = 0; i < num_readings; i++) {
-        //        readings[i].
-        //TODO: implement multireading
+    char data_buffer[PAYLOAD_SIZE] = "";
+    strcat(buffer, "[");
+
+    for (int i = 0; i < num_readings; ++i) {
+
+        // when it consists of more readings with the same reference it has to have utc
+        if (reading_get_utc(readings) == 0)
+            return false;
+
+        if (snprintf(data_buffer, buffer_size, "{\"%s\":%s,\"timestamp\":%ld}", readings->reference,
+                     readings->reading_data, reading_get_utc(readings))
+            >= (int)buffer_size)
+            return false;
+
+        strcat(buffer, data_buffer);
+        if (num_readings > 1 && i < (num_readings - 1))
+            strcat(buffer, ",");
+
+        readings++;
     }
+
+    strcat(buffer, "]");
+    return true;
 }
 
-size_t json_serialize_readings(reading_t* readings, size_t num_readings, char* buffer, size_t buffer_size)
+size_t json_serialize_readings(reading_t* readings, size_t number_of_readings, char* buffer, size_t buffer_size)
 {
     /* Sanity check */
     WOLK_ASSERT(num_readings > 0);
 
-    if (num_readings > 1 && all_readings_have_equal_rtc(readings, num_readings)) {
-        return serialize_readings(readings, num_readings, buffer, buffer_size);
+    if (number_of_readings > 1) {
+        return serialize_readings(readings, number_of_readings, buffer, buffer_size);
     } else {
         return serialize_reading(readings, buffer, buffer_size) ? 1 : 0;
     }
@@ -575,7 +593,8 @@ bool json_serialize_feed_removal(const char* device_key, feed_t* feed, outbound_
 {
     char topic[TOPIC_SIZE] = "";
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FEED_REMOVAL_TOPIC, topic);
-    char payload[PAYLOAD_SIZE] = "";;
+    char payload[PAYLOAD_SIZE] = "";
+    ;
     sprintf(payload, "[\"%s\"]", feed->reference);
 
     strncpy(outbound_message->topic, topic, TOPIC_SIZE);
