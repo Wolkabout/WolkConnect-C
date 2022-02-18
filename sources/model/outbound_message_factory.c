@@ -25,14 +25,16 @@
 #include <stddef.h>
 #include <string.h>
 
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* readings,
-                                           size_t num_readings, outbound_message_t* outbound_message)
+size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* readings, data_type_t type,
+                                           size_t readings_number, size_t reading_element_size,
+                                           outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
     WOLK_ASSERT(readings);
-    WOLK_ASSERT(num_readings);
+    WOLK_ASSERT(readings_number);
+    WOLK_ASSERT(reading_element_size);
     WOLK_ASSERT(outbound_message);
 
     char topic[TOPIC_SIZE] = "";
@@ -41,7 +43,9 @@ size_t outbound_message_make_from_readings(parser_t* parser, const char* device_
 
     parser->create_topic(parser->D2P_TOPIC, device_key, parser->FEED_VALUES_MESSAGE_TOPIC, topic);
 
-    num_serialized = parser_serialize_readings(parser, readings, num_readings, payload, sizeof(payload));
+    //TODO: propagate type further
+    num_serialized =
+        parser_serialize_readings(parser, readings, readings_number, reading_element_size, payload, sizeof(payload));
     if (num_serialized != 0)
         outbound_message_init(outbound_message, topic, payload);
 

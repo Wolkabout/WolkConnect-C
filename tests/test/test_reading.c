@@ -43,7 +43,7 @@ void test_reading_readings_clear()
     reading_clear(&reading);
 
     TEST_ASSERT_EQUAL_INT(ACTUATOR_STATE_READY, reading.actuator_status);
-    TEST_ASSERT_EQUAL_INT(0, reading.rtc);
+    TEST_ASSERT_EQUAL_INT(0, reading.utc);
     TEST_ASSERT_EQUAL_STRING("", reading.reading_data);
 }
 
@@ -67,12 +67,12 @@ void test_reading_reading_get_delimited_data(void)
     int8_t values_size = 2;
     manifest_item_t string_sensor;
     manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_STRING);
-    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, values_size, DATA_DELIMITER);
+    manifest_item_set_reading_size_and_delimiter(&string_sensor, values_size, DATA_DELIMITER);
 
     reading_init(&reading, &string_sensor);
-    reading_set_rtc(&reading, 1591621716);
+    reading_set_utc(&reading, 1591621716);
 
-    for (uint32_t i = 0; i < values_size; ++i) {
+    for (size_t i = 0; i < values_size; ++i) {
         reading_set_data_at(&reading, "TEST READINGS", i);
     }
 
@@ -110,7 +110,7 @@ void test_reading_reading_get_manifest_item(void)
 {
     manifest_item_t string_sensor;
     manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
-    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
+    manifest_item_set_reading_size_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
 
     reading_init(&reading, &string_sensor);
     reading_set_data_at(&reading, "TEST READINGS", 0);
@@ -122,20 +122,20 @@ void test_reading_reading_get_manifest_item(void)
     TEST_ASSERT_EQUAL_STRING(DATA_DELIMITER, reading_get_manifest_item(&reading)->data_delimiter);
 }
 
-void test_reading_set_rtc(void)
+void test_reading_set_utc(void)
 {
-    uint64_t rtc = 1591621716;
-    reading_set_rtc(&reading, rtc);
+    uint64_t utc = 1591621716;
+    reading_set_utc(&reading, utc);
 
-    TEST_ASSERT_EQUAL_INT64(rtc, reading.rtc);
+    TEST_ASSERT_EQUAL_INT64(utc, reading.utc);
 }
 
-void test_reading_reading_get_rtc(void)
+void test_reading_reading_get_utc(void)
 {
-    uint64_t rtc = 1591621716;
-    reading_set_rtc(&reading, rtc);
+    uint64_t utc = 1591621716;
+    reading_set_utc(&reading, utc);
 
-    TEST_ASSERT_EQUAL_INT64(rtc, reading_get_rtc(&reading));
+    TEST_ASSERT_EQUAL_INT64(utc, reading_get_utc(&reading));
 }
 
 void test_reading_reading_set_actuator_state(void)

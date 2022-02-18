@@ -41,16 +41,16 @@ void tearDown(void)
 void test_json_parser_json_serialize_readings_sensor(void)
 {
     char buffer[PAYLOAD_SIZE];
-    uint64_t rtc = 1591621716;
+    uint64_t utc = 1591621716;
     manifest_item_t string_sensor;
 
     /* Data type String */
     manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_STRING);
-    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
+    manifest_item_set_reading_size_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
 
     reading_init(&first_reading, &string_sensor);
     reading_set_data_at(&first_reading, "TEST SENSOR", 0);
-    reading_set_rtc(&first_reading, rtc);
+    reading_set_utc(&first_reading, utc);
 
     TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
     TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"TEST SENSOR\"}", buffer);
@@ -60,7 +60,7 @@ void test_json_parser_json_serialize_readings_sensor(void)
 
     reading_init(&first_reading, &string_sensor);
     reading_set_data_at(&first_reading, "32.1", 0);
-    reading_set_rtc(&first_reading, rtc);
+    reading_set_utc(&first_reading, utc);
 
     TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
     TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"32.1\"}", buffer);
@@ -70,7 +70,7 @@ void test_json_parser_json_serialize_readings_sensor(void)
 
     reading_init(&first_reading, &string_sensor);
     reading_set_data_at(&first_reading, "ON", 0);
-    reading_set_rtc(&first_reading, rtc);
+    reading_set_utc(&first_reading, utc);
 
     TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
     TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"ON\"}", buffer);
@@ -114,7 +114,7 @@ void test_json_parser_json_serialize_readings_actuator(void)
 void test_json_parser_json_serialize_readings_alarm(void)
 {
     char buffer[PAYLOAD_SIZE];
-    uint64_t rtc = 1591621716;
+    uint64_t utc = 1591621716;
     manifest_item_t string_sensor;
 
     /* Data type String */
@@ -122,7 +122,7 @@ void test_json_parser_json_serialize_readings_alarm(void)
 
     reading_init(&first_reading, &string_sensor);
     reading_set_data_at(&first_reading, "ON", 0);
-    reading_set_rtc(&first_reading, rtc);
+    reading_set_utc(&first_reading, utc);
 
     TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
     TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"ON\"}", buffer);
@@ -154,7 +154,7 @@ void test_json_json_serialize_readings_topic(void)
 
     /* Data type String */
     manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
-    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
+    manifest_item_set_reading_size_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
 
     reading_init(&first_reading, &string_sensor);
     reading_set_data_at(&first_reading, "TEST SENSOR", 0);

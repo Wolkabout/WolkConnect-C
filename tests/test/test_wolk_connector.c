@@ -210,7 +210,7 @@ void test_wolkconnector_wolk_add_multi_value_string_sensor_reading(void)
     static outbound_message_t outbound_message;
 
     strncpy(reference, "reference", strlen("reference"));
-    for (int i = 0; i < READING_DIMENSIONS; ++i) {
+    for (size_t  i = 0; i < READING_DIMENSIONS; ++i) {
         strncpy(value[i], "string", strlen("string"));
     }
 
@@ -251,7 +251,7 @@ void test_wolk_connector_wolk_add_multi_value_numeric_sensor_reading(void)
     static outbound_message_t outbound_message;
 
     strncpy(reference, "reference", strlen("reference"));
-    for (int i = 0; i < READING_DIMENSIONS; ++i) {
+    for (size_t  i = 0; i < READING_DIMENSIONS; ++i) {
         value[i] = i;
     }
 
@@ -292,7 +292,7 @@ void test_wolk_connector_wolk_add_multi_value_bool_sensor_reading(void)
     static outbound_message_t outbound_message;
 
     strncpy(reference, "reference", strlen("reference"));
-    for (int i = 0; i < READING_DIMENSIONS; ++i) {
+    for (size_t  i = 0; i < READING_DIMENSIONS; ++i) {
         value[i] = true;
     }
 

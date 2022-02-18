@@ -35,14 +35,14 @@ void reading_init(reading_t* reading, uint16_t reading_size, char* reference)
 
 void reading_clear(reading_t* reading)
 {
-    for (int i = 0; i < reading->reading_size; ++i) {
+    for (size_t i = 0; i < reading->reading_size; ++i) {
         reading_set_data_at(reading, "", i);
     }
 }
 
 void reading_set_data(reading_t* reading, const char** data)
 {
-    for (int i = 0; i < reading->reading_size; ++i) {
+    for (size_t i = 0; i < reading->reading_size; ++i) {
         WOLK_ASSERT(strlen(data[i]) < READING_SIZE);
 
         strcpy(reading->reading_data[i], data[i]);

@@ -66,7 +66,8 @@ typedef struct {
     char SYNC_TIME_TOPIC[TOPIC_SIZE];
     char ERROR_TOPIC[TOPIC_SIZE];
 
-    size_t (*serialize_readings)(reading_t* readings, size_t num_readings, char* buffer, size_t buffer_size);
+    size_t (*serialize_readings)(reading_t* readings, size_t num_readings, size_t reading_element_size, char* buffer,
+                                 size_t buffer_size);
 
     bool (*serialize_file_management_status)(const char* device_key,
                                              file_management_packet_request_t* file_management_packet_request,
@@ -113,8 +114,8 @@ void parser_init(parser_t* parser);
 
 /**** Reading ****/
 /* Note: Actuator status is considered reading, hence it's serialization is tied to function in this section */
-size_t parser_serialize_readings(parser_t* parser, reading_t* readings, size_t num_readings, char* buffer,
-                                 size_t buffer_size);
+size_t parser_serialize_readings(parser_t* parser, reading_t* readings, size_t num_readings,
+                                 size_t reading_element_size, char* buffer, size_t buffer_size);
 /**** Reading ****/
 
 /**** File Management ****/

@@ -117,12 +117,20 @@ typedef struct wolk_ctx {
 } wolk_ctx_t;
 
 /**
- * @brief  WolkAbout IoT Platform readings type.
+ * @brief  WolkAbout IoT Platform numeric reading type. It is simplified reading_t type
  */
-typedef struct wolk_readings {
+typedef struct wolk_numeric_readings_t {
     double value;
     uint64_t utc_time;
-} wolk_readings_t;
+} wolk_numeric_readings_t;
+
+/**
+ * @brief  WolkAbout IoT Platform string reading type. It is simplified reading_t type
+ */
+typedef struct wolk_string_readings {
+    char* value;
+    uint64_t utc_time;
+} wolk_string_readings_t;
 
 typedef feed_t wolk_feed_t;
 
@@ -265,42 +273,29 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx);
  */
 WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick);
 
+//TODO: feed VS reading
 /** @brief Add string reading
  *
- *  @param ctx Context
- *  @param reference Sensor reference
- *  @param value Sensor value
- *  @param utc_time UTC time of sensor value acquisition [miliseconds]
+ * @param ctx Context
+ * @param reference Feed reference
+ * @param readings Feed values, one or more values organized as value:utc pairs. Value is char pointer. Utc time has to be in milliseconds.
+ * @param number_of_readings Number of readings that is captured
  *
  *  @return Error code
  */
-WOLK_ERR_T wolk_add_string_reading(wolk_ctx_t* ctx, const char* reference, const char* value, uint64_t utc_time);
-
-/** @brief Add multi-value string reading
- *
- *  @param ctx Context
- *  @param reference Sensor reference
- *  @param values Sensor values
- *  @param values_size Number of sensor dimensions
- *  @param utc_time UTC time of sensor value acquisition [miliseconds]
- *
- *  @return Error code
- */
-WOLK_ERR_T wolk_add_multi_value_string_reading(wolk_ctx_t* ctx, const char* reference,
-                                               const char (*values)[READING_ELEMENT_SIZE], uint16_t values_size,
-                                               uint64_t utc_time);
+WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_string_readings_t* readings, size_t number_of_readings);
 
 /**
  * @brief Add numeric reading
  *
  * @param ctx Context
- * @param reference Sensor reference
- * @param readings Sensor values, one or more values organized as value utc pairs. Utc time has to be in milliseconds.
+ * @param reference Feed reference
+ * @param readings Feed values, one or more values organized as value:utc pairs. Value is double. Utc time has to be in milliseconds.
  * @param number_of_readings Number of readings that is captured
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_readings_t* readings,
+WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_numeric_readings_t* readings,
                                  size_t number_of_readings);
 
 /**

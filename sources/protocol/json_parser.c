@@ -56,19 +56,6 @@ const char JSON_SYNC_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE] = "synchronize_paramete
 const char JSON_SYNC_TIME_TOPIC[MESSAGE_TYPE_SIZE] = "time";
 const char JSON_ERROR_TOPIC[MESSAGE_TYPE_SIZE] = "error";
 
-static bool all_readings_have_equal_utc(reading_t* readings, size_t num_readings)
-{
-    reading_t* current_reading = readings;
-    uint64_t utc = reading_get_utc(current_reading);
-    // TODO: this is not good
-    //    for (size_t i = 0; i < num_readings; ++i, ++current_reading) {
-    //        if (utc != reading_get_utc(current_reading)) {
-    //            return false;
-    //        }
-    //    }
-
-    return true;
-}
 
 static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s)
 {
@@ -135,7 +122,7 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
     /* Obtain command type and value */
     char value_buffer[COMMAND_ARGUMENT_SIZE];
 
-    for (int i = 1; i < parser_result; i++) {
+    for (size_t i = 1; i < parser_result; i++) {
         if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
@@ -289,7 +276,7 @@ bool json_serialize_file_management_file_list_update(const char* device_key, cha
 
     /* Serialize payload */
     strncpy(outbound_message->payload, "[", strlen("["));
-    for (int i = 0; i < file_list_items; i++) {
+    for (size_t i = 0; i < file_list_items; i++) {
         if (snprintf(outbound_message->payload + strlen(outbound_message->payload),
                      WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"fileName\":\"%s\"},",
                      (const char*)file_list + (i * FILE_MANAGEMENT_FILE_NAME_SIZE))
@@ -347,7 +334,7 @@ bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, 
     /* Obtain command type and value */
     char value_buffer[COMMAND_ARGUMENT_SIZE];
 
-    for (int i = 1; i < parser_result; i++) {
+    for (size_t i = 1; i < parser_result; i++) {
         if (json_token_str_equal(buffer, &tokens[i], "devices")) {
             if (!json_token_str_equal(buffer, &tokens[i + 2], device_key)) {
                 return false;
@@ -441,7 +428,7 @@ bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_
 
     char value_buffer[READING_ELEMENT_SIZE];
     /*Obtain values*/
-    for (int i = 1; i < parser_result; i++) {
+    for (size_t i = 1; i < parser_result; i++) {
 
         if (tokens[i].type == JSMN_PRIMITIVE) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i].end - tokens[i].start,
@@ -494,15 +481,27 @@ size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, para
     return 0;
 }
 
-static bool serialize_reading(reading_t* reading, char* buffer, size_t buffer_size)
+static bool serialize_reading(reading_t* reading, size_t reading_element_size, char* buffer, size_t buffer_size)
 {
+    char data_buffer[PAYLOAD_SIZE] = "";
+
+    for (size_t i = 0; i < reading_element_size; ++i) {
+        strcat(data_buffer, reading->reading_data[i]);
+
+        if (i < reading_element_size - 1)
+            strcat(data_buffer, ",");
+    }
+
+//TODO: if it is string put ""
     if (reading_get_utc(reading) > 0
-        && snprintf(buffer, buffer_size, "[{\"%s\":%s,\"timestamp\":%ld}]", reading->reference,
-                    reading->reading_data[0], reading_get_utc(reading))
+        && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s,\"timestamp\":%ld}]", reading->reference,
+                    reading_element_size > 1 ? "[" : "", data_buffer, reading_element_size > 1 ? "]" : "",
+                    reading_get_utc(reading))
                >= (int)buffer_size) {
         return false;
     } else if (reading_get_utc(reading) == 0
-               && snprintf(buffer, buffer_size, "[{\"%s\":%s}]", reading->reference, reading->reading_data[0])
+               && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s}]", reading->reference,
+                           reading_element_size > 1 ? "[" : "", data_buffer, reading_element_size > 1 ? "]" : "")
                       >= (int)buffer_size) {
         return false;
     }
@@ -517,29 +516,28 @@ static size_t serialize_readings(reading_t* readings, size_t num_readings, char*
     char data_buffer[PAYLOAD_SIZE] = "";
     strcat(buffer, "[");
 
-    for (int i = 0; i < num_readings; ++i) {
+    for (size_t i = 0; i < num_readings; ++i) {
 
         // when it consists of more readings with the same reference it has to have utc
         if (reading_get_utc(readings) == 0)
             return false;
 
         if (snprintf(data_buffer, buffer_size, "{\"%s\":%s,\"timestamp\":%ld}", readings->reference,
-                     readings->reading_data, reading_get_utc(readings))
+                     readings->reading_data[i], reading_get_utc(readings))
             >= (int)buffer_size)
             return false;
 
         strcat(buffer, data_buffer);
         if (num_readings > 1 && i < (num_readings - 1))
             strcat(buffer, ",");
-
-        readings++;
     }
 
     strcat(buffer, "]");
     return true;
 }
 
-size_t json_serialize_readings(reading_t* readings, size_t number_of_readings, char* buffer, size_t buffer_size)
+size_t json_serialize_readings(reading_t* readings, size_t number_of_readings, size_t reading_element_size,
+                               char* buffer, size_t buffer_size)
 {
     /* Sanity check */
     WOLK_ASSERT(num_readings > 0);
@@ -547,7 +545,7 @@ size_t json_serialize_readings(reading_t* readings, size_t number_of_readings, c
     if (number_of_readings > 1) {
         return serialize_readings(readings, number_of_readings, buffer, buffer_size);
     } else {
-        return serialize_reading(readings, buffer, buffer_size) ? 1 : 0;
+        return serialize_reading(readings, reading_element_size, buffer, buffer_size) ? 1 : 0;
     }
 }
 bool json_serialize_attribute(const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message)

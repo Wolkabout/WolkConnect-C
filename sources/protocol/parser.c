@@ -87,15 +87,15 @@ void parser_init(parser_t* parser)
     strncpy(parser->ERROR_TOPIC, JSON_ERROR_TOPIC, MESSAGE_TYPE_SIZE);
 }
 
-size_t parser_serialize_readings(parser_t* parser, reading_t* readings, size_t num_readings, char* buffer,
-                                 size_t buffer_size)
+size_t parser_serialize_readings(parser_t* parser, reading_t* readings, size_t num_readings,
+                                 size_t reading_element_size, char* buffer, size_t buffer_size)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
     WOLK_ASSERT(num_readings > 0);
     WOLK_ASSERT(buffer_size >= PAYLOAD_SIZE);
 
-    return parser->serialize_readings(readings, num_readings, buffer, buffer_size);
+    return parser->serialize_readings(readings, num_readings, reading_element_size, buffer, buffer_size);
 }
 
 bool parser_serialize_file_management_status(parser_t* parser, const char* device_key,

@@ -62,8 +62,9 @@ bool outbound_message_feed_registration(parser_t* parser, const char* device_key
 bool outbound_message_feed_removal(parser_t* parser, const char* device_key, feed_t* feed,
                                    outbound_message_t* outbound_message);
 
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* readings,
-                                           size_t num_readings, outbound_message_t* outbound_message);
+size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* readings, data_type_t type,
+                                           size_t readings_number, size_t reading_element_size,
+                                           outbound_message_t* outbound_message);
 
 bool outbound_message_pull_feed_values(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
