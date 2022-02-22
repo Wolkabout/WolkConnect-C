@@ -74,8 +74,8 @@ typedef void (*feed_handler_t)(const char* reference, const char* value);
 /**
  * @brief Declaration of parameter handler.
  *
- * @param reference actuator references define in manifest on WolkAbout IoT Platform
- * @param value actuator values received from WolkAbout IoT Platform.
+ * @param reference parameter references defined on WolkAbout IoT Platform
+ * @param value parameter values received from WolkAbout IoT Platform.
  * @param num_configuration_items number of used configuration parameters
  */
 typedef void (*parameter_handler_t)(char (*name)[PARAMETER_TYPE_SIZE], char (*value)[PARAMETER_VALUE_SIZE]);
@@ -92,16 +92,20 @@ typedef struct wolk_ctx {
 
     outbound_mode_t outbound_mode;
 
-    feed_handler_t feed_handler; /**< Callback for handling received actuation from WolkAbout IoT Platform.
-                                              @see actuation_handler_t*/
+    feed_handler_t feed_handler; /**< Callback for handling incoming feed from WolkAbout IoT Platform.
+                                              @see feed_handler_t*/
 
     parameter_handler_t parameter_handler; /**< Callback for handling received configuration from WolkAbout IoT
-                                                      Platform. @see configuration_handler_t*/
+                                                      Platform. @see parameter_handler_t*/
 
-    char device_key[DEVICE_KEY_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as a result
+    char device_key[DEVICE_KEY_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as a
+ *
+ * result
                                          of device creation on the platform.*/
     char device_password[DEVICE_PASSWORD_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as
-                                                   a result of device creation on the platform.*/
+                                                   a
+
+                                                   result of device creation on the platform.*/
 
     parser_t parser;
 
@@ -132,6 +136,14 @@ typedef struct wolk_string_readings {
     uint64_t utc_time;
 } wolk_string_readings_t;
 
+/**
+ * @brief  WolkAbout IoT Platform boolean reading type. It is simplified reading_t type
+ */
+typedef struct wolk_boolean_readings {
+    bool* value;
+    uint64_t utc_time;
+} wolk_boolean_readings_t;
+
 typedef feed_t wolk_feed_t;
 
 /**
@@ -142,10 +154,9 @@ typedef feed_t wolk_feed_t;
  * @param snd_func Callback function that handles outgoing traffic
  * @param rcv_func Callback function that handles incoming traffic
  *
- * @param actuation_handler function pointer to 'actuation_handler_t' implementation
+ * @param feed_handler function pointer to 'feed_handler_t' implementation
  *
- * @param configuration_handler function pointer to 'configuration_handler_t' implementation
- * @param configuration_provider function pointer to 'configuration_provider_t' implementation
+ * @param parameter_handler function pointer to 'parameter_handler_t' implementation
  *
  * @param device_key Device key provided by WolkAbout IoT Platform upon device
  * creation
@@ -264,7 +275,7 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx);
 
 /**
  * @brief Must be called periodically to keep alive connection to WolkAbout IoT
- * platform, obtain and perform actuation requests
+ * platform, obtain and perform incoming traffic
  *
  * @param ctx Context
  * @param tick Period at which wolk_process is called
@@ -304,26 +315,26 @@ WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_nu
  *
  * @param ctx Context
  * @param reference Sensor reference
- * @param values Sensor values
- * @param values_size Number of numeric values limited by
+ * @param values Feed values
+ * @param value_size Number of numeric values limited by
  * @param utc_time UTC time of sensor value acquisition [miliseconds]
  *
  * @return Error code
  */
 WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* reference, double* values,
-                                             uint16_t values_size, uint64_t utc_time);
+                                             uint16_t value_size, uint64_t utc_time);
 
 /**
  * @brief Add bool reading
  *
  * @param ctx Context
- * @param reference Sensor reference
- * @param value Sensor value
- * @param utc_time UTC time of sensor value acquisition [miliseconds]
+ * @param reference Feed reference
+* @param readings Feed values, one or more values organized as value:utc pairs. Value is boolean. Utc time has to be in milliseconds.
+* @param number_of_readings Number of readings that is captured
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, bool value, uint64_t utc_time);
+WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, wolk_boolean_readings_t* readings, size_t number_of_readings);
 
 /**
  * @brief Add multi-value bool reading
@@ -331,12 +342,12 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, bool va
  * @param ctx Context
  * @param reference Sensor reference
  * @param values Sensor values
- * @param values_size Number of sensor dimensions
+ * @param value_size Number of sensor dimensions
  * @param utc_time UTC time of sensor value acquisition [miliseconds]
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_multi_value_bool_reading(wolk_ctx_t* ctx, const char* reference, bool* values, uint16_t values_size,
+WOLK_ERR_T wolk_add_multi_value_bool_reading(wolk_ctx_t* ctx, const char* reference, bool* values, uint16_t value_size,
                                              uint64_t utc_time);
 
 /**

@@ -321,7 +321,7 @@ WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_str
     }
 
     outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, STRING, 1, 1, &outbound_message);
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, STRING, number_of_readings, 1, &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
@@ -358,18 +358,18 @@ WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_nu
     }
 
     outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, number_of_readings, NUMERIC, 1,
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, NUMERIC, number_of_readings, 1,
                                         &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
 WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* reference, double* values,
-                                             uint16_t values_size, uint64_t utc_time)
+                                             uint16_t value_size, uint64_t utc_time)
 {
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
-    WOLK_ASSERT(values_size > READING_MAX_NUMBER);
+    WOLK_ASSERT(value_size > READING_MAX_NUMBER);
 
     if (utc_time < 1000000000000 && utc_time != 0) // Unit ms and zero is valid value
     {
@@ -382,7 +382,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* refere
     reading_set_utc(&reading, utc_time);
 
     char value_string_representation[READING_ELEMENT_SIZE] = "";
-    for (size_t i = 0; i < values_size; ++i) {
+    for (size_t i = 0; i < value_size; ++i) {
         if (!snprintf(value_string_representation, READING_ELEMENT_SIZE, "%f", values[i])) {
             return W_TRUE;
         }
@@ -391,29 +391,34 @@ WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* refere
     }
 
     outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, NUMERIC, 1, values_size, &outbound_message);
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, VECTOR, 1, value_size, &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, bool value, uint64_t utc_time)
+WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, wolk_boolean_readings_t* readings, size_t number_of_readings)
 {
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
 
-    if (utc_time < 1000000000000 && utc_time != 0) // Unit ms and zero is valid value
-    {
-        printf("Failed UTC attached to readings. It has to be in ms!\n");
-        return W_TRUE;
+    reading_t reading;
+    reading_init(&reading, number_of_readings, reference);
+
+    for (size_t i = 0; i < number_of_readings; ++i) {
+        if (readings->utc_time < 1000000000000 && readings->utc_time != 0) // Unit ms and zero is valid value
+        {
+            printf("Failed UTC attached to reading with reference %s. It has to be in ms!\n", reference);
+            return W_TRUE;
+        }
+
+        reading_set_data_at(&reading, BOOL_TO_STR(readings->value), i);
+        reading_set_utc(&reading, readings->utc_time);
+
+        readings++;
     }
 
-    reading_t reading;
-    reading_init(&reading, 1, reference);
-    reading_set_data(&reading, BOOL_TO_STR(value));
-    reading_set_utc(&reading, utc_time);
-
     outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, BOOLEAN, 1, 1, &outbound_message);
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, BOOLEAN, number_of_readings, 1, &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }

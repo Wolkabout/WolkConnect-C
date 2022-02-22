@@ -62,11 +62,6 @@ enum {
     PARAMETER_VALUE_SIZE = READING_ELEMENT_SIZE,
     ATTRIBUTE_VALUE_SIZE = READING_ELEMENT_SIZE,
 
-    /* Maximum number of characters in command name */
-    COMMAND_MAX_SIZE = 15,
-    /* Maximum number of characters in actuation value string */
-    COMMAND_ARGUMENT_SIZE = READING_ELEMENT_SIZE,
-
     /* Maximum number of configuration items for device */
     CONFIGURATION_ITEMS_SIZE = 3,
 

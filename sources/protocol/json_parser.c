@@ -120,7 +120,7 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
     file_management_parameter_init(parameter);
 
     /* Obtain command type and value */
-    char value_buffer[COMMAND_ARGUMENT_SIZE];
+    char value_buffer[READING_ELEMENT_SIZE];
 
     for (size_t i = 1; i < parser_result; i++) {
         if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
@@ -332,7 +332,7 @@ bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, 
     firmware_update_parameter_init(parameter);
 
     /* Obtain command type and value */
-    char value_buffer[COMMAND_ARGUMENT_SIZE];
+    char value_buffer[READING_ELEMENT_SIZE];
 
     for (size_t i = 1; i < parser_result; i++) {
         if (json_token_str_equal(buffer, &tokens[i], "devices")) {
@@ -481,7 +481,7 @@ size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, para
     return 0;
 }
 
-static bool serialize_reading(reading_t* reading, size_t reading_element_size, char* buffer, size_t buffer_size)
+static bool serialize_reading(reading_t* reading, data_type_t type, size_t reading_element_size, char* buffer, size_t buffer_size)
 {
     char data_buffer[PAYLOAD_SIZE] = "";
 
@@ -492,24 +492,35 @@ static bool serialize_reading(reading_t* reading, size_t reading_element_size, c
             strcat(data_buffer, ",");
     }
 
-//TODO: if it is string put ""
     if (reading_get_utc(reading) > 0
         && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s,\"timestamp\":%ld}]", reading->reference,
-                    reading_element_size > 1 ? "[" : "", data_buffer, reading_element_size > 1 ? "]" : "",
-                    reading_get_utc(reading))
+                    type==NUMERIC ? "" : "\"", data_buffer, type==NUMERIC ? "" : "\"", reading_get_utc(reading))
                >= (int)buffer_size) {
         return false;
     } else if (reading_get_utc(reading) == 0
                && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s}]", reading->reference,
-                           reading_element_size > 1 ? "[" : "", data_buffer, reading_element_size > 1 ? "]" : "")
+                           type==NUMERIC ? "" : "\"", data_buffer, type==NUMERIC ? "" : "\"")
                       >= (int)buffer_size) {
         return false;
     }
 
+//    if (reading_get_utc(reading) > 0
+//        && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s%s%s,\"timestamp\":%ld}]", reading->reference,
+//                    reading_element_size > 1 ? "\"" : "", type==STRING ? "\"" : "", data_buffer, type==STRING ? "\"" : "", reading_element_size > 1 ? "\"" : "",
+//                    reading_get_utc(reading))
+//               >= (int)buffer_size) {
+//        return false;
+//    } else if (reading_get_utc(reading) == 0
+//               && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s%s%s}]", reading->reference,
+//                           reading_element_size > 1 ? "\"" : "", type==STRING ? "\"" : "", data_buffer, type==STRING ? "\"" : "", reading_element_size > 1 ? "\"" : "")
+//                      >= (int)buffer_size) {
+//        return false;
+//    }
+
     return true;
 }
 
-static size_t serialize_readings(reading_t* readings, size_t num_readings, char* buffer, size_t buffer_size)
+static size_t serialize_readings(reading_t* readings, data_type_t type, size_t num_readings, char* buffer, size_t buffer_size)
 {
     WOLK_UNUSED(num_readings);
 
@@ -522,8 +533,8 @@ static size_t serialize_readings(reading_t* readings, size_t num_readings, char*
         if (reading_get_utc(readings) == 0)
             return false;
 
-        if (snprintf(data_buffer, buffer_size, "{\"%s\":%s,\"timestamp\":%ld}", readings->reference,
-                     readings->reading_data[i], reading_get_utc(readings))
+        if (snprintf(data_buffer, buffer_size, "{\"%s\":%s%s%s,\"timestamp\":%ld}", readings->reference,
+                     type==NUMERIC ? "" : "\"", readings->reading_data[i], type==NUMERIC ? "" : "\"", reading_get_utc(readings))
             >= (int)buffer_size)
             return false;
 
@@ -536,16 +547,16 @@ static size_t serialize_readings(reading_t* readings, size_t num_readings, char*
     return true;
 }
 
-size_t json_serialize_readings(reading_t* readings, size_t number_of_readings, size_t reading_element_size,
+size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t number_of_readings, size_t reading_element_size,
                                char* buffer, size_t buffer_size)
 {
     /* Sanity check */
     WOLK_ASSERT(num_readings > 0);
 
     if (number_of_readings > 1) {
-        return serialize_readings(readings, number_of_readings, buffer, buffer_size);
+        return serialize_readings(readings, type, number_of_readings, buffer, buffer_size);
     } else {
-        return serialize_reading(readings, reading_element_size, buffer, buffer_size) ? 1 : 0;
+        return serialize_reading(readings, type, reading_element_size, buffer, buffer_size) ? 1 : 0;
     }
 }
 bool json_serialize_attribute(const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message)
