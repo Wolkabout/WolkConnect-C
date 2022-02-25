@@ -56,14 +56,14 @@ bool outbound_message_make_from_firmware_update_version(parser_t* parser, const 
                                                         char* firmware_update_version,
                                                         outbound_message_t* outbound_message);
 
-bool outbound_message_feed_registration(parser_t* parser, const char* device_key, feed_t* feed,
+bool outbound_message_feed_registration(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
                                         outbound_message_t* outbound_message);
 
-bool outbound_message_feed_removal(parser_t* parser, const char* device_key, feed_t* feed,
+bool outbound_message_feed_removal(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
                                    outbound_message_t* outbound_message);
 
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* readings, data_type_t type,
-                                           size_t readings_number, size_t reading_element_size,
+size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* readings,
+                                           data_type_t type, size_t readings_number, size_t reading_element_size,
                                            outbound_message_t* outbound_message);
 
 bool outbound_message_pull_feed_values(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
@@ -72,12 +72,12 @@ bool outbound_message_attribute_registration(parser_t* parser, const char* devic
                                              outbound_message_t* outbound_message);
 
 bool outbound_message_update_parameters(parser_t* parser, const char* device_key, parameter_t* parameter,
-                                        outbound_message_t* outbound_message);
+                                        size_t number_of_parameters, outbound_message_t* outbound_message);
 
 bool outbound_message_pull_parameters(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
-bool outbound_message_synchronize_parameters(parser_t* parser, const char* device_key,
-                                             outbound_message_t* outbound_message);
+bool outbound_message_synchronize_parameters(parser_t* parser, const char* device_key, parameter_t* parameters,
+                                             size_t number_of_parameters, outbound_message_t* outbound_message);
 
 bool outbound_message_synchronize_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 

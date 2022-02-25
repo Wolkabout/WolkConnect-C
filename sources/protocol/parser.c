@@ -228,15 +228,15 @@ size_t parser_deserialize_parameter_message(parser_t* parser, char* buffer, size
 {
     return parser->deserialize_parameter_message(buffer, buffer_size, parameter_message, msg_buffer_size);
 }
-bool parser_serialize_feed_registration(parser_t* parser, const char* device_key, feed_t* feed,
+bool parser_serialize_feed_registration(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
                                         outbound_message_t* outbound_message)
 {
-    return parser->serialize_feed_registration(device_key, feed, outbound_message);
+    return parser->serialize_feed_registration(device_key, feed, number_of_feeds, outbound_message);
 }
-bool parser_serialize_feed_removal(parser_t* parser, const char* device_key, feed_t* feed,
+bool parser_serialize_feed_removal(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
                                    outbound_message_t* outbound_message)
 {
-    return parser->serialize_feed_removal(device_key, feed, outbound_message);
+    return parser->serialize_feed_removal(device_key, feed, number_of_feeds, outbound_message);
 }
 bool parser_serialize_pull_feed_values(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
 {
@@ -246,9 +246,10 @@ bool parser_serialize_pull_parameters(parser_t* parser, const char* device_key, 
 {
     return parser->serialize_pull_parameters(device_key, outbound_message);
 }
-bool parser_serialize_sync_parameters(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
+bool parser_serialize_sync_parameters(parser_t* parser, const char* device_key, parameter_t* parameters,
+                                      size_t number_of_parameters, outbound_message_t* outbound_message)
 {
-    return parser->serialize_sync_parameters(device_key, outbound_message);
+    return parser->serialize_sync_parameters(device_key, parameters, number_of_parameters, outbound_message);
 }
 bool parser_serialize_sync_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
 {
@@ -260,7 +261,7 @@ bool parser_serialize_attribute(parser_t* parser, const char* device_key, attrib
     return parser->serialize_attribute(device_key, attribute, outbound_message);
 }
 bool parser_serialize_parameter(parser_t* parser, const char* device_key, parameter_t* parameter,
-                                outbound_message_t* outbound_message)
+                                size_t number_of_parameters, outbound_message_t* outbound_message)
 {
-    return parser->serialize_parameter(device_key, parameter, outbound_message);
+    return parser->serialize_parameter(device_key, parameter, number_of_parameters, outbound_message);
 }

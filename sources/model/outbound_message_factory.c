@@ -25,8 +25,8 @@
 #include <stddef.h>
 #include <string.h>
 
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* readings, data_type_t type,
-                                           size_t readings_number, size_t reading_element_size,
+size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* readings,
+                                           data_type_t type, size_t readings_number, size_t reading_element_size,
                                            outbound_message_t* outbound_message)
 {
     /* Sanity check */
@@ -43,8 +43,8 @@ size_t outbound_message_make_from_readings(parser_t* parser, const char* device_
 
     parser->create_topic(parser->D2P_TOPIC, device_key, parser->FEED_VALUES_MESSAGE_TOPIC, topic);
 
-    num_serialized =
-        parser_serialize_readings(parser, readings, type, readings_number, reading_element_size, payload, sizeof(payload));
+    num_serialized = parser_serialize_readings(parser, readings, type, readings_number, reading_element_size, payload,
+                                               sizeof(payload));
     if (num_serialized != 0)
         outbound_message_init(outbound_message, topic, payload);
 
@@ -133,7 +133,7 @@ bool outbound_message_make_from_firmware_update_version(parser_t* parser, const 
 
     return parse_serialize_firmware_update_version(parser, device_key, firmware_update_version, outbound_message);
 }
-bool outbound_message_feed_registration(parser_t* parser, const char* device_key, feed_t* feed,
+bool outbound_message_feed_registration(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
                                         outbound_message_t* outbound_message)
 {
     /* Sanity check */
@@ -141,9 +141,9 @@ bool outbound_message_feed_registration(parser_t* parser, const char* device_key
     WOLK_ASSERT(device_key);
     WOLK_ASSERT(feed);
     WOLK_ASSERT(outbound_message);
-    return parser_serialize_feed_registration(parser, device_key, feed, outbound_message);
+    return parser_serialize_feed_registration(parser, device_key, feed, number_of_feeds, outbound_message);
 }
-bool outbound_message_feed_removal(parser_t* parser, const char* device_key, feed_t* feed,
+bool outbound_message_feed_removal(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
                                    outbound_message_t* outbound_message)
 {
     /* Sanity check */
@@ -151,7 +151,7 @@ bool outbound_message_feed_removal(parser_t* parser, const char* device_key, fee
     WOLK_ASSERT(device_key);
     WOLK_ASSERT(feed);
     WOLK_ASSERT(outbound_message);
-    return parser_serialize_feed_removal(parser, device_key, feed, outbound_message);
+    return parser_serialize_feed_removal(parser, device_key, feed, number_of_feeds, outbound_message);
 }
 
 bool outbound_message_pull_feed_values(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
@@ -170,12 +170,12 @@ bool outbound_message_attribute_registration(parser_t* parser, const char* devic
     return parser_serialize_attribute(parser, device_key, attribute, outbound_message);
 }
 bool outbound_message_update_parameters(parser_t* parser, const char* device_key, parameter_t* parameter,
-                                        outbound_message_t* outbound_message)
+                                        size_t number_of_parameters, outbound_message_t* outbound_message)
 {
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
 
-    return parser_serialize_parameter(parser, device_key, parameter, outbound_message);
+    return parser_serialize_parameter(parser, device_key, parameter, number_of_parameters, outbound_message);
 }
 bool outbound_message_pull_parameters(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
 {
@@ -183,12 +183,12 @@ bool outbound_message_pull_parameters(parser_t* parser, const char* device_key, 
     WOLK_ASSERT(device_key);
     return parser_serialize_pull_parameters(parser, device_key, outbound_message);
 }
-bool outbound_message_synchronize_parameters(parser_t* parser, const char* device_key,
-                                             outbound_message_t* outbound_message)
+bool outbound_message_synchronize_parameters(parser_t* parser, const char* device_key, parameter_t* parameters,
+                                             size_t number_of_parameters, outbound_message_t* outbound_message)
 {
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
-    return parser_serialize_sync_parameters(parser, device_key, outbound_message);
+    return parser_serialize_sync_parameters(parser, device_key, parameters, number_of_parameters, outbound_message);
 }
 bool outbound_message_synchronize_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
 {

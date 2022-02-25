@@ -284,24 +284,27 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx);
  */
 WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick);
 
-//TODO: feed VS reading
+// TODO: feed VS reading
 /** @brief Add string reading
  *
  * @param ctx Context
  * @param reference Feed reference
- * @param readings Feed values, one or more values organized as value:utc pairs. Value is char pointer. Utc time has to be in milliseconds.
+ * @param readings Feed values, one or more values organized as value:utc pairs. Value is char pointer. Utc time has to
+ * be in milliseconds.
  * @param number_of_readings Number of readings that is captured
  *
  *  @return Error code
  */
-WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_string_readings_t* readings, size_t number_of_readings);
+WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_string_readings_t* readings,
+                                size_t number_of_readings);
 
 /**
  * @brief Add numeric reading
  *
  * @param ctx Context
  * @param reference Feed reference
- * @param readings Feed values, one or more values organized as value:utc pairs. Value is double. Utc time has to be in milliseconds.
+ * @param readings Feed values, one or more values organized as value:utc pairs. Value is double. Utc time has to be in
+ * milliseconds.
  * @param number_of_readings Number of readings that is captured
  *
  * @return Error code
@@ -314,10 +317,10 @@ WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_nu
  * location is. Max number of numeric values is define with READING_MAX_NUMBER from size_definition
  *
  * @param ctx Context
- * @param reference Sensor reference
+ * @param reference Feed reference
  * @param values Feed values
- * @param value_size Number of numeric values limited by
- * @param utc_time UTC time of sensor value acquisition [miliseconds]
+ * @param value_size Number of numeric values limited by READING_MAX_NUMBER
+ * @param utc_time UTC time of feed value acquisition [miliseconds]
  *
  * @return Error code
  */
@@ -329,49 +332,102 @@ WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* refere
  *
  * @param ctx Context
  * @param reference Feed reference
-* @param readings Feed values, one or more values organized as value:utc pairs. Value is boolean. Utc time has to be in milliseconds.
-* @param number_of_readings Number of readings that is captured
+ * @param readings Feed values, one or more values organized as value:utc pairs. Value is boolean. Utc time has to be in
+ * milliseconds.
+ * @param number_of_readings Number of readings that is captured
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, wolk_boolean_readings_t* readings, size_t number_of_readings);
+WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, wolk_boolean_readings_t* readings,
+                                 size_t number_of_readings);
 
 /**
- * @brief Add multi-value bool reading
- *
- * @param ctx Context
- * @param reference Sensor reference
- * @param values Sensor values
- * @param value_size Number of sensor dimensions
- * @param utc_time UTC time of sensor value acquisition [miliseconds]
- *
- * @return Error code
- */
-WOLK_ERR_T wolk_add_multi_value_bool_reading(wolk_ctx_t* ctx, const char* reference, bool* values, uint16_t value_size,
-                                             uint64_t utc_time);
-
-/**
- * @brief Publish accumulated sensor readings
+ * @brief Publish accumulated readings
  *
  * @param ctx Context
  *
  * @return Error code
  */
+WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx);
 
+/**
+ * @brief Register and update attribute. The attribute name must be unique per device. All attributes created by a
+ * device are always required and read-only. If an attribute with the given name already exists, the value will be
+ * updated.
+ *
+ * @param ctx Context
+ * @param attribute Attribute description consists of name, data type and value.
+ *
+ * @return Error code
+ */
 WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attribute);
-WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter);
 
-WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_t* feed);
-WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_t* feed);
+/**
+ * @brief Register feeds. If feed already exist error will be raised at the error channel. If bulk registration is
+ * request one error feed is enough to block registration.
+ *
+ * @param ctx Context
+ * @param feeds List of feeds that will be register. The feed name and reference must be unique per device, it's user
+ * responsibility.
+ * @param number_of_feeds Number of feeds presented into feeds list
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds);
+
+/**
+ * @brief Remove feeds.
+ *
+ * @param ctx Context
+ * @param feeds A list of feed references to be removed. If there is no feed with a specified reference, the reference
+ * will be ignored and nothing will happen
+ * @param number_of_feeds Number of feeds presented into feeds list
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds);
 
 WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx);
+
+/**
+ * @brief Change existing parameters on the WolkAbout IoT Platform.
+ * Updating parameters this way can lead to a misconfigured connection which might prevent further updates. Update
+ * connectivity parameters responsibly!
+ *
+ * @param ctx Context
+ * @param parameters List of parameters
+ * @param number_of_parameters Number of readings that is captured
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter, size_t number_of_parameters);
+
+/**
+ * @brief Sending a message to this topic will notify the platform that the device is ready to receive all parameter
+ * updates that were queued on the platform for that device. Relevant when the device specified PULL outbound data type.
+ *
+ * @param ctx Context
+ * @param parameters List of parameters
+ * @param number_of_parameters Number of readings that is captured
+ *
+ * @return Error code
+ */
 WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx);
 
-WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx);
+/**
+ * @brief A request from the device to the WolkAbout IoT platform for the current values of device parameters.
+ * The payload should contain a list of parameter names that will be contained in the response with it's values.
+ *
+ * @param ctx Context
+ * @param parameters List of parameters
+ * @param number_of_parameters Number of readings that is captured
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx, parameter_t* parameters, size_t number_of_parameters);
 
 WOLK_ERR_T wolk_sync_time_request(wolk_ctx_t* ctx);
 
-WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx);
 
 #ifdef __cplusplus
 }

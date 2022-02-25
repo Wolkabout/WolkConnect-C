@@ -295,7 +295,8 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_string_readings_t* readings, size_t number_of_readings)
+WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_string_readings_t* readings,
+                                size_t number_of_readings)
 {
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
@@ -321,7 +322,8 @@ WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_str
     }
 
     outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, STRING, number_of_readings, 1, &outbound_message);
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, STRING, number_of_readings, 1,
+                                        &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
@@ -391,12 +393,14 @@ WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* refere
     }
 
     outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, VECTOR, 1, value_size, &outbound_message);
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, VECTOR, 1, value_size,
+                                        &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, wolk_boolean_readings_t* readings, size_t number_of_readings)
+WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, wolk_boolean_readings_t* readings,
+                                 size_t number_of_readings)
 {
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
@@ -418,7 +422,8 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, wolk_bo
     }
 
     outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, BOOLEAN, number_of_readings, 1, &outbound_message);
+    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, BOOLEAN, number_of_readings, 1,
+                                        &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
@@ -452,20 +457,24 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_t* feed)
+WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds)
 {
     outbound_message_t outbound_message;
-    outbound_message_feed_registration(&ctx->parser, ctx->device_key, feed, &outbound_message);
+    if (!outbound_message_feed_registration(&ctx->parser, ctx->device_key, feeds, number_of_feeds, &outbound_message))
+        return W_TRUE;
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
-WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_t* feed)
+
+WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds)
 {
     outbound_message_t outbound_message;
-    outbound_message_feed_removal(&ctx->parser, ctx->device_key, feed, &outbound_message);
+    if (!outbound_message_feed_removal(&ctx->parser, ctx->device_key, feeds, number_of_feeds, &outbound_message))
+        return W_TRUE;
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
+
 WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx)
 {
     if (ctx->outbound_mode == PULL) {
@@ -474,8 +483,19 @@ WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx)
 
         return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
     }
+
     return W_TRUE;
 }
+
+WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter, size_t number_of_parameters)
+{
+    outbound_message_t outbound_message;
+    outbound_message_update_parameters(&ctx->parser, ctx->device_key, parameter, number_of_parameters,
+                                       &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
 WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx)
 {
     if (ctx->outbound_mode == PULL) {
@@ -484,15 +504,19 @@ WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx)
 
         return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
     }
+
     return W_TRUE;
 }
-WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx)
+
+WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx, parameter_t* parameters, size_t number_of_parameters)
 {
     outbound_message_t outbound_message;
-    outbound_message_synchronize_parameters(&ctx->parser, ctx->device_key, &outbound_message);
+    outbound_message_synchronize_parameters(&ctx->parser, ctx->device_key, parameters, number_of_parameters,
+                                            &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
+
 WOLK_ERR_T wolk_sync_time_request(wolk_ctx_t* ctx)
 {
     outbound_message_t outbound_message;
@@ -504,13 +528,6 @@ WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attribute)
 {
     outbound_message_t outbound_message;
     outbound_message_attribute_registration(&ctx->parser, ctx->device_key, attribute, &outbound_message);
-
-    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
-}
-WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter)
-{
-    outbound_message_t outbound_message;
-    outbound_message_update_parameters(&ctx->parser, ctx->device_key, parameter, &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }

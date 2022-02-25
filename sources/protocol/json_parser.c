@@ -481,7 +481,8 @@ size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, para
     return 0;
 }
 
-static bool serialize_reading(reading_t* reading, data_type_t type, size_t reading_element_size, char* buffer, size_t buffer_size)
+static bool serialize_reading(reading_t* reading, data_type_t type, size_t reading_element_size, char* buffer,
+                              size_t buffer_size)
 {
     char data_buffer[PAYLOAD_SIZE] = "";
 
@@ -494,33 +495,21 @@ static bool serialize_reading(reading_t* reading, data_type_t type, size_t readi
 
     if (reading_get_utc(reading) > 0
         && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s,\"timestamp\":%ld}]", reading->reference,
-                    type==NUMERIC ? "" : "\"", data_buffer, type==NUMERIC ? "" : "\"", reading_get_utc(reading))
+                    type == NUMERIC ? "" : "\"", data_buffer, type == NUMERIC ? "" : "\"", reading_get_utc(reading))
                >= (int)buffer_size) {
         return false;
     } else if (reading_get_utc(reading) == 0
-               && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s}]", reading->reference,
-                           type==NUMERIC ? "" : "\"", data_buffer, type==NUMERIC ? "" : "\"")
+               && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s}]", reading->reference, type == NUMERIC ? "" : "\"",
+                           data_buffer, type == NUMERIC ? "" : "\"")
                       >= (int)buffer_size) {
         return false;
     }
 
-//    if (reading_get_utc(reading) > 0
-//        && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s%s%s,\"timestamp\":%ld}]", reading->reference,
-//                    reading_element_size > 1 ? "\"" : "", type==STRING ? "\"" : "", data_buffer, type==STRING ? "\"" : "", reading_element_size > 1 ? "\"" : "",
-//                    reading_get_utc(reading))
-//               >= (int)buffer_size) {
-//        return false;
-//    } else if (reading_get_utc(reading) == 0
-//               && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s%s%s}]", reading->reference,
-//                           reading_element_size > 1 ? "\"" : "", type==STRING ? "\"" : "", data_buffer, type==STRING ? "\"" : "", reading_element_size > 1 ? "\"" : "")
-//                      >= (int)buffer_size) {
-//        return false;
-//    }
-
     return true;
 }
 
-static size_t serialize_readings(reading_t* readings, data_type_t type, size_t num_readings, char* buffer, size_t buffer_size)
+static size_t serialize_readings(reading_t* readings, data_type_t type, size_t num_readings, char* buffer,
+                                 size_t buffer_size)
 {
     WOLK_UNUSED(num_readings);
 
@@ -528,27 +517,25 @@ static size_t serialize_readings(reading_t* readings, data_type_t type, size_t n
     strcat(buffer, "[");
 
     for (size_t i = 0; i < num_readings; ++i) {
-
         // when it consists of more readings with the same reference it has to have utc
         if (reading_get_utc(readings) == 0)
             return false;
 
-        if (snprintf(data_buffer, buffer_size, "{\"%s\":%s%s%s,\"timestamp\":%ld}", readings->reference,
-                     type==NUMERIC ? "" : "\"", readings->reading_data[i], type==NUMERIC ? "" : "\"", reading_get_utc(readings))
+        if (snprintf(data_buffer, buffer_size, "{\"%s\":%s%s%s,\"timestamp\":%ld}%s", readings->reference,
+                     type == NUMERIC ? "" : "\"", readings->reading_data[i], type == NUMERIC ? "" : "\"",
+                     reading_get_utc(readings), (num_readings > 1 && i < (num_readings - 1)) ? "," : "")
             >= (int)buffer_size)
             return false;
 
         strcat(buffer, data_buffer);
-        if (num_readings > 1 && i < (num_readings - 1))
-            strcat(buffer, ",");
     }
 
     strcat(buffer, "]");
     return true;
 }
 
-size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t number_of_readings, size_t reading_element_size,
-                               char* buffer, size_t buffer_size)
+size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t number_of_readings,
+                               size_t reading_element_size, char* buffer, size_t buffer_size)
 {
     /* Sanity check */
     WOLK_ASSERT(num_readings > 0);
@@ -561,53 +548,96 @@ size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t num
 }
 bool json_serialize_attribute(const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message)
 {
+    char payload[PAYLOAD_SIZE];
     char topic[TOPIC_SIZE] = "";
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_ATTRIBUTE_REGISTRATION_TOPIC, topic);
-    char payload[PAYLOAD_SIZE];
-    sprintf(payload, "[{\"name\": \"%s\", \"dataType\": \"%s\", \"value\": \"%s\"}]", attribute->name,
-            attribute->data_type, attribute->value);
+
+    if (sprintf(payload, "[{\"name\": \"%s\", \"dataType\": \"%s\", \"value\": \"%s\"}]", attribute->name,
+                attribute->data_type, attribute->value)
+        >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload))
+        return false;
 
     strncpy(outbound_message->topic, topic, TOPIC_SIZE);
     strncpy(outbound_message->payload, payload, PAYLOAD_SIZE);
 
     return true;
 }
-bool json_serialize_parameter(const char* device_key, parameter_t* parameter, outbound_message_t* outbound_message)
+bool json_serialize_parameter(const char* device_key, parameter_t* parameter, size_t number_of_parameters,
+                              outbound_message_t* outbound_message)
 {
     char topic[TOPIC_SIZE] = "";
+    char payload[PAYLOAD_SIZE] = "";
+
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_PARAMETERS_TOPIC, topic);
-    char payload[PAYLOAD_SIZE];
-    sprintf(payload, "{\"%s\": %s", parameter->name, parameter->value);
+    strcat(outbound_message->payload, "{");
+
+    for (int i = 0; i < number_of_parameters; ++i) {
+        if (sprintf(payload, "\"%s\": \"%s\"%s", parameter->name, parameter->value,
+                    (number_of_parameters > 1 && i < (number_of_parameters - 1)) ? "," : "")
+            >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload))
+            return false;
+
+        strcat(outbound_message->payload, payload);
+        parameter++;
+    }
 
     strncpy(outbound_message->topic, topic, TOPIC_SIZE);
-    strncpy(outbound_message->payload, payload, PAYLOAD_SIZE);
+    strcat(outbound_message->payload, "}");
 
     return true;
 }
 
-bool json_serialize_feed_registration(const char* device_key, feed_t* feed, outbound_message_t* outbound_message)
+bool json_serialize_feed_registration(const char* device_key, feed_t* feed, size_t number_of_feeds,
+                                      outbound_message_t* outbound_message)
 {
+    char payload[PAYLOAD_SIZE] = "";
     char topic[TOPIC_SIZE] = "";
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FEED_REGISTRATION_TOPIC, topic);
-    char payload[PAYLOAD_SIZE] = "";
-    sprintf(payload, "[{\"name\": \"%s\", \"type\": \"%s\", \"unitGuid\": \"%s\", \"reference\": \"%s\"}]", feed->name,
-            feed_type_to_string(feed->feedType), feed->unit, feed->reference);
+    strcat(outbound_message->payload, "[");
 
+    for (int i = 0; i < number_of_feeds; ++i) {
+        if (sprintf(payload, "{\"name\": \"%s\", \"type\": \"%s\", \"unitGuid\": \"%s\", \"reference\": \"%s\"}%s",
+                    feed->name, feed_type_to_string(feed->feedType), feed->unit, feed->reference,
+                    (number_of_feeds > 1 && i < (number_of_feeds - 1) ? "," : ""))
+            >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload))
+            return false;
+
+        if (strlen(payload)
+            > (PAYLOAD_SIZE - strlen(outbound_message->payload))) // TODO: apply the same check everywhere
+            return false;
+
+        strcat(outbound_message->payload, payload);
+        feed++;
+    }
+
+    strcat(outbound_message->payload, "]");
     strncpy(outbound_message->topic, topic, TOPIC_SIZE);
-    strncpy(outbound_message->payload, payload, PAYLOAD_SIZE);
 
     return true;
 }
-bool json_serialize_feed_removal(const char* device_key, feed_t* feed, outbound_message_t* outbound_message)
+bool json_serialize_feed_removal(const char* device_key, feed_t* feed, size_t number_of_feeds,
+                                 outbound_message_t* outbound_message)
 {
+    char payload[PAYLOAD_SIZE] = "";
     char topic[TOPIC_SIZE] = "";
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FEED_REMOVAL_TOPIC, topic);
-    char payload[PAYLOAD_SIZE] = "";
-    ;
-    sprintf(payload, "[\"%s\"]", feed->reference);
 
+    strcat(outbound_message->payload, "[");
+
+    for (int i = 0; i < number_of_feeds; ++i) {
+        if (sprintf(payload, "\"%s\"%s", feed->name, (number_of_feeds > 1 && i < (number_of_feeds - 1) ? "," : ""))
+            >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload))
+            return false;
+
+        if (strlen(payload) > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
+            return false;
+
+        strcat(outbound_message->payload, payload);
+        feed++;
+    }
+
+    strcat(outbound_message->payload, "]");
     strncpy(outbound_message->topic, topic, TOPIC_SIZE);
-    strncpy(outbound_message->payload, payload, PAYLOAD_SIZE);
 
     return true;
 }
@@ -631,13 +661,26 @@ bool json_serialize_pull_parameters(const char* device_key, outbound_message_t* 
 
     return true;
 }
-bool json_serialize_sync_parameters(const char* device_key, outbound_message_t* outbound_message)
+bool json_serialize_sync_parameters(const char* device_key, parameter_t* parameters, size_t number_of_parameters,
+                                    outbound_message_t* outbound_message)
 {
     char topic[TOPIC_SIZE] = "";
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_SYNC_PARAMETERS_TOPIC, topic);
 
     strncpy(outbound_message->topic, topic, TOPIC_SIZE);
-    strncpy(outbound_message->payload, "", PAYLOAD_SIZE);
+    strcat(outbound_message->payload, "[");
+
+    for (int i = 0; i < number_of_parameters; ++i) {
+        strcat(outbound_message->payload, "\"");
+        strcat(outbound_message->payload, parameters->name);
+        strcat(outbound_message->payload, "\"");
+
+        if (number_of_parameters > 1 && i < (number_of_parameters - 1))
+            strcat(outbound_message->payload, ",");
+        parameters++;
+    }
+
+    strcat(outbound_message->payload, "]");
 
     return true;
 }

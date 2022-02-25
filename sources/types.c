@@ -131,7 +131,7 @@ const char UNIT_GALLON_UK[] = "GALLON_UK";
 const char UNIT_OUNCE_LIQUID_UK[] = "OUNCE_LIQUID_UK";
 const char UNIT_UNKNOWN[] = "UNKNOWN";
 
-const char** FEED_TYPE[] = {"IN", "IN/OUT"};
+const char** FEED_TYPE[] = {"IN", "IN_OUT"};
 
 const char DATA_TYPE_STRING[] = "STRING";
 const char DATA_TYPE_NUMERIC[] = "NUMERIC";

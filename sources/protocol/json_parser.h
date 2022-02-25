@@ -63,8 +63,8 @@ const char JSON_SYNC_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_SYNC_TIME_TOPIC[MESSAGE_TYPE_SIZE];
 const char JSON_ERROR_TOPIC[MESSAGE_TYPE_SIZE];
 
-size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t number_of_readings, size_t reading_element_size,
-                               char* buffer, size_t buffer_size);
+size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t number_of_readings,
+                               size_t reading_element_size, char* buffer, size_t buffer_size);
 
 bool json_serialize_file_management_status(const char* device_key,
                                            file_management_packet_request_t* file_management_packet_request,
@@ -101,14 +101,18 @@ size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, para
 bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                        char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
 
-bool json_serialize_feed_registration(const char* device_key, feed_t* feed, outbound_message_t* outbound_message);
-bool json_serialize_feed_removal(const char* device_key, feed_t* feed, outbound_message_t* outbound_message);
+bool json_serialize_feed_registration(const char* device_key, feed_t* feed, size_t number_of_feeds,
+                                      outbound_message_t* outbound_message);
+bool json_serialize_feed_removal(const char* device_key, feed_t* feed, size_t number_of_feeds,
+                                 outbound_message_t* outbound_message);
 bool json_serialize_pull_feed_values(const char* device_key, outbound_message_t* outbound_message);
 bool json_serialize_pull_parameters(const char* device_key, outbound_message_t* outbound_message);
-bool json_serialize_sync_parameters(const char* device_key, outbound_message_t* outbound_message);
+bool json_serialize_sync_parameters(const char* device_key, parameter_t* parameters, size_t number_of_parameters,
+                                    outbound_message_t* outbound_message);
 bool json_serialize_sync_time(const char* device_key, outbound_message_t* outbound_message);
 bool json_serialize_attribute(const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message);
-bool json_serialize_parameter(const char* device_key, parameter_t* parameter, outbound_message_t* outbound_message);
+bool json_serialize_parameter(const char* device_key, parameter_t* parameter, size_t number_of_parameters,
+                              outbound_message_t* outbound_message);
 
 
 #ifdef __cplusplus

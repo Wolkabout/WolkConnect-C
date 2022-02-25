@@ -49,7 +49,7 @@ enum {
     /* Maximum number of characters in feed type string */
     ITEM_FEED_TYPE_SIZE = 5,
     /* Maximum number of characters in type string */
-    ITEM_DATA_TYPE_SIZE = 10,
+    ITEM_DATA_TYPE_SIZE = 32,
 
     /* Maximum number of characters in a single reading element */
     READING_ELEMENT_SIZE = 32,
@@ -57,7 +57,7 @@ enum {
     READING_MAX_NUMBER = 32,
 
     /* Maximum number of characters in parameter type string */
-    PARAMETER_TYPE_SIZE = 3,
+    PARAMETER_TYPE_SIZE = 32,
     /* Maximum number of characters in parameter value */
     PARAMETER_VALUE_SIZE = READING_ELEMENT_SIZE,
     ATTRIBUTE_VALUE_SIZE = READING_ELEMENT_SIZE,
