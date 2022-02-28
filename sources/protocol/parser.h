@@ -108,7 +108,8 @@ typedef struct {
     bool (*serialize_sync_parameters)(const char* device_key, parameter_t* parameters, size_t number_of_parameters,
                                       outbound_message_t* outbound_message);
     bool (*serialize_sync_time)(const char* device_key, outbound_message_t* outbound_message);
-    bool (*serialize_attribute)(const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message);
+    bool (*serialize_attribute)(const char* device_key, attribute_t* attributes, size_t number_of_attributes,
+                                outbound_message_t* outbound_message);
     bool (*serialize_parameter)(const char* device_key, parameter_t* parameter, size_t number_of_parameters,
                                 outbound_message_t* outbound_message);
 
@@ -181,8 +182,8 @@ bool parser_serialize_sync_parameters(parser_t* parser, const char* device_key, 
 
 bool parser_serialize_sync_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
-bool parser_serialize_attribute(parser_t* parser, const char* device_key, attribute_t* attribute,
-                                outbound_message_t* outbound_message);
+bool parser_serialize_attribute(parser_t* parser, const char* device_key, attribute_t* attributes,
+                                size_t number_of_attributes, outbound_message_t* outbound_message);
 
 bool parser_serialize_parameter(parser_t* parser, const char* device_key, parameter_t* parameter,
                                 size_t number_of_parameters, outbound_message_t* outbound_message);

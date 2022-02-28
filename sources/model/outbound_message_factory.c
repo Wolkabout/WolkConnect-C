@@ -161,13 +161,13 @@ bool outbound_message_pull_feed_values(parser_t* parser, const char* device_key,
 
     return parser_serialize_pull_feed_values(parser, device_key, outbound_message);
 }
-bool outbound_message_attribute_registration(parser_t* parser, const char* device_key, attribute_t* attribute,
-                                             outbound_message_t* outbound_message)
+bool outbound_message_attribute_registration(parser_t* parser, const char* device_key, attribute_t* attributes,
+                                             size_t number_of_attributes, outbound_message_t* outbound_message)
 {
     WOLK_ASSERT(parser);
     WOLK_ASSERT(device_key);
 
-    return parser_serialize_attribute(parser, device_key, attribute, outbound_message);
+    return parser_serialize_attribute(parser, device_key, attributes, number_of_attributes, outbound_message);
 }
 bool outbound_message_update_parameters(parser_t* parser, const char* device_key, parameter_t* parameter,
                                         size_t number_of_parameters, outbound_message_t* outbound_message)

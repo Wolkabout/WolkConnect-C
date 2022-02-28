@@ -356,11 +356,12 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx);
  * updated.
  *
  * @param ctx Context
- * @param attribute Attribute description consists of name, data type and value.
+ * @param attributes Attribute description consists of name, data type and value.
+ * @param number_of_attributes Number of attributes that is captured
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attribute);
+WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attributes, size_t number_of_attributes);
 
 /**
  * @brief Register feeds. If feed already exist error will be raised at the error channel. If bulk registration is

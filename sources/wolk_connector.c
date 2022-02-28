@@ -321,7 +321,7 @@ WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_str
         readings++;
     }
 
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, STRING, number_of_readings, 1,
                                         &outbound_message);
 
@@ -359,7 +359,7 @@ WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_nu
         readings++;
     }
 
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, NUMERIC, number_of_readings, 1,
                                         &outbound_message);
 
@@ -392,7 +392,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* refere
         reading_set_data_at(&reading, value_string_representation, i);
     }
 
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, VECTOR, 1, value_size,
                                         &outbound_message);
 
@@ -421,7 +421,7 @@ WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, wolk_bo
         readings++;
     }
 
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, BOOLEAN, number_of_readings, 1,
                                         &outbound_message);
 
@@ -436,7 +436,7 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
 
     uint16_t i;
     uint16_t batch_size = 50; // TODO have to be constant, or until persistance is empty
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
 
     for (i = 0; i < batch_size; ++i) {
         if (persistence_is_empty(&ctx->persistence)) {
@@ -459,7 +459,7 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
 
 WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds)
 {
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     if (!outbound_message_feed_registration(&ctx->parser, ctx->device_key, feeds, number_of_feeds, &outbound_message))
         return W_TRUE;
 
@@ -468,7 +468,7 @@ WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_f
 
 WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds)
 {
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     if (!outbound_message_feed_removal(&ctx->parser, ctx->device_key, feeds, number_of_feeds, &outbound_message))
         return W_TRUE;
 
@@ -478,7 +478,7 @@ WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_fee
 WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx)
 {
     if (ctx->outbound_mode == PULL) {
-        outbound_message_t outbound_message;
+        outbound_message_t outbound_message = {0};
         outbound_message_pull_feed_values(&ctx->parser, ctx->device_key, &outbound_message);
 
         return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
@@ -489,7 +489,7 @@ WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx)
 
 WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter, size_t number_of_parameters)
 {
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_update_parameters(&ctx->parser, ctx->device_key, parameter, number_of_parameters,
                                        &outbound_message);
 
@@ -499,7 +499,7 @@ WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter, size_t
 WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx)
 {
     if (ctx->outbound_mode == PULL) {
-        outbound_message_t outbound_message;
+        outbound_message_t outbound_message = {0};
         outbound_message_pull_parameters(&ctx->parser, ctx->device_key, &outbound_message);
 
         return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
@@ -510,7 +510,7 @@ WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx)
 
 WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx, parameter_t* parameters, size_t number_of_parameters)
 {
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_synchronize_parameters(&ctx->parser, ctx->device_key, parameters, number_of_parameters,
                                             &outbound_message);
 
@@ -519,15 +519,16 @@ WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx, parameter_t* parameters, size_t
 
 WOLK_ERR_T wolk_sync_time_request(wolk_ctx_t* ctx)
 {
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_synchronize_time(&ctx->parser, ctx->device_key, &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
-WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attribute)
+WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attributes, size_t number_of_attributes)
 {
-    outbound_message_t outbound_message;
-    outbound_message_attribute_registration(&ctx->parser, ctx->device_key, attribute, &outbound_message);
+    outbound_message_t outbound_message = {0};
+    outbound_message_attribute_registration(&ctx->parser, ctx->device_key, attributes, number_of_attributes,
+                                            &outbound_message);
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
@@ -598,7 +599,7 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
             feed_value_message_t feed_message;
             const size_t num_deserialized_commands = parser_deserialize_feed_value_message(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &feed_message, 1);
-            // TODO make this a for loop and the feed_message a buffer
+            // TODO make this a for loop and the feed_message a buffer & type IN_OUT
             if (num_deserialized_commands != 0) {
                 handle_feed_value(ctx, &feed_message);
             }
@@ -829,7 +830,7 @@ static void listener_file_management_on_status(file_management_t* file_managemen
     WOLK_ASSERT(status);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_make_from_file_management_status(&wolk_ctx->parser, wolk_ctx->device_key,
                                                       file_management->file_name, &status, &outbound_message);
 
@@ -845,7 +846,7 @@ static void listener_file_management_on_packet_request(file_management_t* file_m
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
 
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_make_from_file_management_packet_request(&wolk_ctx->parser, wolk_ctx->device_key, &request,
                                                               &outbound_message);
 
@@ -860,7 +861,7 @@ static void listener_file_management_on_url_download_status(file_management_t* f
     WOLK_ASSERT(status);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     file_management_parameter_t file_management_parameter;
 
     file_management_parameter_set_file_url(&file_management_parameter, file_management->file_url);
@@ -881,7 +882,7 @@ static void listener_file_management_on_file_list_status(file_management_t* file
     WOLK_ASSERT(file_list_items);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
 
     outbound_message_make_from_file_management_file_list(&wolk_ctx->parser, wolk_ctx->device_key, file_list,
                                                          file_list_items, &outbound_message);
@@ -896,7 +897,7 @@ static void listener_firmware_update_on_status(firmware_update_t* firmware_updat
     WOLK_ASSERT(status);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
 
     outbound_message_make_from_firmware_update_status(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update,
                                                       &outbound_message);
@@ -911,7 +912,7 @@ static void listener_firmware_update_on_version(firmware_update_t* firmware_upda
     WOLK_ASSERT(firmware_update_version);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
 
     outbound_message_make_from_firmware_update_version(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update_version,
                                                        &outbound_message);

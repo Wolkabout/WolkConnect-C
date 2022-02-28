@@ -68,8 +68,8 @@ size_t outbound_message_make_from_readings(parser_t* parser, const char* device_
 
 bool outbound_message_pull_feed_values(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
 
-bool outbound_message_attribute_registration(parser_t* parser, const char* device_key, attribute_t* attribute,
-                                             outbound_message_t* outbound_message);
+bool outbound_message_attribute_registration(parser_t* parser, const char* device_key, attribute_t* attributes,
+                                             size_t number_of_attributes, outbound_message_t* outbound_message);
 
 bool outbound_message_update_parameters(parser_t* parser, const char* device_key, parameter_t* parameter,
                                         size_t number_of_parameters, outbound_message_t* outbound_message);

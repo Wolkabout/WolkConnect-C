@@ -110,7 +110,8 @@ bool json_serialize_pull_parameters(const char* device_key, outbound_message_t* 
 bool json_serialize_sync_parameters(const char* device_key, parameter_t* parameters, size_t number_of_parameters,
                                     outbound_message_t* outbound_message);
 bool json_serialize_sync_time(const char* device_key, outbound_message_t* outbound_message);
-bool json_serialize_attribute(const char* device_key, attribute_t* attribute, outbound_message_t* outbound_message);
+bool json_serialize_attribute(const char* device_key, attribute_t* attributes, size_t number_of_attributes,
+                              outbound_message_t* outbound_message);
 bool json_serialize_parameter(const char* device_key, parameter_t* parameter, size_t number_of_parameters,
                               outbound_message_t* outbound_message);
 

@@ -255,10 +255,10 @@ bool parser_serialize_sync_time(parser_t* parser, const char* device_key, outbou
 {
     return parser->serialize_sync_time(device_key, outbound_message);
 }
-bool parser_serialize_attribute(parser_t* parser, const char* device_key, attribute_t* attribute,
-                                outbound_message_t* outbound_message)
+bool parser_serialize_attribute(parser_t* parser, const char* device_key, attribute_t* attributes,
+                                size_t number_of_attributes, outbound_message_t* outbound_message)
 {
-    return parser->serialize_attribute(device_key, attribute, outbound_message);
+    return parser->serialize_attribute(device_key, attributes, number_of_attributes, outbound_message);
 }
 bool parser_serialize_parameter(parser_t* parser, const char* device_key, parameter_t* parameter,
                                 size_t number_of_parameters, outbound_message_t* outbound_message)
