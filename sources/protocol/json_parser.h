@@ -37,31 +37,32 @@
 extern "C" {
 #endif
 
-const char JSON_FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC[MESSAGE_TYPE_SIZE];
 
-const char JSON_FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC[MESSAGE_TYPE_SIZE];
+const char JSON_FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
 
-const char JSON_FILE_MANAGEMENT_FILE_DELETE_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_FILE_MANAGEMENT_FILE_PURGE_TOPIC[MESSAGE_TYPE_SIZE];
+const char JSON_FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
 
-const char JSON_FIRMWARE_UPDATE_INSTALL_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_FIRMWARE_UPDATE_ABORT_TOPIC[MESSAGE_TYPE_SIZE];
+const char JSON_FILE_MANAGEMENT_FILE_DELETE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_FILE_MANAGEMENT_FILE_PURGE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+
+const char JSON_FIRMWARE_UPDATE_INSTALL_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_FIRMWARE_UPDATE_ABORT_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
 
 const char JSON_P2D_TOPIC[TOPIC_DIRECTION_SIZE];
 const char JSON_D2P_TOPIC[TOPIC_DIRECTION_SIZE];
-const char JSON_FEED_REGISTRATION_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_FEED_REMOVAL_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_FEED_VALUES_MESSAGE_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_PULL_FEEDS_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_ATTRIBUTE_REGISTRATION_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_PULL_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_SYNC_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_SYNC_TIME_TOPIC[MESSAGE_TYPE_SIZE];
-const char JSON_ERROR_TOPIC[MESSAGE_TYPE_SIZE];
+const char JSON_FEED_REGISTRATION_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_FEED_REMOVAL_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_FEED_VALUES_MESSAGE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_PULL_FEEDS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_ATTRIBUTE_REGISTRATION_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_PULL_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_SYNC_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_SYNC_TIME_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_ERROR_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
 
 size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t number_of_readings,
                                size_t reading_element_size, char* buffer, size_t buffer_size);
@@ -93,13 +94,11 @@ bool json_serialize_firmware_update_version(const char* device_key, char* firmwa
 
 bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_command);
 
-size_t json_deserialize_feed_value_message(char* buffer, size_t buffer_size, feed_value_message_t* feed_value_message,
-                                           size_t msg_buffer_size);
-size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message,
-                                          size_t msg_buffer_size);
+size_t json_deserialize_readings_value_message(char* buffer, size_t buffer_size, reading_t* readings_received);
+size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message);
 
 bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
-                       char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
+                       char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
 
 bool json_serialize_feed_registration(const char* device_key, feed_t* feed, size_t number_of_feeds,
                                       outbound_message_t* outbound_message);

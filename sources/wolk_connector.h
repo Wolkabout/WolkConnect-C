@@ -92,7 +92,7 @@ typedef struct wolk_ctx {
 
     outbound_mode_t outbound_mode;
 
-    feed_handler_t feed_handler; /**< Callback for handling incoming feed from WolkAbout IoT Platform.
+    feed_handler_t feed_handler; /**< Callback for handling incoming feeds from WolkAbout IoT Platform.
                                               @see feed_handler_t*/
 
     parameter_handler_t parameter_handler; /**< Callback for handling received configuration from WolkAbout IoT
@@ -145,7 +145,7 @@ typedef struct wolk_boolean_readings {
 } wolk_boolean_readings_t;
 
 typedef feed_t wolk_feed_t;
-
+typedef parameter_t wolk_parameter_t;
 /**
  * @brief Initializes WolkAbout IoT Platform connector context
  *

@@ -42,8 +42,8 @@ static WOLK_ERR_T subscribe(wolk_ctx_t* ctx, const char* topic);
 
 static bool is_wolk_initialized(wolk_ctx_t* ctx);
 
-static void handle_feed_value(wolk_ctx_t* ctx, feed_value_message_t* feed_value_msg);
-static void handle_parameter_message(wolk_ctx_t* ctx, parameter_t* parameter_message);
+static void handle_readings(wolk_ctx_t* ctx, reading_t* readings, size_t number_of_readings);
+static void handle_parameter_message(wolk_ctx_t* ctx, parameter_t* parameter_message, size_t number_of_parameters);
 static void handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc);
 
 static void handle_file_management_parameter(file_management_t* file_management,
@@ -72,7 +72,7 @@ static void listener_firmware_update_on_verification(firmware_update_t* firmware
 static void handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter);
 static void handle_firmware_update_abort(firmware_update_t* firmware_update);
 
-static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[MESSAGE_TYPE_SIZE]);
+static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[TOPIC_MESSAGE_TYPE_SIZE]);
 
 WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, feed_handler_t feed_handler,
                      parameter_handler_t parameter_handler, const char* device_key, const char* device_password,
@@ -596,20 +596,18 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
         strncpy(&topic_str[0], topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
 
         if (strstr(topic_str, ctx->parser.FEED_VALUES_MESSAGE_TOPIC) != NULL) {
-            feed_value_message_t feed_message;
-            const size_t num_deserialized_commands = parser_deserialize_feed_value_message(
-                &ctx->parser, (char*)payload, (size_t)payload_len, &feed_message, 1);
-            // TODO make this a for loop and the feed_message a buffer & type IN_OUT
-            if (num_deserialized_commands != 0) {
-                handle_feed_value(ctx, &feed_message);
+            reading_t readings_received[READING_ELEMENT_SIZE];
+            const size_t number_of_deserialized_readings = parser_deserialize_readings_message(
+                &ctx->parser, (char*)payload, (size_t)payload_len, &readings_received);
+            if (number_of_deserialized_readings != 0) {
+                handle_readings(ctx, &readings_received, number_of_deserialized_readings);
             }
         } else if (strstr(topic_str, ctx->parser.PARAMETERS_TOPIC)) {
-            parameter_t parameter_message;
-            const size_t num_deserialized_commands = parser_deserialize_parameter_message(
-                &ctx->parser, (char*)payload, (size_t)payload_len, &parameter_message, 1);
-            // TODO make this a for loop and the parameter_message a buffer
-            if (num_deserialized_commands != 0) {
-                handle_parameter_message(ctx, &parameter_message);
+            parameter_t parameter_message[READING_ELEMENT_SIZE];
+            const size_t number_of_deserialized_parameters = parser_deserialize_parameter_message(
+                &ctx->parser, (char*)payload, (size_t)payload_len, &parameter_message);
+            if (number_of_deserialized_parameters != 0) {
+                handle_parameter_message(ctx, &parameter_message, number_of_deserialized_parameters);
             }
         } else if (strstr(topic_str, ctx->parser.SYNC_TIME_TOPIC)) {
             utc_command_t utc_command;
@@ -618,7 +616,9 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
             if (num_deserialized_commands != 0) {
                 handle_utc_command(ctx, &utc_command);
             }
-        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC)) {
+        } // TODO: p2d/{deviceKey}/details_synchronization
+        // TODO: p2d/{deviceKey}/error
+        else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
@@ -739,23 +739,20 @@ static bool is_wolk_initialized(wolk_ctx_t* ctx)
     return ctx->is_initialized && persistence_is_initialized(&ctx->persistence);
 }
 
-static void handle_feed_value(wolk_ctx_t* ctx, feed_value_message_t* feed_value_msg)
+static void handle_readings(wolk_ctx_t* ctx, reading_t* readings, size_t number_of_readings)
 {
-    const char* reference = feed_value_msg->reference;
-    const char* value = feed_value_msg->value;
-
     if (ctx->feed_handler != NULL) {
-        ctx->feed_handler(reference, value);
+        ctx->feed_handler(readings, number_of_readings);
     }
 }
 
-static void handle_parameter_message(wolk_ctx_t* ctx, parameter_t* parameter_message)
+static void handle_parameter_message(wolk_ctx_t* ctx, parameter_t* parameter_message, size_t number_of_parameters)
 {
     const char* name = parameter_message->name;
     const char* value = parameter_message->value;
 
     if (ctx->parameter_handler != NULL) {
-        ctx->parameter_handler(name, value);
+        ctx->parameter_handler(parameter_message, number_of_parameters);
     }
 }
 
@@ -945,7 +942,7 @@ static void handle_firmware_update_abort(firmware_update_t* firmware_update)
     firmware_update_handle_abort(firmware_update);
 }
 
-static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[MESSAGE_TYPE_SIZE])
+static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[TOPIC_MESSAGE_TYPE_SIZE])
 {
     char topic[TOPIC_SIZE] = "";
     parser_create_topic(&ctx->parser, ctx->parser.P2D_TOPIC, ctx->device_key, message_type, topic);

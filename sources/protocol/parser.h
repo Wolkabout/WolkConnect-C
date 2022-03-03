@@ -94,11 +94,9 @@ typedef struct {
     bool (*deserialize_time)(char* buffer, size_t buffer_size, utc_command_t* utc_command);
 
     bool (*create_topic)(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
-                         char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
-    size_t (*deserialize_feed_value_message)(char* buffer, size_t buffer_size, feed_value_message_t* feed_value_message,
-                                             size_t msg_buffer_size);
-    size_t (*deserialize_parameter_message)(char* buffer, size_t buffer_size, parameter_t* parameter_message,
-                                            size_t msg_buffer_size);
+                         char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
+    size_t (*deserialize_readings_value_message)(char* buffer, size_t buffer_size, reading_t* readings_received);
+    size_t (*deserialize_parameter_message)(char* buffer, size_t buffer_size, parameter_t* parameter_message);
     bool (*serialize_feed_registration)(const char* device_key, feed_t* feed, size_t number_of_feeds,
                                         outbound_message_t* outbound_message);
     bool (*serialize_feed_removal)(const char* device_key, feed_t* feed, size_t number_of_feeds,
@@ -160,13 +158,13 @@ bool parser_is_initialized(parser_t* parser);
 bool parser_deserialize_time(parser_t* parser, char* buffer, size_t buffer_size, utc_command_t* utc_command);
 
 bool parser_create_topic(parser_t* parser, char direction[TOPIC_DIRECTION_SIZE], char device_key[DEVICE_KEY_SIZE],
-                         char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
+                         char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
 
-size_t parser_deserialize_feed_value_message(parser_t* parser, char* buffer, size_t buffer_size,
-                                             feed_value_message_t* feed_value_message, size_t msg_buffer_size);
+size_t parser_deserialize_readings_message(parser_t* parser, char* buffer, size_t buffer_size,
+                                           reading_t* readings_received);
 
 size_t parser_deserialize_parameter_message(parser_t* parser, char* buffer, size_t buffer_size,
-                                            parameter_t* parameter_message, size_t msg_buffer_size);
+                                            parameter_t* parameter_message);
 
 bool parser_serialize_feed_registration(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
                                         outbound_message_t* outbound_message);

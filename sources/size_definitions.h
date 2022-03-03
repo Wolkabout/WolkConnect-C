@@ -30,20 +30,25 @@ enum {
     /* Maximum number of characters in device password string */
     DEVICE_PASSWORD_SIZE = 64,
 
-    /* Topic root path size*/
+    /* Topic root path size */
     TOPIC_DIRECTION_SIZE = 4,
-    /* Topic branch size*/
-    MESSAGE_TYPE_SIZE = 64,
-
+    /* Topic branch size */
+    TOPIC_MESSAGE_TYPE_SIZE = 64,
     /* Maximum number of characters in topic string */
-    TOPIC_SIZE = TOPIC_DIRECTION_SIZE + MESSAGE_TYPE_SIZE + DEVICE_KEY_SIZE + 3 /* for the delimiters */,
+    TOPIC_SIZE = TOPIC_DIRECTION_SIZE + TOPIC_MESSAGE_TYPE_SIZE + DEVICE_KEY_SIZE + 3 /* for the delimiters */,
+
     /* Maximum number of bytes in payload string */
     PAYLOAD_SIZE = 448,
 
-    /* Maximum number of characters in name string */
-    ITEM_NAME_SIZE = 64,
+    /* Maximum number of characters in a single reading element */
+    READING_ELEMENT_SIZE = 32,
+    /* Maximum number of readings*/
+    READING_MAX_NUMBER = 32,
+
     /* Maximum number of characters in reference string */
     REFERENCE_SIZE = 64,
+    /* Maximum number of characters in name string */
+    ITEM_NAME_SIZE = 64,
     /* Maximum number of characters in unit string */
     ITEM_UNIT_SIZE = 25,
     /* Maximum number of characters in feed type string */
@@ -51,19 +56,13 @@ enum {
     /* Maximum number of characters in type string */
     ITEM_DATA_TYPE_SIZE = 32,
 
-    /* Maximum number of characters in a single reading element */
-    READING_ELEMENT_SIZE = 32,
-    /* Maximum number of readings*/
-    READING_MAX_NUMBER = 32,
-
     /* Maximum number of characters in parameter type string */
     PARAMETER_TYPE_SIZE = 32,
     /* Maximum number of characters in parameter value */
     PARAMETER_VALUE_SIZE = READING_ELEMENT_SIZE,
-    ATTRIBUTE_VALUE_SIZE = READING_ELEMENT_SIZE,
 
-    /* Maximum number of configuration items for device */
-    CONFIGURATION_ITEMS_SIZE = 3,
+    /* Maximum number of characters in attribute value */
+    ATTRIBUTE_VALUE_SIZE = READING_ELEMENT_SIZE,
 
     /* Maximum number of files in list */
     FILE_MANAGEMENT_FILE_LIST_SIZE = 32,

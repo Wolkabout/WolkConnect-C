@@ -47,7 +47,7 @@ void parser_init(parser_t* parser)
     parser->serialize_firmware_update_version = json_serialize_firmware_update_version;
 
     parser->deserialize_time = json_deserialize_time;
-    parser->deserialize_feed_value_message = json_deserialize_feed_value_message;
+    parser->deserialize_readings_value_message = json_deserialize_readings_value_message;
     parser->deserialize_parameter_message = json_deserialize_parameter_message;
 
     parser->create_topic = json_create_topic;
@@ -62,29 +62,31 @@ void parser_init(parser_t* parser)
     parser->serialize_parameter = json_serialize_parameter;
 
     strncpy(parser->FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC, JSON_FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC,
-            MESSAGE_TYPE_SIZE);
-    strncpy(parser->FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC, JSON_FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC, MESSAGE_TYPE_SIZE);
+            TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC, JSON_FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC,
+            TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC,
+            TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC,
-            MESSAGE_TYPE_SIZE);
+            TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC,
-            MESSAGE_TYPE_SIZE);
-    strncpy(parser->FILE_MANAGEMENT_FILE_DELETE_TOPIC, JSON_FILE_MANAGEMENT_FILE_DELETE_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->FILE_MANAGEMENT_FILE_PURGE_TOPIC, JSON_FILE_MANAGEMENT_FILE_PURGE_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->FIRMWARE_UPDATE_INSTALL_TOPIC, JSON_FIRMWARE_UPDATE_INSTALL_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->FIRMWARE_UPDATE_ABORT_TOPIC, JSON_FIRMWARE_UPDATE_ABORT_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->P2D_TOPIC, JSON_P2D_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->D2P_TOPIC, JSON_D2P_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->FEED_REGISTRATION_TOPIC, JSON_FEED_REGISTRATION_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->FEED_REMOVAL_TOPIC, JSON_FEED_REMOVAL_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->FEED_VALUES_MESSAGE_TOPIC, JSON_FEED_VALUES_MESSAGE_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->PULL_FEED_VALUES_TOPIC, JSON_PULL_FEEDS_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->ATTRIBUTE_REGISTRATION_TOPIC, JSON_ATTRIBUTE_REGISTRATION_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->PARAMETERS_TOPIC, JSON_PARAMETERS_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->PULL_PARAMETERS_TOPIC, JSON_PULL_PARAMETERS_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->SYNC_PARAMETERS_TOPIC, JSON_SYNC_PARAMETERS_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->SYNC_TIME_TOPIC, JSON_SYNC_TIME_TOPIC, MESSAGE_TYPE_SIZE);
-    strncpy(parser->ERROR_TOPIC, JSON_ERROR_TOPIC, MESSAGE_TYPE_SIZE);
+            TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_FILE_DELETE_TOPIC, JSON_FILE_MANAGEMENT_FILE_DELETE_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_FILE_PURGE_TOPIC, JSON_FILE_MANAGEMENT_FILE_PURGE_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FIRMWARE_UPDATE_INSTALL_TOPIC, JSON_FIRMWARE_UPDATE_INSTALL_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FIRMWARE_UPDATE_ABORT_TOPIC, JSON_FIRMWARE_UPDATE_ABORT_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->P2D_TOPIC, JSON_P2D_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->D2P_TOPIC, JSON_D2P_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FEED_REGISTRATION_TOPIC, JSON_FEED_REGISTRATION_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FEED_REMOVAL_TOPIC, JSON_FEED_REMOVAL_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FEED_VALUES_MESSAGE_TOPIC, JSON_FEED_VALUES_MESSAGE_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->PULL_FEED_VALUES_TOPIC, JSON_PULL_FEEDS_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->ATTRIBUTE_REGISTRATION_TOPIC, JSON_ATTRIBUTE_REGISTRATION_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->PARAMETERS_TOPIC, JSON_PARAMETERS_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->PULL_PARAMETERS_TOPIC, JSON_PULL_PARAMETERS_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->SYNC_PARAMETERS_TOPIC, JSON_SYNC_PARAMETERS_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->SYNC_TIME_TOPIC, JSON_SYNC_TIME_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->ERROR_TOPIC, JSON_ERROR_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
 }
 
 size_t parser_serialize_readings(parser_t* parser, reading_t* readings, data_type_t type, size_t num_readings,
@@ -218,15 +220,15 @@ bool parser_create_topic(parser_t* parser, char* direction, char* device_key, ch
 {
     return parser->create_topic(direction, device_key, message_type, topic);
 }
-size_t parser_deserialize_feed_value_message(parser_t* parser, char* buffer, size_t buffer_size,
-                                             feed_value_message_t* feed_value_message, size_t msg_buffer_size)
+size_t parser_deserialize_readings_message(parser_t* parser, char* buffer, size_t buffer_size,
+                                           reading_t* readings_received)
 {
-    return parser->deserialize_feed_value_message(buffer, buffer_size, feed_value_message, msg_buffer_size);
+    return parser->deserialize_readings_value_message(buffer, buffer_size, readings_received);
 }
 size_t parser_deserialize_parameter_message(parser_t* parser, char* buffer, size_t buffer_size,
-                                            parameter_t* parameter_message, size_t msg_buffer_size)
+                                            parameter_t* parameter_message)
 {
-    return parser->deserialize_parameter_message(buffer, buffer_size, parameter_message, msg_buffer_size);
+    return parser->deserialize_parameter_message(buffer, buffer_size, parameter_message);
 }
 bool parser_serialize_feed_registration(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
                                         outbound_message_t* outbound_message)

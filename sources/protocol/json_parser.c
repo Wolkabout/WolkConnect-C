@@ -33,7 +33,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char* JSON_READINGS_TOPIC = "d2p/sensor_reading/d/";
+#define JSON_TOKEN_SIZE READING_MAX_NUMBER
+#define UTC_MILLISECONDS_LENGTH 14
 
 const char* JSON_FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC = "d2p/file_upload_status/d/";
 const char* JSON_FILE_MANAGEMENT_PACKET_REQUEST_TOPIC = "d2p/file_binary_request/d/";
@@ -45,16 +46,16 @@ const char* JSON_FIRMWARE_UPDATE_VERSION_TOPIC = "d2p/firmware_version_update/d/
 
 const char JSON_P2D_TOPIC[TOPIC_DIRECTION_SIZE] = "p2d";
 const char JSON_D2P_TOPIC[TOPIC_DIRECTION_SIZE] = "d2p";
-const char JSON_FEED_REGISTRATION_TOPIC[MESSAGE_TYPE_SIZE] = "feed_registration";
-const char JSON_FEED_REMOVAL_TOPIC[MESSAGE_TYPE_SIZE] = "feed_removal";
-const char JSON_FEED_VALUES_MESSAGE_TOPIC[MESSAGE_TYPE_SIZE] = "feed_values";
-const char JSON_PULL_FEEDS_TOPIC[MESSAGE_TYPE_SIZE] = "pull_feed_values";
-const char JSON_ATTRIBUTE_REGISTRATION_TOPIC[MESSAGE_TYPE_SIZE] = "attribute_registration";
-const char JSON_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE] = "parameters";
-const char JSON_PULL_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE] = "pull_parameters";
-const char JSON_SYNC_PARAMETERS_TOPIC[MESSAGE_TYPE_SIZE] = "synchronize_parameters";
-const char JSON_SYNC_TIME_TOPIC[MESSAGE_TYPE_SIZE] = "time";
-const char JSON_ERROR_TOPIC[MESSAGE_TYPE_SIZE] = "error";
+const char JSON_FEED_REGISTRATION_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "feed_registration";
+const char JSON_FEED_REMOVAL_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "feed_removal";
+const char JSON_FEED_VALUES_MESSAGE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "feed_values";
+const char JSON_PULL_FEEDS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "pull_feed_values";
+const char JSON_ATTRIBUTE_REGISTRATION_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "attribute_registration";
+const char JSON_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "parameters";
+const char JSON_PULL_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "pull_parameters";
+const char JSON_SYNC_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "synchronize_parameters";
+const char JSON_SYNC_TIME_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "time";
+const char JSON_ERROR_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "error";
 
 
 static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s)
@@ -105,6 +106,7 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
                                                 file_management_parameter_t* parameter)
 {
     jsmn_parser parser;
+    // TODO: made constant from 12
     jsmntok_t tokens[12]; /* No more than 12 JSON token(s) are expected, check
                              jsmn documentation for token definition */
     jsmn_init(&parser);
@@ -398,40 +400,21 @@ bool json_serialize_firmware_update_version(const char* device_key, char* firmwa
 
 bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_command)
 {
-    jsmn_parser parser;
-    jsmntok_t tokens[10]; /* No more than 10 JSON token(s) are expected, check
-                             jsmn documentation for token definition */
-    jsmn_init(&parser);
-    int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
+    if (strlen(buffer) == 0)
+        return false;
 
-    /* Received JSON must be valid, and top level element must be object */
-    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+    char* string_part;
+    uint64_t conversion_utc = strtoul(buffer, &string_part, 10);
+    if (conversion_utc == NULL) {
         return false;
     }
-
-    char value_buffer[READING_ELEMENT_SIZE];
-    /*Obtain values*/
-    for (size_t i = 1; i < parser_result; i++) {
-
-        if (tokens[i].type == JSMN_PRIMITIVE) {
-            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i].end - tokens[i].start,
-                         buffer + tokens[i].start)
-                >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
-                return false;
-            }
-            uint64_t conversion_result = strtod(value_buffer, NULL);
-            if (conversion_result == NULL) {
-                return false;
-            }
-            utc_command->utc = conversion_result;
-        }
-    }
+    utc_command->utc = conversion_utc;
 
     return true;
 }
 
 bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
-                       char message_type[MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE])
+                       char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE])
 {
     topic[0] = '\0';
     strcat(topic, direction);
@@ -442,26 +425,102 @@ bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_k
 
     return true;
 }
-size_t json_deserialize_feed_value_message(char* buffer, size_t buffer_size, feed_value_message_t* feed_value_message,
-                                           size_t msg_buffer_size)
+
+size_t json_deserialize_readings_value_message(char* buffer, size_t buffer_size, reading_t* readings_received)
 {
+    uint8_t number_of_deserialized_readings = 0;
     jsmn_parser parser;
-    jsmntok_t tokens[10]; /* No more than 10 JSON token(s) are expected, check
-                             jsmn documentation for token definition */
+    jsmntok_t tokens[JSON_TOKEN_SIZE];
+
     jsmn_init(&parser);
     int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
 
-    /* Received JSON must be valid, and top level element must be object */
-    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+    /* Received JSON must be valid, and top level element must be array */
+    if (parser_result < 1 || tokens[0].type != JSMN_ARRAY || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
         return false;
     }
-    // TODO Figure out the JSMN parser
+
+    for (int i = 1; i < parser_result; ++i) { // at 1st position expects json object; 0 position is json array
+        if (tokens[i].type == JSMN_OBJECT) {
+            // object equals reading
+            for (int j = i + 1; tokens[j].type != JSMN_OBJECT; ++j) { // at 2nd position expects string
+                if (tokens[j].type == JSMN_STRING) {
+                    // get timestamp
+                    if (json_token_str_equal(buffer, &tokens[j], "timestamp")) {
+                        char timestamp[UTC_MILLISECONDS_LENGTH] = "";
+
+                        if (snprintf(timestamp, WOLK_ARRAY_LENGTH(timestamp), "%.*s",
+                                     tokens[j + 1].end - tokens[j + 1].start, buffer + tokens[j + 1].start)
+                            >= (int)WOLK_ARRAY_LENGTH(timestamp)) {
+                            return false;
+                        }
+                        char* string_part;
+                        reading_set_utc(readings_received, strtoul(timestamp, &string_part, 10));
+                    } else {
+                        // get reference
+                        if (snprintf(readings_received->reference, WOLK_ARRAY_LENGTH(readings_received->reference),
+                                     "%.*s", tokens[j].end - tokens[j].start, buffer + tokens[j].start)
+                            >= (int)WOLK_ARRAY_LENGTH(readings_received->reference)) {
+                            return false;
+                        }
+                        // get value
+                        if (snprintf(readings_received->reading_data,
+                                     WOLK_ARRAY_LENGTH(readings_received->reading_data), "%.*s",
+                                     tokens[j + 1].end - tokens[j + 1].start, buffer + tokens[j + 1].start)
+                            >= (int)WOLK_ARRAY_LENGTH(readings_received->reading_data)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            // move to next reading
+            readings_received++;
+            number_of_deserialized_readings++;
+        }
+    }
+    return number_of_deserialized_readings;
 }
-size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message,
-                                          size_t msg_buffer_size)
+
+size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message)
 {
-    // TODO
-    return 0;
+    uint8_t number_of_deserialized_parameters = 0;
+    jsmn_parser parser;
+    jsmntok_t tokens[JSON_TOKEN_SIZE];
+
+    jsmn_init(&parser);
+    int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
+
+    /* Received JSON must be valid, and top level element must be array */
+    if (parser_result < 1 || tokens[0].type != JSMN_ARRAY || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+        return false;
+    }
+
+    if (tokens[1].type != JSMN_OBJECT) {
+        return false;
+    }
+
+    for (int i = 2; i < parser_result;
+         ++i) { // at 3rd position expects first json string; 2nd position is json object; 1st position is json array
+        if (tokens[i].type == JSMN_STRING) {
+            // get name
+            if (snprintf(parameter_message->name, WOLK_ARRAY_LENGTH(parameter_message->name), "%.*s",
+                         tokens[i].end - tokens[i].start, buffer + tokens[i].start)
+                >= (int)WOLK_ARRAY_LENGTH(parameter_message->name)) {
+                return false;
+            }
+            // get value
+            if (snprintf(parameter_message->value, WOLK_ARRAY_LENGTH(parameter_message->value), "%.*s",
+                         tokens[i + 1].end - tokens[i + 1].start, buffer + tokens[i + 1].start)
+                >= (int)WOLK_ARRAY_LENGTH(parameter_message->value)) {
+                return false;
+            }
+            // move to next parameter
+            parameter_message++;
+            number_of_deserialized_parameters++;
+        }
+    }
+
+    return number_of_deserialized_parameters;
 }
 
 static bool serialize_reading(reading_t* reading, data_type_t type, size_t reading_element_size, char* buffer,
@@ -532,7 +591,7 @@ size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t num
 bool json_serialize_attribute(const char* device_key, attribute_t* attributes, size_t number_of_attributes,
                               outbound_message_t* outbound_message)
 {
-    char payload[PAYLOAD_SIZE]="";
+    char payload[PAYLOAD_SIZE] = "";
     char topic[TOPIC_SIZE] = "";
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_ATTRIBUTE_REGISTRATION_TOPIC, topic);
 
@@ -544,8 +603,7 @@ bool json_serialize_attribute(const char* device_key, attribute_t* attributes, s
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload))
             return false;
 
-        if (strlen(payload)
-            > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
+        if (strlen(payload) > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
             return false;
 
         strcat(outbound_message->payload, payload);
@@ -572,8 +630,7 @@ bool json_serialize_parameter(const char* device_key, parameter_t* parameter, si
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload))
             return false;
 
-        if (strlen(payload)
-            > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
+        if (strlen(payload) > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
             return false;
 
         strcat(outbound_message->payload, payload);
@@ -601,8 +658,7 @@ bool json_serialize_feed_registration(const char* device_key, feed_t* feed, size
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload))
             return false;
 
-        if (strlen(payload)
-            > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
+        if (strlen(payload) > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
             return false;
 
         strcat(outbound_message->payload, payload);
@@ -668,8 +724,7 @@ bool json_serialize_sync_parameters(const char* device_key, parameter_t* paramet
     strcat(outbound_message->payload, "[");
     for (int i = 0; i < number_of_parameters; ++i) {
         strcat(outbound_message->payload, "\"");
-        if (strlen(parameters->name)
-            > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
+        if (strlen(parameters->name) > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
             return false;
         strcat(outbound_message->payload, parameters->name);
         strcat(outbound_message->payload, "\"");
