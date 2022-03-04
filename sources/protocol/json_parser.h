@@ -63,6 +63,7 @@ const char JSON_PULL_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
 const char JSON_SYNC_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
 const char JSON_SYNC_TIME_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
 const char JSON_ERROR_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
+const char JSON_DETAILS_SYNCHRONIZATION[TOPIC_MESSAGE_TYPE_SIZE];
 
 size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t number_of_readings,
                                size_t reading_element_size, char* buffer, size_t buffer_size);
@@ -93,6 +94,8 @@ bool json_serialize_firmware_update_version(const char* device_key, char* firmwa
                                             outbound_message_t* outbound_message);
 
 bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_command);
+bool json_deserialize_details_synchronization(char* buffer, size_t buffer_size, feed_t* feeds, size_t* number_of_feeds,
+                                              attribute_t* attributes, size_t* number_of_attributes);
 
 size_t json_deserialize_readings_value_message(char* buffer, size_t buffer_size, reading_t* readings_received);
 size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message);
@@ -109,6 +112,7 @@ bool json_serialize_pull_parameters(const char* device_key, outbound_message_t* 
 bool json_serialize_sync_parameters(const char* device_key, parameter_t* parameters, size_t number_of_parameters,
                                     outbound_message_t* outbound_message);
 bool json_serialize_sync_time(const char* device_key, outbound_message_t* outbound_message);
+bool json_serialize_sync_details_synchronization(const char* device_key, outbound_message_t* outbound_message);
 bool json_serialize_attribute(const char* device_key, attribute_t* attributes, size_t number_of_attributes,
                               outbound_message_t* outbound_message);
 bool json_serialize_parameter(const char* device_key, parameter_t* parameter, size_t number_of_parameters,

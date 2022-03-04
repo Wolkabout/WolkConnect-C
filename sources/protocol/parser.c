@@ -47,6 +47,7 @@ void parser_init(parser_t* parser)
     parser->serialize_firmware_update_version = json_serialize_firmware_update_version;
 
     parser->deserialize_time = json_deserialize_time;
+    parser->deserialize_details_synchronization = json_deserialize_details_synchronization;
     parser->deserialize_readings_value_message = json_deserialize_readings_value_message;
     parser->deserialize_parameter_message = json_deserialize_parameter_message;
 
@@ -58,6 +59,7 @@ void parser_init(parser_t* parser)
     parser->serialize_pull_parameters = json_serialize_pull_parameters;
     parser->serialize_sync_parameters = json_serialize_sync_parameters;
     parser->serialize_sync_time = json_serialize_sync_time;
+    parser->serialize_sync_details_synchronization = json_serialize_sync_details_synchronization;
     parser->serialize_attribute = json_serialize_attribute;
     parser->serialize_parameter = json_serialize_parameter;
 
@@ -87,6 +89,7 @@ void parser_init(parser_t* parser)
     strncpy(parser->SYNC_PARAMETERS_TOPIC, JSON_SYNC_PARAMETERS_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->SYNC_TIME_TOPIC, JSON_SYNC_TIME_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->ERROR_TOPIC, JSON_ERROR_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->DETAILS_SYNCHRONIZATION_TOPIC, JSON_DETAILS_SYNCHRONIZATION, TOPIC_MESSAGE_TYPE_SIZE);
 }
 
 size_t parser_serialize_readings(parser_t* parser, reading_t* readings, data_type_t type, size_t num_readings,
@@ -216,6 +219,14 @@ bool parser_deserialize_time(parser_t* parser, char* buffer, size_t buffer_size,
     return parser->deserialize_time(buffer, buffer_size, utc_command);
 }
 
+bool parser_deserialize_details_synchronization(parser_t* parser, char* buffer, size_t buffer_size, feed_t* feeds,
+                                                size_t* number_of_feeds, attribute_t* attributes,
+                                                size_t* number_of_attributes)
+{
+    return parser->deserialize_details_synchronization(buffer, buffer_size, feeds, number_of_feeds, attributes,
+                                                       number_of_attributes);
+}
+
 bool parser_create_topic(parser_t* parser, char* direction, char* device_key, char* message_type, char* topic)
 {
     return parser->create_topic(direction, device_key, message_type, topic);
@@ -256,6 +267,11 @@ bool parser_serialize_sync_parameters(parser_t* parser, const char* device_key, 
 bool parser_serialize_sync_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message)
 {
     return parser->serialize_sync_time(device_key, outbound_message);
+}
+bool parser_serialize_details_synchronization(parser_t* parser, const char* device_key,
+                                              outbound_message_t* outbound_message)
+{
+    return parser->serialize_sync_details_synchronization(device_key, outbound_message);
 }
 bool parser_serialize_attribute(parser_t* parser, const char* device_key, attribute_t* attributes,
                                 size_t number_of_attributes, outbound_message_t* outbound_message)

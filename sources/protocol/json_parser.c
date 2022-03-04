@@ -55,7 +55,9 @@ const char JSON_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "parameters";
 const char JSON_PULL_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "pull_parameters";
 const char JSON_SYNC_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "synchronize_parameters";
 const char JSON_SYNC_TIME_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "time";
+const char JSON_SYNC_DETAILS_SYNCHRONIZATION_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "details_synchronization";
 const char JSON_ERROR_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "error";
+const char JSON_DETAILS_SYNCHRONIZATION[TOPIC_MESSAGE_TYPE_SIZE] = "details_synchronization";
 
 
 static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s)
@@ -413,6 +415,52 @@ bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_
     return true;
 }
 
+bool json_deserialize_details_synchronization(char* buffer, size_t buffer_size, feed_t* feeds, size_t* number_of_feeds,
+                                              attribute_t* attributes, size_t* number_of_attributes)
+{
+    jsmn_parser parser;
+    jsmntok_t tokens[JSON_TOKEN_SIZE];
+
+    jsmn_init(&parser);
+    int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
+
+    /* Received JSON must be valid, and top level element must be array */
+    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+        return false;
+    }
+    // OBJ*STR-ARRAY-STR-..-STR-STR-ARRAY-STR-..-STR
+    for (int i = 1; i < parser_result; ++i) { // at 1st position expects json object; 0 position is json array
+        if (tokens[i].type == JSMN_ARRAY) {
+            if (json_token_str_equal(buffer, &tokens[i - 1], "feeds")) {
+                for (int j = i; tokens[j + 1].type != JSMN_ARRAY; ++j) { // 1st str is value, 2nd is element name
+                    if (tokens[j].type == JSMN_STRING) {
+                        if (snprintf(feeds->name, WOLK_ARRAY_LENGTH(feeds->name), "%.*s",
+                                     tokens[j].end - tokens[j].start, buffer + tokens[j].start)
+                            >= (int)WOLK_ARRAY_LENGTH(feeds->name)) {
+                            return false;
+                        }
+                        *number_of_feeds += 1;
+                        feeds++;
+                    }
+                }
+            } else if (json_token_str_equal(buffer, &tokens[i - 1], "attributes")) {
+                for (int j = i; tokens[j + 1].type != JSMN_ARRAY; ++j) { // 1st str is value, 2nd is element name
+                    if (tokens[j].type == JSMN_STRING) {
+                        if (snprintf(attributes->name, WOLK_ARRAY_LENGTH(attributes->name), "%.*s",
+                                     tokens[j].end - tokens[j].start, buffer + tokens[j].start)
+                            >= (int)WOLK_ARRAY_LENGTH(attributes->name)) {
+                            return false;
+                        }
+                        *number_of_attributes += 1;
+                        attributes++;
+                    }
+                }
+            } else
+                return false;
+        }
+    }
+}
+
 bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                        char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE])
 {
@@ -744,6 +792,17 @@ bool json_serialize_sync_time(const char* device_key, outbound_message_t* outbou
 {
     char topic[TOPIC_SIZE] = "";
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_SYNC_TIME_TOPIC, topic);
+
+    strncpy(outbound_message->topic, topic, TOPIC_SIZE);
+    strncpy(outbound_message->payload, "", PAYLOAD_SIZE);
+
+    return true;
+}
+
+bool json_serialize_sync_details_synchronization(const char* device_key, outbound_message_t* outbound_message)
+{
+    char topic[TOPIC_SIZE] = "";
+    json_create_topic(JSON_D2P_TOPIC, device_key, JSON_SYNC_DETAILS_SYNCHRONIZATION_TOPIC, topic);
 
     strncpy(outbound_message->topic, topic, TOPIC_SIZE);
     strncpy(outbound_message->payload, "", PAYLOAD_SIZE);

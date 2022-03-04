@@ -196,3 +196,12 @@ bool outbound_message_synchronize_time(parser_t* parser, const char* device_key,
     WOLK_ASSERT(device_key);
     return parser_serialize_sync_time(parser, device_key, outbound_message);
 }
+
+bool outbound_message_details_synchronize(parser_t* parser, const char* device_key,
+                                          outbound_message_t* outbound_message)
+{
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(device_key);
+
+    return parser_serialize_details_synchronization(parser, device_key, outbound_message);
+}

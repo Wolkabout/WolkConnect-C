@@ -54,73 +54,6 @@ typedef unsigned char WOLK_BOOL_T;
 enum WOLK_BOOL_T_values { W_FALSE = 0, W_TRUE = 1 };
 
 /**
- * @brief Callback declaration for writting bytes to socket
- */
-typedef int (*send_func_t)(unsigned char* bytes, unsigned int num_bytes);
-
-/**
- * @brief Callback declaration for reading bytes from socket
- */
-typedef int (*recv_func_t)(unsigned char* bytes, unsigned int num_bytes);
-
-/**
- * @brief Declaration of feed value handler.
- *
- * @param reference feed reference received from WolkAbout IoT Platform.
- * @param value value received from WolkAbout IoT Platform.
- */
-typedef void (*feed_handler_t)(const char* reference, const char* value);
-
-/**
- * @brief Declaration of parameter handler.
- *
- * @param reference parameter references defined on WolkAbout IoT Platform
- * @param value parameter values received from WolkAbout IoT Platform.
- * @param num_configuration_items number of used configuration parameters
- */
-typedef void (*parameter_handler_t)(char (*name)[PARAMETER_TYPE_SIZE], char (*value)[PARAMETER_VALUE_SIZE]);
-
-/**
- * @brief  WolkAbout IoT Platform connector context.
- * Most of the parameters are used to initialize WolkConnect library forwarding to wolk_init().
- */
-typedef struct wolk_ctx {
-    int sock;
-    MQTTPacket_connectData connectData;
-    MQTTTransport mqtt_transport;
-    transmission_io_functions_t iof;
-
-    outbound_mode_t outbound_mode;
-
-    feed_handler_t feed_handler; /**< Callback for handling incoming feeds from WolkAbout IoT Platform.
-                                              @see feed_handler_t*/
-
-    parameter_handler_t parameter_handler; /**< Callback for handling received configuration from WolkAbout IoT
-                                                      Platform. @see parameter_handler_t*/
-
-    char device_key[DEVICE_KEY_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as a
- *
- * result
-                                         of device creation on the platform.*/
-    char device_password[DEVICE_PASSWORD_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as
-                                                   a
-
-                                                   result of device creation on the platform.*/
-
-    parser_t parser;
-
-    persistence_t persistence;
-
-    file_management_t file_management;
-
-    firmware_update_t firmware_update;
-
-    uint64_t utc;
-
-    bool is_initialized;
-} wolk_ctx_t;
-
-/**
  * @brief  WolkAbout IoT Platform numeric reading type. It is simplified reading_t type
  */
 typedef struct wolk_numeric_readings_t {
@@ -146,6 +79,87 @@ typedef struct wolk_boolean_readings {
 
 typedef feed_t wolk_feed_t;
 typedef parameter_t wolk_parameter_t;
+typedef attribute_t wolk_attribute_t;
+
+/**
+ * @brief Callback declaration for writting bytes to socket
+ */
+typedef int (*send_func_t)(unsigned char* bytes, unsigned int num_bytes);
+
+/**
+ * @brief Callback declaration for reading bytes from socket
+ */
+typedef int (*recv_func_t)(unsigned char* bytes, unsigned int num_bytes);
+
+/**
+ * @brief Declaration of feed value handler.
+ *
+ * @param reference feed reference received from WolkAbout IoT Platform.
+ * @param value value received from WolkAbout IoT Platform.
+ */
+typedef void (*feed_handler_t)(const char* reference, const char* value);
+
+/**
+ * @brief Declaration of parameter handler.
+ *
+ * @param parameter_message Parameters received as name:value pairs
+ * @param number_of_parameters number of received parameters
+ */
+typedef void (*parameter_handler_t)(wolk_parameter_t* parameter_message, size_t number_of_parameters);
+
+/**
+ * @brief Declaration of parameter handler.
+ *
+ * @param parameter_message Parameters received as name:value pairs
+ * @param number_of_parameters number of received parameters
+ */
+typedef void (*details_synchronization_handler_t)(wolk_feed_t* feeds, size_t number_of_received_feeds,
+                                                  wolk_attribute_t* attributes, size_t number_of_received_attributes);
+
+
+/**
+ * @brief  WolkAbout IoT Platform connector context.
+ * Most of the parameters are used to initialize WolkConnect library forwarding to wolk_init().
+ */
+typedef struct wolk_ctx {
+    int sock;
+    MQTTPacket_connectData connectData;
+    MQTTTransport mqtt_transport;
+    transmission_io_functions_t iof;
+
+    outbound_mode_t outbound_mode;
+
+    feed_handler_t feed_handler; /**< Callback for handling incoming feeds from WolkAbout IoT Platform.
+                                              @see feed_handler_t*/
+
+    parameter_handler_t parameter_handler; /**< Callback for handling received configuration from WolkAbout IoT
+                                                      Platform. @see parameter_handler_t*/
+
+    details_synchronization_handler_t details_synchronization_handler; /**< Callback for handling received details
+configuration from WolkAbout IoT Platform. @see attribute_handler_t*/
+
+    char device_key[DEVICE_KEY_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as a
+ *
+ * result
+                                         of device creation on the platform.*/
+    char device_password[DEVICE_PASSWORD_SIZE]; /**<  Authentication parameters for WolkAbout IoT Platform. Obtained as
+                                                   a
+
+                                                   result of device creation on the platform.*/
+
+    parser_t parser;
+
+    persistence_t persistence;
+
+    file_management_t file_management;
+
+    firmware_update_t firmware_update;
+
+    uint64_t utc;
+
+    bool is_initialized;
+} wolk_ctx_t;
+
 /**
  * @brief Initializes WolkAbout IoT Platform connector context
  *
@@ -154,21 +168,23 @@ typedef parameter_t wolk_parameter_t;
  * @param snd_func Callback function that handles outgoing traffic
  * @param rcv_func Callback function that handles incoming traffic
  *
- * @param feed_handler function pointer to 'feed_handler_t' implementation
- *
- * @param parameter_handler function pointer to 'parameter_handler_t' implementation
- *
  * @param device_key Device key provided by WolkAbout IoT Platform upon device
  * creation
  * @param password Device password provided by WolkAbout IoT Platform device
  * upon device creation
  *
+ * @param feed_handler function pointer to 'feed_handler_t' implementation
+ *
+ * @param parameter_handler function pointer to 'parameter_handler_t' implementation
+ *
+ * @param details_synchronization_handler function pointer to 'details_synchronization_handler_t' implementation
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, feed_handler_t feed_handler,
-                     parameter_handler_t parameter_handler, const char* device_key, const char* device_password,
-                     outbound_mode_t outbound_mode);
+WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, const char* device_key,
+                     const char* device_password, outbound_mode_t outbound_mode, feed_handler_t feed_handler,
+                     parameter_handler_t parameter_handler,
+                     details_synchronization_handler_t details_synchronization_handler);
 
 /**
  * @brief Initializes persistence mechanism with in-memory implementation
@@ -428,6 +444,8 @@ WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx);
 WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx, parameter_t* parameters, size_t number_of_parameters);
 
 WOLK_ERR_T wolk_sync_time_request(wolk_ctx_t* ctx);
+
+WOLK_ERR_T wolk_details_synchronization(wolk_ctx_t* ctx);
 
 
 #ifdef __cplusplus

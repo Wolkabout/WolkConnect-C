@@ -45,6 +45,9 @@ static bool is_wolk_initialized(wolk_ctx_t* ctx);
 static void handle_readings(wolk_ctx_t* ctx, reading_t* readings, size_t number_of_readings);
 static void handle_parameter_message(wolk_ctx_t* ctx, parameter_t* parameter_message, size_t number_of_parameters);
 static void handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc);
+static void handle_details_synchronization_message(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds,
+                                                   attribute_t* attributes, size_t number_of_attributes);
+static void handle_error_message(wolk_ctx_t* ctx, char* error);
 
 static void handle_file_management_parameter(file_management_t* file_management,
                                              file_management_parameter_t* file_management_parameter);
@@ -74,9 +77,10 @@ static void handle_firmware_update_abort(firmware_update_t* firmware_update);
 
 static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[TOPIC_MESSAGE_TYPE_SIZE]);
 
-WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, feed_handler_t feed_handler,
-                     parameter_handler_t parameter_handler, const char* device_key, const char* device_password,
-                     outbound_mode_t outbound_mode)
+WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, const char* device_key,
+                     const char* device_password, outbound_mode_t outbound_mode, feed_handler_t feed_handler,
+                     parameter_handler_t parameter_handler,
+                     details_synchronization_handler_t details_synchronization_handler)
 {
     /* Sanity check */
     WOLK_ASSERT(snd_func != NULL);
@@ -116,6 +120,7 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
 
     ctx->feed_handler = feed_handler;
     ctx->parameter_handler = parameter_handler;
+    ctx->details_synchronization_handler = details_synchronization_handler;
 
     ctx->outbound_mode = outbound_mode;
 
@@ -206,6 +211,8 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     subscribe_to(ctx, ctx->parser.FEED_VALUES_MESSAGE_TOPIC);
     subscribe_to(ctx, ctx->parser.PARAMETERS_TOPIC);
     subscribe_to(ctx, ctx->parser.SYNC_TIME_TOPIC);
+    subscribe_to(ctx, ctx->parser.ERROR_TOPIC);
+    subscribe_to(ctx, ctx->parser.DETAILS_SYNCHRONIZATION_TOPIC);
 
     subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC);
     subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC);
@@ -524,6 +531,15 @@ WOLK_ERR_T wolk_sync_time_request(wolk_ctx_t* ctx)
 
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
+
+WOLK_ERR_T wolk_details_synchronization(wolk_ctx_t* ctx)
+{
+    outbound_message_t outbound_message = {0};
+    outbound_message_details_synchronize(&ctx->parser, ctx->device_key, &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
 WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attributes, size_t number_of_attributes)
 {
     outbound_message_t outbound_message = {0};
@@ -616,9 +632,21 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
             if (num_deserialized_commands != 0) {
                 handle_utc_command(ctx, &utc_command);
             }
-        } // TODO: p2d/{deviceKey}/details_synchronization
-        // TODO: p2d/{deviceKey}/error
-        else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC)) {
+        } else if (strstr(topic_str, ctx->parser.ERROR_TOPIC)) {
+            if (payload_len != 0) {
+                handle_error_message(ctx, &payload);
+            }
+        } else if (strstr(topic_str, ctx->parser.DETAILS_SYNCHRONIZATION_TOPIC)) {
+            feed_t feeds[READING_ELEMENT_SIZE];
+            attribute_t attributes[READING_ELEMENT_SIZE];
+            size_t number_of_feeds = 0;
+            size_t number_of_attributes = 0;
+
+            if (parser_deserialize_details_synchronization(&ctx->parser, (char*)payload, (size_t)payload_len, &feeds,
+                                                           &number_of_feeds, &attributes, &number_of_attributes)) {
+                handle_details_synchronization_message(ctx, &feeds, number_of_feeds, &attributes, number_of_attributes);
+            }
+        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
@@ -741,6 +769,9 @@ static bool is_wolk_initialized(wolk_ctx_t* ctx)
 
 static void handle_readings(wolk_ctx_t* ctx, reading_t* readings, size_t number_of_readings)
 {
+    /* Sanity Check */
+    WOLK_ASSERT(ctx);
+
     if (ctx->feed_handler != NULL) {
         ctx->feed_handler(readings, number_of_readings);
     }
@@ -748,8 +779,8 @@ static void handle_readings(wolk_ctx_t* ctx, reading_t* readings, size_t number_
 
 static void handle_parameter_message(wolk_ctx_t* ctx, parameter_t* parameter_message, size_t number_of_parameters)
 {
-    const char* name = parameter_message->name;
-    const char* value = parameter_message->value;
+    /* Sanity Check */
+    WOLK_ASSERT(ctx);
 
     if (ctx->parameter_handler != NULL) {
         ctx->parameter_handler(parameter_message, number_of_parameters);
@@ -763,6 +794,23 @@ static void handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc)
     WOLK_ASSERT(utc);
 
     ctx->utc = utc_command_get(utc);
+}
+
+static void handle_details_synchronization_message(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds,
+                                                   attribute_t* attributes, size_t number_of_attributes)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(ctx);
+
+    if (ctx->details_synchronization_handler != NULL) {
+        ctx->details_synchronization_handler(feeds, number_of_feeds, attributes, number_of_attributes);
+    }
+}
+
+static void handle_error_message(wolk_ctx_t* ctx, char* error)
+{
+    WOLK_UNUSED(ctx);
+    WOLK_UNUSED(error);
 }
 
 static void handle_file_management_parameter(file_management_t* file_management,

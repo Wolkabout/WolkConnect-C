@@ -80,6 +80,8 @@ bool outbound_message_synchronize_parameters(parser_t* parser, const char* devic
                                              size_t number_of_parameters, outbound_message_t* outbound_message);
 
 bool outbound_message_synchronize_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
+bool outbound_message_details_synchronize(parser_t* parser, const char* device_key,
+                                          outbound_message_t* outbound_message);
 
 #ifdef __cplusplus
 }

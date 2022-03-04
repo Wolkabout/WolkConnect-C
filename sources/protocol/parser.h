@@ -65,6 +65,7 @@ typedef struct {
     char SYNC_PARAMETERS_TOPIC[TOPIC_SIZE];
     char SYNC_TIME_TOPIC[TOPIC_SIZE];
     char ERROR_TOPIC[TOPIC_SIZE];
+    char DETAILS_SYNCHRONIZATION_TOPIC[TOPIC_SIZE];
 
     size_t (*serialize_readings)(reading_t* readings, data_type_t type, size_t num_readings,
                                  size_t reading_element_size, char* buffer, size_t buffer_size);
@@ -92,6 +93,9 @@ typedef struct {
                                               outbound_message_t* outbound_message);
 
     bool (*deserialize_time)(char* buffer, size_t buffer_size, utc_command_t* utc_command);
+    bool (*deserialize_details_synchronization)(char* buffer, size_t buffer_size, feed_t* feeds,
+                                                size_t* number_of_feeds, attribute_t* attributes,
+                                                size_t* number_of_attributes);
 
     bool (*create_topic)(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                          char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
@@ -106,6 +110,7 @@ typedef struct {
     bool (*serialize_sync_parameters)(const char* device_key, parameter_t* parameters, size_t number_of_parameters,
                                       outbound_message_t* outbound_message);
     bool (*serialize_sync_time)(const char* device_key, outbound_message_t* outbound_message);
+    bool (*serialize_sync_details_synchronization)(const char* device_key, outbound_message_t* outbound_message);
     bool (*serialize_attribute)(const char* device_key, attribute_t* attributes, size_t number_of_attributes,
                                 outbound_message_t* outbound_message);
     bool (*serialize_parameter)(const char* device_key, parameter_t* parameter, size_t number_of_parameters,
@@ -156,6 +161,9 @@ bool parser_is_initialized(parser_t* parser);
 
 /**** Utility ****/
 bool parser_deserialize_time(parser_t* parser, char* buffer, size_t buffer_size, utc_command_t* utc_command);
+bool parser_deserialize_details_synchronization(parser_t* parser, char* buffer, size_t buffer_size, feed_t* feeds,
+                                                size_t* number_of_feeds, attribute_t* attributes,
+                                                size_t* number_of_attributes);
 
 bool parser_create_topic(parser_t* parser, char direction[TOPIC_DIRECTION_SIZE], char device_key[DEVICE_KEY_SIZE],
                          char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
@@ -179,6 +187,8 @@ bool parser_serialize_sync_parameters(parser_t* parser, const char* device_key, 
                                       size_t number_of_parameters, outbound_message_t* outbound_message);
 
 bool parser_serialize_sync_time(parser_t* parser, const char* device_key, outbound_message_t* outbound_message);
+bool parser_serialize_details_synchronization(parser_t* parser, const char* device_key,
+                                              outbound_message_t* outbound_message);
 
 bool parser_serialize_attribute(parser_t* parser, const char* device_key, attribute_t* attributes,
                                 size_t number_of_attributes, outbound_message_t* outbound_message);
