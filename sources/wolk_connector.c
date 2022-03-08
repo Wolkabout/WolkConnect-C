@@ -285,7 +285,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
 WOLK_ERR_T wolk_init_feed(feed_registration_t* feed, char* name, const char* reference, char* unit,
                           const feed_type_t feedType)
 {
-    initialize_feed(feed, name, reference, unit, feedType);
+    initialize_registration_feed(feed, name, reference, unit, feedType);
 
     return W_FALSE;
 }

@@ -21,7 +21,6 @@
 #include "model/feed.h"
 #include "model/file_management/file_management_status.h"
 #include "model/outbound_message.h"
-#include "model/reading.h"
 #include "protocol/parser.h"
 #include "size_definitions.h"
 

@@ -26,7 +26,6 @@
 #include "model/firmware_update.h"
 #include "model/outbound_message.h"
 #include "model/parameter.h"
-#include "model/reading.h"
 #include "model/utc_command.h"
 
 #include <stdbool.h>
@@ -122,7 +121,7 @@ void parser_init(parser_t* parser);
 
 /**** Feed ****/
 size_t parser_serialize_feeds(parser_t* parser, feed_t* readings, data_type_t type, size_t num_readings,
-                                 size_t reading_element_size, char* buffer, size_t buffer_size);
+                              size_t reading_element_size, char* buffer, size_t buffer_size);
 /**** Feed ****/
 
 /**** File Management ****/

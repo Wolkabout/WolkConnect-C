@@ -26,7 +26,6 @@
 #include "model/firmware_update.h"
 #include "model/outbound_message.h"
 #include "model/parameter.h"
-#include "model/reading.h"
 #include "model/utc_command.h"
 
 #include <stdbool.h>

@@ -20,7 +20,6 @@
 #include "model/file_management/file_management_parameter.h"
 #include "model/file_management/file_management_status.h"
 #include "model/firmware_update.h"
-#include "model/reading.h"
 #include "size_definitions.h"
 #include "utility/base64.h"
 #include "utility/jsmn.h"
