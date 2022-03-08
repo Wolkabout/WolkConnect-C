@@ -43,7 +43,7 @@ size_t outbound_message_make_from_feeds(parser_t* parser, const char* device_key
 
     parser->create_topic(parser->D2P_TOPIC, device_key, parser->FEED_VALUES_MESSAGE_TOPIC, topic);
 
-    num_serialized = parser_serialize_readings(parser, readings, type, readings_number, reading_element_size, payload,
+    num_serialized = parser_serialize_feeds(parser, readings, type, readings_number, reading_element_size, payload,
                                                sizeof(payload));
     if (num_serialized != 0)
         outbound_message_init(outbound_message, topic, payload);

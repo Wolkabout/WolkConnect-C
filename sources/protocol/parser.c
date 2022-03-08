@@ -92,7 +92,7 @@ void parser_init(parser_t* parser)
     strncpy(parser->DETAILS_SYNCHRONIZATION_TOPIC, JSON_DETAILS_SYNCHRONIZATION, TOPIC_MESSAGE_TYPE_SIZE);
 }
 
-size_t parser_serialize_readings(parser_t* parser, feed_t* readings, data_type_t type, size_t num_readings,
+size_t parser_serialize_feeds(parser_t* parser, feed_t* readings, data_type_t type, size_t num_readings,
                                  size_t reading_element_size, char* buffer, size_t buffer_size)
 {
     /* Sanity check */
