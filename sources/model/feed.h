@@ -14,9 +14,9 @@ typedef struct {
     char unit[ITEM_UNIT_SIZE];
 
     feed_type_t feedType;
-} feed_t;
+} feed_registration_t;
 
-void initialize_feed(feed_t* feed, char* name, const char* reference, char* unit, feed_type_t feedType);
+void initialize_feed(feed_registration_t* feed, char* name, const char* reference, char* unit, feed_type_t feedType);
 
 #ifdef __cplusplus
 }

@@ -32,10 +32,10 @@ static size_t get_downloaded_file_position_in_list(char* first_file_list, size_t
                                                    char* second_file_list, size_t second_file_list_number_of_files)
 {
     int position_in_list = 0;
-    for (int i = 0; i < (first_file_list_number_of_files); i++) {
+    for (size_t i = 0; i < (first_file_list_number_of_files); i++) {
         bool found_match = false;
 
-        for (int y = 0; y < second_file_list_number_of_files; y++) {
+        for (size_t y = 0; y < second_file_list_number_of_files; y++) {
             if (strcmp(&first_file_list[i * FILE_MANAGEMENT_FILE_NAME_SIZE],
                        &second_file_list[y * FILE_MANAGEMENT_FILE_NAME_SIZE])
                 == 0) {

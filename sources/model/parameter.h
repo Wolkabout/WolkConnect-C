@@ -28,7 +28,7 @@ extern "C" {
 
 typedef struct {
     char name[PARAMETER_TYPE_SIZE];
-    char value[READING_ELEMENT_SIZE];
+    char value[FEED_ELEMENT_SIZE];
 } parameter_t;
 
 void parameter_init(parameter_t* parameter_message, char* name, char* value);

@@ -112,7 +112,7 @@ static bool file_write(uint8_t* status, int8_t* version)
             tmp_version[2] = version_patch;
         }
     } else {
-        for (int i = 0; i < FIRMWARE_UPDATE_VERSION_NUMBER_OF_ELEMENTS; i++) {
+        for (size_t i = 0; i < FIRMWARE_UPDATE_VERSION_NUMBER_OF_ELEMENTS; i++) {
             tmp_version[i] = version[i];
         }
     }

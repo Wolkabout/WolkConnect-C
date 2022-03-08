@@ -22,7 +22,7 @@
 void feed_value_message_init(feed_value_message_t* message, const char* reference, const char* value)
 { /* Sanity check */
     WOLK_ASSERT(strlen(reference) <= REFERENCE_SIZE);
-    WOLK_ASSERT(strlen(argument) <= READING_ELEMENT_SIZE);
+    WOLK_ASSERT(strlen(argument) <= FEED_ELEMENT_SIZE);
 
     strcpy(message->reference, reference);
     strcpy(message->value, value);

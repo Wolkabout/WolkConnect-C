@@ -25,9 +25,9 @@
 #include <stddef.h>
 #include <string.h>
 
-size_t outbound_message_make_from_readings(parser_t* parser, const char* device_key, reading_t* readings,
-                                           data_type_t type, size_t readings_number, size_t reading_element_size,
-                                           outbound_message_t* outbound_message)
+size_t outbound_message_make_from_feeds(parser_t* parser, const char* device_key, feed_t* readings, data_type_t type,
+                                        size_t readings_number, size_t reading_element_size,
+                                        outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
@@ -133,8 +133,8 @@ bool outbound_message_make_from_firmware_update_version(parser_t* parser, const 
 
     return parse_serialize_firmware_update_version(parser, device_key, firmware_update_version, outbound_message);
 }
-bool outbound_message_feed_registration(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
-                                        outbound_message_t* outbound_message)
+bool outbound_message_feed_registration(parser_t* parser, const char* device_key, feed_registration_t* feed,
+                                        size_t number_of_feeds, outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);
@@ -143,8 +143,8 @@ bool outbound_message_feed_registration(parser_t* parser, const char* device_key
     WOLK_ASSERT(outbound_message);
     return parser_serialize_feed_registration(parser, device_key, feed, number_of_feeds, outbound_message);
 }
-bool outbound_message_feed_removal(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
-                                   outbound_message_t* outbound_message)
+bool outbound_message_feed_removal(parser_t* parser, const char* device_key, feed_registration_t* feed,
+                                   size_t number_of_feeds, outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);

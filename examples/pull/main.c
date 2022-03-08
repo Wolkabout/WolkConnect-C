@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 WolkAbout Technology s.r.o.
+ * Copyright 2022 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "utility/wolk_utils.h"
 #include "wolk_connector.h"
 
@@ -27,17 +28,12 @@
 
 #include <openssl/ssl.h>
 
-#include "file_management_implementation.h"
-#include "firmware_update_implementation.h"
-
-#define DEFAULT_PUBLISH_PERIOD_SECONDS 15
 
 static SSL_CTX* ctx;
 static BIO* sockfd;
 
-/* WolkAbout Platform device connection parameters */
-static const char* device_key = "wolk-ffs";
-static const char* device_password = "8KLY1DA5H2";
+static const char* device_key = "wolkc-pull";
+static const char* device_password = "FBBAG1M57U";
 static const char* hostname = "integration5.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
@@ -48,12 +44,13 @@ static uint8_t persistence_storage[1024 * 1024];
 /* WolkConnect-C Connector context */
 static wolk_ctx_t wolk;
 
-wolk_numeric_feeds_t temperature_value = {0};
-wolk_numeric_feeds_t heartbeat_value = {0};
-wolk_boolean_feeds_t switch_value = {0};
-
-/* System dependencies */
 static volatile bool keep_running = true;
+
+static volatile bool received_feeds = false;
+static volatile bool received_parameters = false;
+wolk_boolean_feeds_t switch_feed = {0};
+wolk_numeric_feeds_t heartbeat_feed = {0};
+
 static void int_handler(int dummy)
 {
     WOLK_UNUSED(dummy);
@@ -137,18 +134,32 @@ static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const in
 
 void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds)
 {
+    printf("Receiving feeds.\n");
+
     for (int i = 0; i < number_of_feeds; ++i) {
         printf("Received is feed with reference %s and value %s\n", feeds->reference, feeds->data);
         if (strstr(feeds->reference, "SW")) {
             if (strstr(feeds->data[0], "true"))
-                switch_value.value = true;
+                switch_feed.value = true;
             else
-                switch_value.value = false;
+                switch_feed.value = false;
         } else if (strstr(feeds->reference, "HB")) {
-            heartbeat_value.value = atol(feeds->data[0]);
+            heartbeat_feed.value = atol(feeds->data[0]);
         }
         feeds++;
     }
+    received_feeds = true;
+}
+
+void parameters_value_handler(wolk_parameter_t* parameters, size_t number_of_parameters)
+{
+    printf("Receiving parameters.\n");
+
+    for (int i = 0; i < number_of_parameters; ++i) {
+        printf("Received is parameters with name %s and value %s\n", parameters->name, parameters->value);
+        parameters++;
+    }
+    received_parameters = true;
 }
 
 int main(int argc, char* argv[])
@@ -159,7 +170,7 @@ int main(int argc, char* argv[])
     signal(SIGINT, int_handler);
     signal(SIGTERM, int_handler);
 
-    heartbeat_value.value = DEFAULT_PUBLISH_PERIOD_SECONDS;
+    heartbeat_feed.value = 10; // default heartbeat_value
 
     if (strcmp(device_key, "device_key") == 0) {
         printf("Wolk client - Error, device key not provided\n");
@@ -171,82 +182,69 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    printf("Wolk client - Establishing connection to WolkAbout IoT platform\n");
-    open_socket(&sockfd, &ctx, hostname, portno, certs, NULL);
-    if (sockfd == NULL) {
-        printf("Wolk client - Error establishing connection to WolkAbout IoT platform\n");
-        return 1;
-    }
-
-    if (wolk_init(&wolk, send_buffer, receive_buffer, device_key, device_password, PUSH, feed_value_handler, NULL, NULL)
-        != W_FALSE) {
-        printf("Wolk client - Error initializing WolkConnect-C\n");
-        return 1;
-    }
-
-    if (wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false) != W_FALSE) {
-        printf("Wolk client - Error initializing in-memory persistence\n");
-        return 1;
-    }
-
-    printf("Wolk client - Connecting to server\n");
-    if (wolk_connect(&wolk) != W_FALSE) {
-        printf("Wolk client - Error connecting to server\n");
-        return 1;
-    }
-    printf("Wolk client - Connected to server\n");
-
-    //    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 500, file_management_start,
-    //    file_management_chunk_write,
-    //                                  file_management_chunk_read, file_management_abort, file_management_finalize,
-    //                                  file_management_start_url_download, file_management_is_url_download_done,
-    //                                  file_management_get_file_list, file_management_remove_file,
-    //                                  file_management_purge_files)
-    //        != W_FALSE) {
-    //        printf("Error initializing File Management");
-    //        return 1;
-    //    }
-
-    //    if (wolk_init_firmware_update(&wolk, firmware_update_start_installation,
-    //    firmware_update_is_installation_completed,
-    //                                  firmware_update_verification_store, firmware_update_verification_read,
-    //                                  firmware_update_get_version, firmware_update_abort_installation)
-    //        != W_FALSE) {
-    //        printf("Error initializing Firmware Update");
-    //        return 1;
-    //    }
-
-    int32_t tick_count = 0;
 
     while (keep_running) {
-        // Sending feeds on heartbeat
-        if (tick_count > (heartbeat_value.value) * 1000) {
-            printf("Wolk client - Sending feed readings:\n");
-
-            temperature_value.value = rand() % 100 - 20;
-            printf("Temperature feed with value: %lf °C\n", temperature_value.value);
-            wolk_add_numeric_feed(&wolk, "T", &temperature_value, 1);
-
-            printf("Heartbeat feed with value: %lf seconds\n", heartbeat_value.value);
-            wolk_add_numeric_feed(&wolk, "HB", &heartbeat_value, 1);
-
-            printf("Switch feed with value: %d\n", switch_value.value);
-            wolk_add_bool_feeds(&wolk, "SW", &switch_value, 1);
-
-            if (wolk_publish(&wolk)) {
-                printf("Wolk client - Error publishing feeds!\n");
-                return 1;
-            }
-
-            tick_count = 0;
+        printf("Wolk client - Establishing connection to WolkAbout IoT platform\n");
+        open_socket(&sockfd, &ctx, hostname, portno, certs, NULL);
+        if (sockfd == NULL) {
+            printf("Wolk client - Error establishing connection to WolkAbout IoT platform\n");
+            return 1;
         }
 
-        // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
-        // you can change this parameters, but keep it's multiplication
-        usleep(1000);
-        wolk_process(&wolk, 1);
+        if (wolk_init(&wolk, send_buffer, receive_buffer, device_key, device_password, PULL, feed_value_handler,
+                      parameters_value_handler, NULL)
+            != W_FALSE) {
+            printf("Wolk client - Error initializing WolkConnect-C\n");
+            return 1;
+        }
 
-        tick_count++;
+        if (wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false)
+            != W_FALSE) {
+            printf("Wolk client - Error initializing in-memory persistence\n");
+            return 1;
+        }
+
+        printf("Wolk client - Connecting to server\n");
+        if (wolk_connect(&wolk) != W_FALSE) {
+            printf("Wolk client - Error connecting to server\n");
+            return 1;
+        }
+        printf("Wolk client - Connected to server\n");
+
+        printf("Wolk client - Pulling values from platform\n");
+        wolk_pull_feed_values(&wolk);
+        wolk_pull_parameters(&wolk);
+        if (wolk_publish(&wolk)) {
+            printf("Wolk client - Error publishing pull values!\n");
+            return 1;
+        }
+
+        int32_t awake_time = 0;
+        while (!received_feeds && !received_parameters) {
+            // MANDATORY: keep looping for a new messages. Sleep(currently 1000us) and number of tick(currently 1)
+            // you can change this parameter, but keep it's multiplication
+            usleep(1000);
+            wolk_process(&wolk, 1);
+            awake_time++;
+
+            if (awake_time > 3000) // wait for platform response 3 seconds
+                break;
+        }
+
+        printf("Wolk client - Sending feeds\n");
+        wolk_add_bool_feeds(&wolk, "SW", &switch_feed, 1);
+        wolk_add_numeric_feed(&wolk, "HB", &heartbeat_feed, 1);
+        if (wolk_publish(&wolk)) {
+            printf("Wolk client - Error publishing feeds!\n");
+            return 1;
+        }
+
+        printf("Wolk client - Disconnecting\n");
+        wolk_disconnect(&wolk);
+        BIO_free_all(sockfd);
+
+        printf("Wolk client - Entering sleep mode.\n");
+        sleep(heartbeat_feed.value); // Sleep commanded value from platform
     }
 
     printf("Wolk client - Disconnecting\n");

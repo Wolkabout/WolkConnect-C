@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-add_executable(simple main.c)
+add_executable(pull main.c)
 
-target_link_libraries(simple WolkConnector-C pthread)
+target_link_libraries(pull WolkConnector-C)

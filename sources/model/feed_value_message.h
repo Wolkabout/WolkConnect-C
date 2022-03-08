@@ -25,7 +25,7 @@ extern "C" {
 
 typedef struct {
     char reference[REFERENCE_SIZE];
-    char value[READING_ELEMENT_SIZE];
+    char value[FEED_ELEMENT_SIZE];
 } feed_value_message_t;
 
 void feed_value_message_init(feed_value_message_t* message, const char* reference, const char* value);

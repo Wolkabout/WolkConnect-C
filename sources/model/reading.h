@@ -28,26 +28,26 @@ extern "C" {
 #endif
 
 typedef struct {
-    char reading_data[READING_MAX_NUMBER][READING_ELEMENT_SIZE];
-    uint16_t reading_size;
+    char data[FEEDS_MAX_NUMBER][FEED_ELEMENT_SIZE];
+    uint16_t size;
 
     char reference[REFERENCE_SIZE];
 
     uint64_t utc;
-} reading_t;
+} feed_t;
 
-void reading_init(reading_t* reading, uint16_t reading_size, char* reference);
+void feed_init(feed_t* feed, uint16_t feed_size, char* reference);
 
-void reading_clear(reading_t* reading);
+void feed_clear(feed_t* feed);
 
-void reading_set_data(reading_t* reading, const char** data);
-char** reading_get_data(reading_t* reading);
+void feed_set_data(feed_t* feed, const char** data);
+char** feed_get_data(feed_t* feed);
 
-void reading_set_data_at(reading_t* reading, const char* data, size_t data_position);
-char* reading_get_data_at(reading_t* reading, size_t data_position);
+void feed_set_data_at(feed_t* feed, const char* data, size_t data_position);
+char* feed_get_data_at(feed_t* feed, size_t data_position);
 
-void reading_set_utc(reading_t* reading, uint64_t utc);
-uint64_t reading_get_utc(reading_t* reading);
+void feed_set_utc(feed_t* feed, uint64_t utc);
+uint64_t feed_get_utc(feed_t* feed);
 
 #ifdef __cplusplus
 }

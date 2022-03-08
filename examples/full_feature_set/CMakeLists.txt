@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-add_executable(full-feature-set main.c sensor_readings.c file_management_implementation.c firmware_update_implementation.h firmware_update_implementation.c)
+add_executable(full-feature-set main.c file_management_implementation.c file_management_implementation.h firmware_update_implementation.h firmware_update_implementation.c)
 
 target_link_libraries(full-feature-set WolkConnector-C pthread)

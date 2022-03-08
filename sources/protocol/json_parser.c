@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define JSON_TOKEN_SIZE READING_MAX_NUMBER
+#define JSON_TOKEN_SIZE FEEDS_MAX_NUMBER
 #define UTC_MILLISECONDS_LENGTH 14
 
 const char* JSON_FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC = "d2p/file_upload_status/d/";
@@ -108,9 +108,7 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
                                                 file_management_parameter_t* parameter)
 {
     jsmn_parser parser;
-    // TODO: made constant from 12
-    jsmntok_t tokens[12]; /* No more than 12 JSON token(s) are expected, check
-                             jsmn documentation for token definition */
+    jsmntok_t tokens[JSON_TOKEN_SIZE];
     jsmn_init(&parser);
     const int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
 
@@ -122,7 +120,7 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
     file_management_parameter_init(parameter);
 
     /* Obtain command type and value */
-    char value_buffer[READING_ELEMENT_SIZE];
+    char value_buffer[FEED_ELEMENT_SIZE];
 
     for (size_t i = 1; i < parser_result; i++) {
         if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
@@ -313,8 +311,7 @@ bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, 
                                                 firmware_update_t* parameter)
 {
     jsmn_parser parser;
-    jsmntok_t tokens[12]; /* No more than 12 JSON token(s) are expected, check
-                             jsmn documentation for token definition */
+    jsmntok_t tokens[JSON_TOKEN_SIZE];
     jsmn_init(&parser);
     const int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
 
@@ -326,7 +323,7 @@ bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, 
     firmware_update_parameter_init(parameter);
 
     /* Obtain command type and value */
-    char value_buffer[READING_ELEMENT_SIZE];
+    char value_buffer[FEED_ELEMENT_SIZE];
 
     for (size_t i = 1; i < parser_result; i++) {
         if (json_token_str_equal(buffer, &tokens[i], "devices")) {
@@ -415,8 +412,9 @@ bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_
     return true;
 }
 
-bool json_deserialize_details_synchronization(char* buffer, size_t buffer_size, feed_t* feeds, size_t* number_of_feeds,
-                                              attribute_t* attributes, size_t* number_of_attributes)
+bool json_deserialize_details_synchronization(char* buffer, size_t buffer_size, feed_registration_t* feeds,
+                                              size_t* number_of_feeds, attribute_t* attributes,
+                                              size_t* number_of_attributes)
 {
     jsmn_parser parser;
     jsmntok_t tokens[JSON_TOKEN_SIZE];
@@ -474,9 +472,9 @@ bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_k
     return true;
 }
 
-size_t json_deserialize_readings_value_message(char* buffer, size_t buffer_size, reading_t* readings_received)
+size_t json_deserialize_feeds_value_message(char* buffer, size_t buffer_size, feed_t* feeds_received)
 {
-    uint8_t number_of_deserialized_readings = 0;
+    uint8_t number_of_deserialized_feeds = 0;
     jsmn_parser parser;
     jsmntok_t tokens[JSON_TOKEN_SIZE];
 
@@ -490,7 +488,7 @@ size_t json_deserialize_readings_value_message(char* buffer, size_t buffer_size,
 
     for (int i = 1; i < parser_result; ++i) { // at 1st position expects json object; 0 position is json array
         if (tokens[i].type == JSMN_OBJECT) {
-            // object equals reading
+            // object equals feed
             for (int j = i + 1; tokens[j].type != JSMN_OBJECT; ++j) { // at 2nd position expects string
                 if (tokens[j].type == JSMN_STRING) {
                     // get timestamp
@@ -503,30 +501,29 @@ size_t json_deserialize_readings_value_message(char* buffer, size_t buffer_size,
                             return false;
                         }
                         char* string_part;
-                        reading_set_utc(readings_received, strtoul(timestamp, &string_part, 10));
+                        feed_set_utc(feeds_received, strtoul(timestamp, &string_part, 10));
                     } else {
                         // get reference
-                        if (snprintf(readings_received->reference, WOLK_ARRAY_LENGTH(readings_received->reference),
-                                     "%.*s", tokens[j].end - tokens[j].start, buffer + tokens[j].start)
-                            >= (int)WOLK_ARRAY_LENGTH(readings_received->reference)) {
+                        if (snprintf(feeds_received->reference, WOLK_ARRAY_LENGTH(feeds_received->reference), "%.*s",
+                                     tokens[j].end - tokens[j].start, buffer + tokens[j].start)
+                            >= (int)WOLK_ARRAY_LENGTH(feeds_received->reference)) {
                             return false;
                         }
                         // get value
-                        if (snprintf(readings_received->reading_data,
-                                     WOLK_ARRAY_LENGTH(readings_received->reading_data), "%.*s",
+                        if (snprintf(feeds_received->data, WOLK_ARRAY_LENGTH(feeds_received->data), "%.*s",
                                      tokens[j + 1].end - tokens[j + 1].start, buffer + tokens[j + 1].start)
-                            >= (int)WOLK_ARRAY_LENGTH(readings_received->reading_data)) {
+                            >= (int)WOLK_ARRAY_LENGTH(feeds_received->data)) {
                             return false;
                         }
                     }
                 }
             }
-            // move to next reading
-            readings_received++;
-            number_of_deserialized_readings++;
+            // move to next feed
+            feeds_received++;
+            number_of_deserialized_feeds++;
         }
     }
-    return number_of_deserialized_readings;
+    return number_of_deserialized_feeds;
 }
 
 size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message)
@@ -571,25 +568,24 @@ size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, para
     return number_of_deserialized_parameters;
 }
 
-static bool serialize_reading(reading_t* reading, data_type_t type, size_t reading_element_size, char* buffer,
-                              size_t buffer_size)
+static bool serialize_feed(feed_t* feed, data_type_t type, size_t feed_element_size, char* buffer, size_t buffer_size)
 {
     char data_buffer[PAYLOAD_SIZE] = "";
 
-    for (size_t i = 0; i < reading_element_size; ++i) {
-        strcat(data_buffer, reading->reading_data[i]);
+    for (size_t i = 0; i < feed_element_size; ++i) {
+        strcat(data_buffer, feed->data[i]);
 
-        if (i < reading_element_size - 1)
+        if (i < feed_element_size - 1)
             strcat(data_buffer, ",");
     }
 
-    if (reading_get_utc(reading) > 0
-        && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s,\"timestamp\":%ld}]", reading->reference,
-                    type == NUMERIC ? "" : "\"", data_buffer, type == NUMERIC ? "" : "\"", reading_get_utc(reading))
+    if (feed_get_utc(feed) > 0
+        && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s,\"timestamp\":%ld}]", feed->reference,
+                    type == NUMERIC ? "" : "\"", data_buffer, type == NUMERIC ? "" : "\"", feed_get_utc(feed))
                >= (int)buffer_size) {
         return false;
-    } else if (reading_get_utc(reading) == 0
-               && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s}]", reading->reference, type == NUMERIC ? "" : "\"",
+    } else if (feed_get_utc(feed) == 0
+               && snprintf(buffer, buffer_size, "[{\"%s\":%s%s%s}]", feed->reference, type == NUMERIC ? "" : "\"",
                            data_buffer, type == NUMERIC ? "" : "\"")
                       >= (int)buffer_size) {
         return false;
@@ -598,22 +594,21 @@ static bool serialize_reading(reading_t* reading, data_type_t type, size_t readi
     return true;
 }
 
-static size_t serialize_readings(reading_t* readings, data_type_t type, size_t num_readings, char* buffer,
-                                 size_t buffer_size)
+static size_t serialize_feeds(feed_t* feeds, data_type_t type, size_t number_of_feeds, char* buffer, size_t buffer_size)
 {
-    WOLK_UNUSED(num_readings);
+    WOLK_UNUSED(number_of_feeds);
 
     char data_buffer[PAYLOAD_SIZE] = "";
     strcat(buffer, "[");
 
-    for (size_t i = 0; i < num_readings; ++i) {
-        // when it consists of more readings with the same reference it has to have utc
-        if (reading_get_utc(readings) == 0)
+    for (size_t i = 0; i < number_of_feeds; ++i) {
+        // when it consists of more feeds with the same reference it has to have utc
+        if (feed_get_utc(feeds) == 0)
             return false;
 
-        if (snprintf(data_buffer, buffer_size, "{\"%s\":%s%s%s,\"timestamp\":%ld}%s", readings->reference,
-                     type == NUMERIC ? "" : "\"", readings->reading_data[i], type == NUMERIC ? "" : "\"",
-                     reading_get_utc(readings), (num_readings > 1 && i < (num_readings - 1)) ? "," : "")
+        if (snprintf(data_buffer, buffer_size, "{\"%s\":%s%s%s,\"timestamp\":%ld}%s", feeds->reference,
+                     type == NUMERIC ? "" : "\"", feeds->data[i], type == NUMERIC ? "" : "\"", feed_get_utc(feeds),
+                     (number_of_feeds > 1 && i < (number_of_feeds - 1)) ? "," : "")
             >= (int)buffer_size)
             return false;
 
@@ -624,16 +619,16 @@ static size_t serialize_readings(reading_t* readings, data_type_t type, size_t n
     return true;
 }
 
-size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t number_of_readings,
-                               size_t reading_element_size, char* buffer, size_t buffer_size)
+size_t json_serialize_feeds(feed_t* feeds, data_type_t type, size_t number_of_feeds, size_t feed_element_size,
+                            char* buffer, size_t buffer_size)
 {
     /* Sanity check */
-    WOLK_ASSERT(num_readings > 0);
+    WOLK_ASSERT(number_of_feeds > 0);
 
-    if (number_of_readings > 1) {
-        return serialize_readings(readings, type, number_of_readings, buffer, buffer_size);
+    if (number_of_feeds > 1) {
+        return serialize_feeds(feeds, type, number_of_feeds, buffer, buffer_size);
     } else {
-        return serialize_reading(readings, type, reading_element_size, buffer, buffer_size) ? 1 : 0;
+        return serialize_feed(feeds, type, feed_element_size, buffer, buffer_size) ? 1 : 0;
     }
 }
 bool json_serialize_attribute(const char* device_key, attribute_t* attributes, size_t number_of_attributes,
@@ -691,7 +686,7 @@ bool json_serialize_parameter(const char* device_key, parameter_t* parameter, si
     return true;
 }
 
-bool json_serialize_feed_registration(const char* device_key, feed_t* feed, size_t number_of_feeds,
+bool json_serialize_feed_registration(const char* device_key, feed_registration_t* feed, size_t number_of_feeds,
                                       outbound_message_t* outbound_message)
 {
     char payload[PAYLOAD_SIZE] = "";
@@ -718,7 +713,7 @@ bool json_serialize_feed_registration(const char* device_key, feed_t* feed, size
 
     return true;
 }
-bool json_serialize_feed_removal(const char* device_key, feed_t* feed, size_t number_of_feeds,
+bool json_serialize_feed_removal(const char* device_key, feed_registration_t* feed, size_t number_of_feeds,
                                  outbound_message_t* outbound_message)
 {
     char payload[PAYLOAD_SIZE] = "";

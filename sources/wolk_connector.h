@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 WolkAbout Technology s.r.o.
+ * Copyright 2022 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,30 +54,31 @@ typedef unsigned char WOLK_BOOL_T;
 enum WOLK_BOOL_T_values { W_FALSE = 0, W_TRUE = 1 };
 
 /**
- * @brief  WolkAbout IoT Platform numeric reading type. It is simplified reading_t type
+ * @brief  WolkAbout IoT Platform numeric feed type.
  */
-typedef struct wolk_numeric_readings_t {
+typedef struct wolk_numeric_feeds_t {
     double value;
     uint64_t utc_time;
-} wolk_numeric_readings_t;
+} wolk_numeric_feeds_t;
 
 /**
- * @brief  WolkAbout IoT Platform string reading type. It is simplified reading_t type
+ * @brief  WolkAbout IoT Platform string feed type.
  */
-typedef struct wolk_string_readings {
+typedef struct wolk_string_feeds_t {
     char* value;
     uint64_t utc_time;
-} wolk_string_readings_t;
+} wolk_string_feeds_t;
 
 /**
- * @brief  WolkAbout IoT Platform boolean reading type. It is simplified reading_t type
+ * @brief  WolkAbout IoT Platform boolean feed type.
  */
-typedef struct wolk_boolean_readings {
+typedef struct wolk_boolean_feeds_t {
     bool* value;
     uint64_t utc_time;
-} wolk_boolean_readings_t;
+} wolk_boolean_feeds_t;
 
 typedef feed_t wolk_feed_t;
+typedef feed_registration_t wolk_feed_registration_t;
 typedef parameter_t wolk_parameter_t;
 typedef attribute_t wolk_attribute_t;
 
@@ -87,22 +88,22 @@ typedef attribute_t wolk_attribute_t;
 typedef int (*send_func_t)(unsigned char* bytes, unsigned int num_bytes);
 
 /**
- * @brief Callback declaration for reading bytes from socket
+ * @brief Callback declaration for bytes from socket
  */
 typedef int (*recv_func_t)(unsigned char* bytes, unsigned int num_bytes);
 
 /**
  * @brief Declaration of feed value handler.
  *
- * @param reference feed reference received from WolkAbout IoT Platform.
- * @param value value received from WolkAbout IoT Platform.
+ * @param feeds feeds received as name:value pairs from WolkAbout IoT Platform.
+ * @param number_of_feeds number fo received feeds.
  */
-typedef void (*feed_handler_t)(const char* reference, const char* value);
+typedef void (*feed_handler_t)(wolk_feed_t* feeds, size_t number_of_feeds);
 
 /**
  * @brief Declaration of parameter handler.
  *
- * @param parameter_message Parameters received as name:value pairs
+ * @param parameter_message Parameters received as name:value pairs from WolkAbout IoT Platform.
  * @param number_of_parameters number of received parameters
  */
 typedef void (*parameter_handler_t)(wolk_parameter_t* parameter_message, size_t number_of_parameters);
@@ -110,10 +111,10 @@ typedef void (*parameter_handler_t)(wolk_parameter_t* parameter_message, size_t 
 /**
  * @brief Declaration of parameter handler.
  *
- * @param parameter_message Parameters received as name:value pairs
+ * @param parameter_message Parameters received as name:value pairs from WolkAbout IoT Platform.
  * @param number_of_parameters number of received parameters
  */
-typedef void (*details_synchronization_handler_t)(wolk_feed_t* feeds, size_t number_of_received_feeds,
+typedef void (*details_synchronization_handler_t)(wolk_feed_registration_t* feeds, size_t number_of_received_feeds,
                                                   wolk_attribute_t* attributes, size_t number_of_received_attributes);
 
 
@@ -263,16 +264,13 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_inst
  * @brief Connect to WolkAbout IoT Platform
  *
  * Prior to connecting, following must be performed:
- *  1. Context must be initialized via wolk_init(wolk_ctx_t* ctx, send_func
- * snd_func, recv_func rcv_func, const char *device_key, const char *password,
- * protocol_t protocol)
+ *  1. Context must be initialized via wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, const
+ * char* device_key, const char* device_password, outbound_mode_t outbound_mode, feed_handler_t feed_handler,
+ *  parameter_handler_t parameter_handler, details_synchronization_handler_t details_synchronization_handler)
  *  2. Persistence must be initialized using
- *      wolk_initialize_in_memory_persistence(wolk_ctx_t *ctx, void* storage,
- * uint16_t num_elements, bool wrap) or
- *      wolk_initialize_custom_persistence(wolk_ctx_t *ctx,
- *                                         persistence_push_t push,
- * persistence_pop_t pop, persistence_is_empty_t is_empty, persistence_size_t
- * size)
+ *      wolk_init_in_memory_persistence(wolk_ctx_t* ctx, void* storage, uint32_t size, bool wrap) or
+ *      wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push, persistence_peek_t peek,
+ *      persistence_pop_t pop, persistence_is_empty_t is_empty)
  *
  * @param ctx Context
  *
@@ -300,42 +298,54 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx);
  */
 WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick);
 
-// TODO: feed VS reading
-/** @brief Add string reading
+/**
+ * @brief Initialized feed
+ *
+ * @param feed Where it's data will be stored
+ * @param name Feed name
+ * @param reference Reference define on the WolkAbout IoT platform. This is mandatory filed to map feed.
+ * @param unit Feed's unit, use one of the defined in the type.h file
+ * @param feedType Can be IN or IN_OUT
+ * @return
+ */
+WOLK_ERR_T wolk_init_feed(feed_registration_t* feed, char* name, const char* reference, char* unit,
+                          const feed_type_t feedType);
+
+/** @brief Add string feed
  *
  * @param ctx Context
  * @param reference Feed reference
- * @param readings Feed values, one or more values organized as value:utc pairs. Value is char pointer. Utc time has to
+ * @param feeds Feed values, one or more values organized as value:utc pairs. Value is char pointer. Utc time has to
  * be in milliseconds.
- * @param number_of_readings Number of readings that is captured
+ * @param number_of_feeds Number of feeds that is captured
  *
  *  @return Error code
  */
-WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_string_readings_t* readings,
-                                size_t number_of_readings);
+WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_string_feeds_t* feeds,
+                                size_t number_of_feeds);
 
 /**
- * @brief Add numeric reading
+ * @brief Add numeric feeds
  *
  * @param ctx Context
  * @param reference Feed reference
- * @param readings Feed values, one or more values organized as value:utc pairs. Value is double. Utc time has to be in
+ * @param feeds Feed values, one or more values organized as value:utc pairs. Value is double. Utc time has to be in
  * milliseconds.
- * @param number_of_readings Number of readings that is captured
+ * @param number_of_feeds Number of feeds that is captured
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_numeric_readings_t* readings,
-                                 size_t number_of_readings);
+WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_numeric_feeds_t* feeds,
+                                 size_t number_of_feeds);
 
 /**
- * @brief Add multi-value numeric reading. For feeds that has more than one numeric number associated as value, like
- * location is. Max number of numeric values is define with READING_MAX_NUMBER from size_definition
+ * @brief Add multi-value numeric feed. For feeds that has more than one numeric number associated as value, like
+ * location is. Max number of numeric values is define with FEEDS_MAX_NUMBER from size_definition
  *
  * @param ctx Context
  * @param reference Feed reference
  * @param values Feed values
- * @param value_size Number of numeric values limited by READING_MAX_NUMBER
+ * @param value_size Number of numeric values limited by FEEDS_MAX_NUMBER
  * @param utc_time UTC time of feed value acquisition [miliseconds]
  *
  * @return Error code
@@ -344,21 +354,22 @@ WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* refere
                                              uint16_t value_size, uint64_t utc_time);
 
 /**
- * @brief Add bool reading
+ * @brief Add bool feed
  *
  * @param ctx Context
  * @param reference Feed reference
- * @param readings Feed values, one or more values organized as value:utc pairs. Value is boolean. Utc time has to be in
+ * @param feeds Feed values, one or more values organized as value:utc pairs. Value is boolean. Utc time has to be in
  * milliseconds.
- * @param number_of_readings Number of readings that is captured
+ * @param number_of_feeds Number of feeds that is captured
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_add_bool_reading(wolk_ctx_t* ctx, const char* reference, wolk_boolean_readings_t* readings,
-                                 size_t number_of_readings);
+WOLK_ERR_T wolk_add_bool_feeds(wolk_ctx_t* ctx, const char* reference, wolk_boolean_feeds_t* feeds,
+                               size_t number_of_feeds);
 
 /**
- * @brief Publish accumulated readings
+ * @brief Publish all accumulated data from persistence. It can be any data(feeds, attributed or parameters) added after
+ * last publish.
  *
  * @param ctx Context
  *
@@ -390,7 +401,7 @@ WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attributes, siz
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds);
+WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_registration_t* feeds, size_t number_of_feeds);
 
 /**
  * @brief Remove feeds.
@@ -402,8 +413,16 @@ WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_f
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds);
+WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_registration_t* feeds, size_t number_of_feeds);
 
+/**
+ * @brief This will notify the platform that the device is ready to receive all feed values that were queued on the
+ * platform for it. Relevant when the device specified PULL mode.
+ *
+ * @param ctx Context
+ *
+ * @return Error code
+ */
 WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx);
 
 /**
@@ -413,7 +432,7 @@ WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx);
  *
  * @param ctx Context
  * @param parameters List of parameters
- * @param number_of_parameters Number of readings that is captured
+ * @param number_of_parameters Number of parameters that is captured
  *
  * @return Error code
  */
@@ -425,7 +444,7 @@ WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter, size_t
  *
  * @param ctx Context
  * @param parameters List of parameters
- * @param number_of_parameters Number of readings that is captured
+ * @param number_of_parameters Number of parameters that is captured
  *
  * @return Error code
  */
@@ -437,14 +456,28 @@ WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx);
  *
  * @param ctx Context
  * @param parameters List of parameters
- * @param number_of_parameters Number of readings that is captured
+ * @param number_of_parameters Number of parameters that is captured
  *
  * @return Error code
  */
 WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx, parameter_t* parameters, size_t number_of_parameters);
 
+/**
+ * @brief This is request for getting WolkAbout IoT Platform's timestamp define as UTC in milliseconds. It will lead to
+ * updating ctx->utc to received value.
+ *
+ * @param ctx Context
+ *
+ * @return Error code
+ */
 WOLK_ERR_T wolk_sync_time_request(wolk_ctx_t* ctx);
 
+/**
+ * @brief Requesting known information about device from platform
+ *
+ * @param ctx Context
+ * @return Error code
+ */
 WOLK_ERR_T wolk_details_synchronization(wolk_ctx_t* ctx);
 
 

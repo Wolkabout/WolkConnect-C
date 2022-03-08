@@ -40,10 +40,10 @@ enum {
     /* Maximum number of bytes in payload string */
     PAYLOAD_SIZE = 448,
 
-    /* Maximum number of characters in a single reading element */
-    READING_ELEMENT_SIZE = 32,
-    /* Maximum number of readings*/
-    READING_MAX_NUMBER = 32,
+    /* Maximum number of characters in a single feed */
+    FEED_ELEMENT_SIZE = 32,
+    /* Maximum number of feeds*/
+    FEEDS_MAX_NUMBER = 32,
 
     /* Maximum number of characters in reference string */
     REFERENCE_SIZE = 64,
@@ -59,10 +59,10 @@ enum {
     /* Maximum number of characters in parameter type string */
     PARAMETER_TYPE_SIZE = 32,
     /* Maximum number of characters in parameter value */
-    PARAMETER_VALUE_SIZE = READING_ELEMENT_SIZE,
+    PARAMETER_VALUE_SIZE = FEED_ELEMENT_SIZE,
 
     /* Maximum number of characters in attribute value */
-    ATTRIBUTE_VALUE_SIZE = READING_ELEMENT_SIZE,
+    ATTRIBUTE_VALUE_SIZE = FEED_ELEMENT_SIZE,
 
     /* Maximum number of files in list */
     FILE_MANAGEMENT_FILE_LIST_SIZE = 32,
@@ -75,6 +75,9 @@ enum {
 
     /* Maximum number of characters in firmware update version */
     FIRMWARE_UPDATE_VERSION_SIZE = 16,
+
+    /* Number of batches in which data will be published */
+    PUBLISH_BATCH_SIZE = 50,
 };
 
 #ifdef __cplusplus

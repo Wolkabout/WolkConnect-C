@@ -65,8 +65,8 @@ const char JSON_SYNC_TIME_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
 const char JSON_ERROR_TOPIC[TOPIC_MESSAGE_TYPE_SIZE];
 const char JSON_DETAILS_SYNCHRONIZATION[TOPIC_MESSAGE_TYPE_SIZE];
 
-size_t json_serialize_readings(reading_t* readings, data_type_t type, size_t number_of_readings,
-                               size_t reading_element_size, char* buffer, size_t buffer_size);
+size_t json_serialize_feeds(feed_t* feeds, data_type_t type, size_t number_of_feeds, size_t feed_element_size,
+                            char* buffer, size_t buffer_size);
 
 bool json_serialize_file_management_status(const char* device_key,
                                            file_management_packet_request_t* file_management_packet_request,
@@ -94,18 +94,19 @@ bool json_serialize_firmware_update_version(const char* device_key, char* firmwa
                                             outbound_message_t* outbound_message);
 
 bool json_deserialize_time(char* buffer, size_t buffer_size, utc_command_t* utc_command);
-bool json_deserialize_details_synchronization(char* buffer, size_t buffer_size, feed_t* feeds, size_t* number_of_feeds,
-                                              attribute_t* attributes, size_t* number_of_attributes);
+bool json_deserialize_details_synchronization(char* buffer, size_t buffer_size, feed_registration_t* feeds,
+                                              size_t* number_of_feeds, attribute_t* attributes,
+                                              size_t* number_of_attributes);
 
-size_t json_deserialize_readings_value_message(char* buffer, size_t buffer_size, reading_t* readings_received);
+size_t json_deserialize_feeds_value_message(char* buffer, size_t buffer_size, feed_t* feeds_received);
 size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, parameter_t* parameter_message);
 
 bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                        char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
 
-bool json_serialize_feed_registration(const char* device_key, feed_t* feed, size_t number_of_feeds,
+bool json_serialize_feed_registration(const char* device_key, feed_registration_t* feed, size_t number_of_feeds,
                                       outbound_message_t* outbound_message);
-bool json_serialize_feed_removal(const char* device_key, feed_t* feed, size_t number_of_feeds,
+bool json_serialize_feed_removal(const char* device_key, feed_registration_t* feed, size_t number_of_feeds,
                                  outbound_message_t* outbound_message);
 bool json_serialize_pull_feed_values(const char* device_key, outbound_message_t* outbound_message);
 bool json_serialize_pull_parameters(const char* device_key, outbound_message_t* outbound_message);

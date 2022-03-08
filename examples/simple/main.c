@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 WolkAbout Technology s.r.o.
+ * Copyright 2022 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@
 static SSL_CTX* ctx;
 static BIO* sockfd;
 
-static const char* device_key = "DigitalTwinWolkC-C";
-static const char* device_password = "5C3FRRDSSH";
+static const char* device_key = "wolkconnect-c";
+static const char* device_password = "JXG4KWKF80";
 static const char* hostname = "integration5.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
@@ -154,13 +154,13 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init(&wolk, send_buffer, receive_buffer, NULL, NULL, device_key, device_password, PUSH) != W_FALSE) {
-        printf("Error initializing WolkConnect-C\n");
+    if (wolk_init(&wolk, send_buffer, receive_buffer, device_key, device_password, PUSH, NULL, NULL, NULL) != W_FALSE) {
+        printf("Wolk client - Error initializing WolkConnect-C\n");
         return 1;
     }
 
     if (wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false) != W_FALSE) {
-        printf("Error initializing in-memory persistence\n");
+        printf("Wolk client - Error initializing in-memory persistence\n");
         return 1;
     }
 
@@ -171,39 +171,28 @@ int main(int argc, char* argv[])
     }
     printf("Wolk client - Connected to server\n");
 
-    //    feed_t feed;
-    //    initialize_feed(&feed, "Petar", "Petrovic", UNIT_CELSIUS, IN);
-    //    if (wolk_register_feed(&wolk, &feed) != W_FALSE) {
-    //        printf("Wolk client -  Failed to register feed");
-    //    }
-    //    printf("Wolk client - Feed registrated\n");
-
-    //    attribute_t version;
-    //    strcpy(version.name, "VERSION");
-    //    strcpy(version.data_type, DATA_TYPE_STRING);
-    //    strcpy(version.value, "1.2.1");
-    //
-    //    wolk_register_attribute(&wolk, &version);
-    //
-    //    wolk_add_numeric_reading(&wolk, feed.reference, rand() % 100 - 20, 0);
-    //
-    //    parameter_t some_parameter;
-    //    parameter_init(&some_parameter, PARAMETER_EXTERNAL_ID, "NIKOPOLIDIS");
-    //
-    //    wolk_sync_parameters(&wolk);
-    //    wolk_sync_time_request(&wolk);
-    //    wolk_publish(&wolk);
-
+    int32_t tick_count = 0;
+    wolk_numeric_feeds_t feed = {0};
+    int32_t heartbeat = 60000; // 60 000ms == 1min
 
     while (keep_running) {
-        // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
-        // you can change this parameters, but keep it's multiplication
+        // Sending random values for reference "T"
+        if (tick_count > heartbeat) {
+            tick_count = 0;
+            feed.value = rand() % 100 - 20;
+            if (wolk_add_numeric_feed(&wolk, "T", &feed, 1))
+                printf("Wolk client - Error serializing numeric feed!\n");
+            if (wolk_publish(&wolk))
+                printf("Wolk client - Error publishing data!\n");
+            else
+                printf("Wolk client - for feed reference T published value is %lf\n", feed.value);
+        }
+
+        // MANDATORY: keep looping for a new messages. Sleep(currently 1000us) and number of tick(currently 1)
+        // you can change this parameter, but keep it's multiplication
         usleep(1000);
         wolk_process(&wolk, 1);
-
-        usleep(1000000);
-        //        wolk_remove_feed(&wolk, &feed);
-        wolk_publish(&wolk);
+        tick_count++;
     }
 
     printf("Wolk client - Diconnecting\n");

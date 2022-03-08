@@ -34,7 +34,7 @@ void parser_init(parser_t* parser)
 
     parser->is_initialized = true;
 
-    parser->serialize_readings = json_serialize_readings;
+    parser->serialize_feeds = json_serialize_feeds;
 
     parser->serialize_file_management_status = json_serialize_file_management_status;
     parser->deserialize_file_management_parameter = json_deserialize_file_management_parameter;
@@ -48,7 +48,7 @@ void parser_init(parser_t* parser)
 
     parser->deserialize_time = json_deserialize_time;
     parser->deserialize_details_synchronization = json_deserialize_details_synchronization;
-    parser->deserialize_readings_value_message = json_deserialize_readings_value_message;
+    parser->deserialize_readings_value_message = json_deserialize_feeds_value_message;
     parser->deserialize_parameter_message = json_deserialize_parameter_message;
 
     parser->create_topic = json_create_topic;
@@ -92,7 +92,7 @@ void parser_init(parser_t* parser)
     strncpy(parser->DETAILS_SYNCHRONIZATION_TOPIC, JSON_DETAILS_SYNCHRONIZATION, TOPIC_MESSAGE_TYPE_SIZE);
 }
 
-size_t parser_serialize_readings(parser_t* parser, reading_t* readings, data_type_t type, size_t num_readings,
+size_t parser_serialize_readings(parser_t* parser, feed_t* readings, data_type_t type, size_t num_readings,
                                  size_t reading_element_size, char* buffer, size_t buffer_size)
 {
     /* Sanity check */
@@ -100,7 +100,7 @@ size_t parser_serialize_readings(parser_t* parser, reading_t* readings, data_typ
     WOLK_ASSERT(num_readings > 0);
     WOLK_ASSERT(buffer_size >= PAYLOAD_SIZE);
 
-    return parser->serialize_readings(readings, type, num_readings, reading_element_size, buffer, buffer_size);
+    return parser->serialize_feeds(readings, type, num_readings, reading_element_size, buffer, buffer_size);
 }
 
 bool parser_serialize_file_management_status(parser_t* parser, const char* device_key,
@@ -219,9 +219,9 @@ bool parser_deserialize_time(parser_t* parser, char* buffer, size_t buffer_size,
     return parser->deserialize_time(buffer, buffer_size, utc_command);
 }
 
-bool parser_deserialize_details_synchronization(parser_t* parser, char* buffer, size_t buffer_size, feed_t* feeds,
-                                                size_t* number_of_feeds, attribute_t* attributes,
-                                                size_t* number_of_attributes)
+bool parser_deserialize_details_synchronization(parser_t* parser, char* buffer, size_t buffer_size,
+                                                feed_registration_t* feeds, size_t* number_of_feeds,
+                                                attribute_t* attributes, size_t* number_of_attributes)
 {
     return parser->deserialize_details_synchronization(buffer, buffer_size, feeds, number_of_feeds, attributes,
                                                        number_of_attributes);
@@ -231,8 +231,7 @@ bool parser_create_topic(parser_t* parser, char* direction, char* device_key, ch
 {
     return parser->create_topic(direction, device_key, message_type, topic);
 }
-size_t parser_deserialize_readings_message(parser_t* parser, char* buffer, size_t buffer_size,
-                                           reading_t* readings_received)
+size_t parser_deserialize_feeds_message(parser_t* parser, char* buffer, size_t buffer_size, feed_t* readings_received)
 {
     return parser->deserialize_readings_value_message(buffer, buffer_size, readings_received);
 }
@@ -241,13 +240,13 @@ size_t parser_deserialize_parameter_message(parser_t* parser, char* buffer, size
 {
     return parser->deserialize_parameter_message(buffer, buffer_size, parameter_message);
 }
-bool parser_serialize_feed_registration(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
-                                        outbound_message_t* outbound_message)
+bool parser_serialize_feed_registration(parser_t* parser, const char* device_key, feed_registration_t* feed,
+                                        size_t number_of_feeds, outbound_message_t* outbound_message)
 {
     return parser->serialize_feed_registration(device_key, feed, number_of_feeds, outbound_message);
 }
-bool parser_serialize_feed_removal(parser_t* parser, const char* device_key, feed_t* feed, size_t number_of_feeds,
-                                   outbound_message_t* outbound_message)
+bool parser_serialize_feed_removal(parser_t* parser, const char* device_key, feed_registration_t* feed,
+                                   size_t number_of_feeds, outbound_message_t* outbound_message)
 {
     return parser->serialize_feed_removal(device_key, feed, number_of_feeds, outbound_message);
 }
