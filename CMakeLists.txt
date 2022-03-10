@@ -62,6 +62,8 @@ file(GLOB_RECURSE REGISTER_FEED_AND_ATTRIBUTE_SOURCE_FILES "examples/register_fe
 file(GLOB_RECURSE FULL_EXAMPLE_HEADER_FILES "examples/full_feature_set/*.h")
 file(GLOB_RECURSE FULL_EXAMPLE_SOURCE_FILES "examples/full_feature_set/*.c")
 
+file(GLOB_RECURSE TESTS_SOURCE_FILES "tests/test/*.c")
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")
 
@@ -86,6 +88,7 @@ add_custom_target(format ALL
                   ${PULL_HEADER_FILES} ${PULL_SOURCE_FILES}
                   ${REGISTER_FEED_AND_ATTRIBUTE_HEADER_FILES} ${REGISTER_FEED_AND_ATTRIBUTE_SOURCE_FILES}
                   ${SIMPLE_HEADER_FILES} ${SIMPLE_SOURCE_FILES}
+                  ${TESTS_SOURCE_FILES}
                   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
                   COMMENT "[Formatting source code]"
                   VERBATIM)

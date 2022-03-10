@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 WolkAbout Technology s.r.o.
+ * Copyright 2022 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 #include "wolk_connector.h"
 #include "MQTTPacket.h"
-#include "model/feed_value_message.h"
 #include "model/file_management/file_management.h"
 #include "model/file_management/file_management_parameter.h"
 #include "model/firmware_update.h"
@@ -282,10 +281,10 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_init_feed(feed_registration_t* feed, char* name, const char* reference, char* unit,
+WOLK_ERR_T wolk_init_feed(feed_registration_t* feed, char* name, const char* reference, const char* unit,
                           const feed_type_t feedType)
 {
-    initialize_registration_feed(feed, name, reference, unit, feedType);
+    feed_initialize_registration(feed, name, reference, unit, feedType);
 
     return W_FALSE;
 }
@@ -301,7 +300,7 @@ WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_str
     WOLK_ASSERT(number_of_feeds > FEEDS_MAX_NUMBER);
 
     feed_t feed;
-    feed_init(&feed, number_of_feeds, reference);
+    feed_initialize(&feed, number_of_feeds, reference);
 
     for (size_t i = 0; i < number_of_feeds; ++i) {
         if (feeds->utc_time < 1000000000000 && feeds->utc_time != 0) // Unit ms and zero is valid value
@@ -335,7 +334,7 @@ WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_nu
 
     char value_string[FEED_ELEMENT_SIZE] = "";
     feed_t feed;
-    feed_init(&feed, number_of_feeds, reference);
+    feed_initialize(&feed, number_of_feeds, reference);
 
     for (size_t i = 0; i < number_of_feeds; ++i) {
         if (feeds->utc_time < 1000000000000 && feeds->utc_time != 0) // Unit ms and zero is valid value
@@ -375,7 +374,7 @@ WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* refere
     }
 
     feed_t feed;
-    feed_init(&feed, 1, reference); // one feed consisting of N numeric values
+    feed_initialize(&feed, 1, reference); // one feed consisting of N numeric values
     feed_set_utc(&feed, utc_time);
 
     char value_string_representation[FEED_ELEMENT_SIZE] = "";
@@ -400,7 +399,7 @@ WOLK_ERR_T wolk_add_bool_feeds(wolk_ctx_t* ctx, const char* reference, wolk_bool
     WOLK_ASSERT(is_wolk_initialized(ctx));
 
     feed_t feed;
-    feed_init(&feed, number_of_feeds, reference);
+    feed_initialize(&feed, number_of_feeds, reference);
 
     for (size_t i = 0; i < number_of_feeds; ++i) {
         if (feeds->utc_time < 1000000000000 && feeds->utc_time != 0) // Unit ms and zero is valid value

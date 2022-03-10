@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 WolkAbout Technology s.r.o.
+ * Copyright 2022 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 
 #include "json_parser.h"
-#include "model/feed_value_message.h"
 #include "model/file_management/file_management_packet_request.h"
 #include "model/file_management/file_management_parameter.h"
 #include "model/file_management/file_management_status.h"
@@ -606,12 +605,13 @@ static size_t serialize_feeds(feed_t* feeds, data_type_t type, size_t number_of_
             return false;
 
         if (snprintf(data_buffer, buffer_size, "{\"%s\":%s%s%s,\"timestamp\":%ld}%s", feeds->reference,
-                     type == NUMERIC ? "" : "\"", feeds->data[i], type == NUMERIC ? "" : "\"", feed_get_utc(feeds),
+                     type == NUMERIC ? "" : "\"", feeds->data[0], type == NUMERIC ? "" : "\"", feed_get_utc(feeds),
                      (number_of_feeds > 1 && i < (number_of_feeds - 1)) ? "," : "")
             >= (int)buffer_size)
             return false;
 
         strcat(buffer, data_buffer);
+        feeds++;
     }
 
     strcat(buffer, "]");
@@ -625,6 +625,7 @@ size_t json_serialize_feeds(feed_t* feeds, data_type_t type, size_t number_of_fe
     WOLK_ASSERT(number_of_feeds > 0);
 
     if (number_of_feeds > 1) {
+        WOLK_UNUSED(feed_element_size);
         return serialize_feeds(feeds, type, number_of_feeds, buffer, buffer_size);
     } else {
         return serialize_feed(feeds, type, feed_element_size, buffer, buffer_size) ? 1 : 0;

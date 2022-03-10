@@ -1,34 +1,39 @@
+#ifdef TEST
+
 #include "unity.h"
 
-#include "json_parser.h"
-#include "model/actuator_command.h"
-#include "base64.h"
-#include "file_management_parameter.h"
-#include "model/file_management/file_management_packet_request.h"
-#include "model/file_management/file_management_status.h"
-#include "jsmn.h"
-#include "model/reading.h"
+#include "MQTTPacket.h"
 #include "size_definitions.h"
-#include "utility/wolk_utils.h"
-#include "firmware_update.h"
-
-#include "manifest_item.h"
-#include "model/outbound_message.h"
-#include "model/configuration_command.h"
-
 #include "string.h"
+#include "types.h"
+//#include "wolk_connector.h"
 
+#include "model/attribute.h"
+#include "model/feed.h"
+#include "model/file_management/file_management.h"
+#include "model/file_management/file_management_packet.h"
+#include "model/file_management/file_management_packet_request.h"
+#include "model/file_management/file_management_parameter.h"
+#include "model/file_management/file_management_status.h"
+#include "model/firmware_update.h"
+#include "model/outbound_message.h"
+#include "model/outbound_message_factory.h"
+#include "model/utc_command.h"
 
-reading_t first_reading;
+#include "connectivity/data_transmission.h"
 
-static const char* UNIT_TEST_READINGS_TOPIC = "d2p/sensor_reading/d/";
-static const char* UNIT_TEST_EVENTS_TOPIC = "d2p/events/d/";
+#include "persistence/in_memory_persistence.h"
+#include "persistence/persistence.h"
 
-static const char* UNIT_TEST_ACTUATOR_SET_TOPIC = "p2d/actuator_set/d/";
-static const char* UNIT_TEST_ACTUATOR_STATUS_TOPIC = "d2p/actuator_status/d/";
+#include "protocol/json_parser.h"
+#include "protocol/parser.h"
 
-static const char* UNIT_TEST_CONFIGURATION_SET = "p2d/configuration_set/d/";
-static const char* UNIT_TEST_CONFIGURATION_GET = "d2p/configuration_get/d/";
+#include "utility/base64.h"
+#include "utility/circular_buffer.h"
+#include "utility/jsmn.h"
+#include "utility/sha256.h"
+#include "utility/wolk_utils.h"
+
 
 void setUp(void)
 {
@@ -38,200 +43,126 @@ void tearDown(void)
 {
 }
 
-void test_json_parser_json_serialize_readings_sensor(void)
+
+void test_json_parser_json_serialize_feed_all_types(void)
 {
-    char buffer[PAYLOAD_SIZE];
-    uint64_t utc = 1591621716;
-    manifest_item_t string_sensor;
+    feed_t first_feed;
+    char buffer[PAYLOAD_SIZE] = "";
+    uint64_t utc = 1646815080000; // in milliseconds
 
     /* Data type String */
-    manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_STRING);
-    manifest_item_set_reading_size_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
+    feed_initialize(&first_feed, 1, "FS");
+    feed_set_data_at(&first_feed, "FEED STRING", 0);
+    feed_set_utc(&first_feed, utc);
 
-    reading_init(&first_reading, &string_sensor);
-    reading_set_data_at(&first_reading, "TEST SENSOR", 0);
-    reading_set_utc(&first_reading, utc);
-
-    TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
-    TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"TEST SENSOR\"}", buffer);
+    TEST_ASSERT_TRUE(json_serialize_feeds(&first_feed, STRING, 1, 1, buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL_STRING("[{\"FS\":\"FEED STRING\",\"timestamp\":1646815080000}]", buffer);
 
     /* Data type Numeric */
-    manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
+    feed_initialize(&first_feed, 1, "FN");
+    feed_set_data_at(&first_feed, "32.1", 0);
+    feed_set_utc(&first_feed, utc);
 
-    reading_init(&first_reading, &string_sensor);
-    reading_set_data_at(&first_reading, "32.1", 0);
-    reading_set_utc(&first_reading, utc);
-
-    TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
-    TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"32.1\"}", buffer);
+    TEST_ASSERT_TRUE(json_serialize_feeds(&first_feed, NUMERIC, 1, 1, buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL_STRING("[{\"FN\":32.1,\"timestamp\":1646815080000}]", buffer);
 
     /* Data type Boolean */
-    manifest_item_init(&string_sensor, "reference", READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
+    feed_initialize(&first_feed, 1, "FB");
+    feed_set_data_at(&first_feed, "true", 0);
+    feed_set_utc(&first_feed, utc);
 
-    reading_init(&first_reading, &string_sensor);
-    reading_set_data_at(&first_reading, "ON", 0);
-    reading_set_utc(&first_reading, utc);
-
-    TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
-    TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"ON\"}", buffer);
+    TEST_ASSERT_TRUE(json_serialize_feeds(&first_feed, BOOLEAN, 1, 1, buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL_STRING("[{\"FB\":\"true\",\"timestamp\":1646815080000}]", buffer);
 }
 
-void test_json_parser_json_serialize_readings_actuator(void)
+void test_json_parser_json_serialize_feeds_all_types_different_timestamp(void)
 {
-    char buffer[PAYLOAD_SIZE];
-    manifest_item_t string_sensor;
+    feed_t first_feed[3];
+    char buffer[PAYLOAD_SIZE] = "";
+    uint64_t utc = 1646815080000; // in milliseconds
 
     /* Data type String */
-    manifest_item_init(&string_sensor, "reference", READING_TYPE_ACTUATOR, DATA_TYPE_STRING);
+    feed_initialize(&first_feed[0], 1, "FS");
+    feed_set_data_at(&first_feed[0], "STRING1", 0);
+    feed_set_utc(&first_feed[0], utc);
+    feed_initialize(&first_feed[1], 1, "FS");
+    feed_set_data_at(&first_feed[1], "STRING2", 0);
+    feed_set_utc(&first_feed[1], utc + 100);
 
-    reading_init(&first_reading, &string_sensor);
-    reading_set_data_at(&first_reading, "TEST ACTUATOR", 0);
+    TEST_ASSERT_TRUE(json_serialize_feeds(&first_feed, STRING, 2, 1, buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL_STRING(
+        "[{\"FS\":\"STRING1\",\"timestamp\":1646815080000},{\"FS\":\"STRING2\",\"timestamp\":1646815080100}]", buffer);
 
-    TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
-    TEST_ASSERT_EQUAL_STRING("{\"status\":\"READY\",\"value\":\"TEST ACTUATOR\"}", buffer);
-
+    memset(buffer, '\0', PAYLOAD_SIZE);
     /* Data type Numeric */
-    manifest_item_init(&string_sensor, "reference", READING_TYPE_ACTUATOR, DATA_TYPE_NUMERIC);
+    feed_initialize(&first_feed[0], 1, "FN");
+    feed_set_data_at(&first_feed[0], "3", 0);
+    feed_set_utc(&first_feed[0], utc);
 
-    reading_init(&first_reading, &string_sensor);
-    reading_set_data_at(&first_reading, "32.1", 0);
+    feed_initialize(&first_feed[1], 1, "FN");
+    feed_set_data_at(&first_feed[1], "32", 0);
+    feed_set_utc(&first_feed[1], utc + 100);
 
-    TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
-    TEST_ASSERT_EQUAL_STRING("{\"status\":\"READY\",\"value\":\"32.1\"}", buffer);
+    feed_initialize(&first_feed[2], 1, "FN");
+    feed_set_data_at(&first_feed[2], "32.1", 0);
+    feed_set_utc(&first_feed[2], utc + 200);
 
-    TEST_ASSERT_EQUAL_STRING("{\"status\":\"READY\",\"value\":\"32.1\"}", buffer);
+    TEST_ASSERT_TRUE(json_serialize_feeds(&first_feed, NUMERIC, 3, 1, buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL_STRING(
+        "[{\"FN\":3,\"timestamp\":1646815080000},{\"FN\":32,\"timestamp\":1646815080100},{\"FN\":32.1,\"timestamp\":1646815080200}]",
+        buffer);
 
+    memset(buffer, '\0', PAYLOAD_SIZE);
     /* Data type Boolean */
-    manifest_item_init(&string_sensor, "reference", READING_TYPE_ACTUATOR, DATA_TYPE_BOOLEAN);
+    feed_initialize(&first_feed[0], 1, "FB");
+    feed_set_data_at(&first_feed[0], "true", 0);
+    feed_set_utc(&first_feed[0], utc);
 
-    reading_init(&first_reading, &string_sensor);
-    reading_set_data_at(&first_reading, "ON", 0);
+    feed_initialize(&first_feed[1], 1, "FB");
+    feed_set_data_at(&first_feed[1], "false", 0);
+    feed_set_utc(&first_feed[1], utc + 100);
 
-    TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
-    TEST_ASSERT_EQUAL_STRING("{\"status\":\"READY\",\"value\":\"ON\"}", buffer);
+    TEST_ASSERT_TRUE(json_serialize_feeds(&first_feed, BOOLEAN, 2, 1, buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL_STRING(
+        "[{\"FB\":\"true\",\"timestamp\":1646815080000},{\"FB\":\"false\",\"timestamp\":1646815080100}]", buffer);
 }
 
-void test_json_parser_json_serialize_readings_alarm(void)
+void test_json_parser_json_serialize_feed_multivalue(void)
 {
-    char buffer[PAYLOAD_SIZE];
-    uint64_t utc = 1591621716;
-    manifest_item_t string_sensor;
+    feed_t first_feed;
+    char buffer[PAYLOAD_SIZE] = "";
+    uint64_t utc = 1646815080000; // in milliseconds
 
     /* Data type String */
-    manifest_item_init(&string_sensor, "reference", READING_TYPE_ALARM, DATA_TYPE_STRING);
+    feed_initialize(&first_feed, 3, "FS");
+    feed_set_data_at(&first_feed, "STRING1", 0);
+    feed_set_data_at(&first_feed, "STRING2", 1);
+    feed_set_data_at(&first_feed, "STRING3", 2);
+    feed_set_utc(&first_feed, utc);
 
-    reading_init(&first_reading, &string_sensor);
-    reading_set_data_at(&first_reading, "ON", 0);
-    reading_set_utc(&first_reading, utc);
+    TEST_ASSERT_TRUE(json_serialize_feeds(&first_feed, STRING, 1, 3, buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL_STRING("[{\"FS\":\"STRING1,STRING2,STRING3\",\"timestamp\":1646815080000}]", buffer);
 
-    TEST_ASSERT_TRUE(json_serialize_readings(&first_reading, 1, buffer, sizeof(buffer)));
-    TEST_ASSERT_EQUAL_STRING("{\"utc\":1591621716,\"data\":\"ON\"}", buffer);
+    memset(buffer, '\0', PAYLOAD_SIZE);
+    /* Data type Numeric */
+    feed_initialize(&first_feed, 3, "FN");
+    feed_set_data_at(&first_feed, "3", 0);
+    feed_set_data_at(&first_feed, "32", 1);
+    feed_set_data_at(&first_feed, "32.1", 2);
+    feed_set_utc(&first_feed, utc);
+
+    TEST_ASSERT_TRUE(json_serialize_feeds(&first_feed, NUMERIC, 1, 3, buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL_STRING("[{\"FN\":3,32,32.1,\"timestamp\":1646815080000}]", buffer);
+
+    memset(buffer, '\0', PAYLOAD_SIZE);
+    /* Data type Boolean */
+    feed_initialize(&first_feed, 2, "FB");
+    feed_set_data_at(&first_feed, "true", 0);
+    feed_set_data_at(&first_feed, "false", 1);
+    feed_set_utc(&first_feed, utc);
+
+    TEST_ASSERT_TRUE(json_serialize_feeds(&first_feed, BOOLEAN, 1, 2, buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL_STRING("[{\"FB\":\"true,false\",\"timestamp\":1646815080000}]", buffer);
 }
 
-void test_json_parser_json_deserialize_actuator_commands(void)
-{
-    char topic[TOPIC_SIZE];
-    char payload[PAYLOAD_SIZE];
-    int payload_len = 0;
-    actuator_command_t actuator_command;
-
-    strncpy(topic, UNIT_TEST_ACTUATOR_SET_TOPIC, strlen(UNIT_TEST_ACTUATOR_SET_TOPIC));
-    strcat(topic, "/r/reference");
-    strncpy(payload, "{\"value\":\"321.1\"}", strlen("{\"value\":\"321.1\"}")+1);
-    payload_len = strlen(payload);
-
-    TEST_ASSERT_EQUAL_INT(1, json_deserialize_actuator_commands(topic, strlen(topic), payload, (size_t)payload_len, &actuator_command, 1));
-    TEST_ASSERT_EQUAL_STRING("321.1", actuator_command.argument);
-}
-
-void test_json_json_serialize_readings_topic(void)
-{
-    char device_key[DEVICE_KEY_SIZE];
-    char buffer[PAYLOAD_SIZE];
-    char topic[TOPIC_SIZE];
-    char reference[REFERENCE_SIZE] = {"reference"};
-    manifest_item_t string_sensor;
-
-    /* Data type String */
-    manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
-    manifest_item_set_reading_size_and_delimiter(&string_sensor, 1, DATA_DELIMITER);
-
-    reading_init(&first_reading, &string_sensor);
-    reading_set_data_at(&first_reading, "TEST SENSOR", 0);
-
-    strncpy(device_key, "some_device_key", strlen("some_device_key"));
-
-    strncpy(topic, UNIT_TEST_READINGS_TOPIC, strlen(UNIT_TEST_READINGS_TOPIC)+1);
-    strcat(topic, device_key);
-    strcat(topic, "/r/");
-    strcat(topic, reference);
-
-    TEST_ASSERT_TRUE(json_serialize_readings_topic(&first_reading, 1, device_key, buffer, PAYLOAD_SIZE));
-    TEST_ASSERT_EQUAL_STRING(topic, buffer);
-}
-
-void test_json_parser_json_serialize_configuration_single_item(void)
-{
-    char device_key[DEVICE_KEY_SIZE] = {"some_device_key"};
-    char references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"reference"};
-    char values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"string"};
-    char topic[TOPIC_SIZE];
-    int8_t num_configuration_items = 1;
-    outbound_message_t outbound_message;
-
-    strncpy(topic, UNIT_TEST_CONFIGURATION_GET, strlen(UNIT_TEST_CONFIGURATION_GET)+1);
-    strcat(topic, device_key);
-
-    TEST_ASSERT_TRUE(json_serialize_configuration(device_key, references, values, num_configuration_items, &outbound_message));
-    TEST_ASSERT_EQUAL_STRING(topic, outbound_message.topic);
-    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"reference\":\"string\"}}", outbound_message.payload);
-}
-
-void test_json_parser_json_serialize_configuration_multi_item(void)
-{
-    char device_key[DEVICE_KEY_SIZE] = {"some_device_key"};
-    char references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"reference1", "reference2", "referenceN"};
-    char values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"string1", "string2", "stringN"};
-    char topic[TOPIC_SIZE];
-    int8_t num_configuration_items = 3;
-    outbound_message_t outbound_message;
-
-    strncpy(topic, UNIT_TEST_CONFIGURATION_GET, strlen(UNIT_TEST_CONFIGURATION_GET)+1);
-    strcat(topic, device_key);
-
-    TEST_ASSERT_TRUE(json_serialize_configuration(device_key, references, values, num_configuration_items, &outbound_message));
-    TEST_ASSERT_EQUAL_STRING(topic, outbound_message.topic);
-    TEST_ASSERT_EQUAL_STRING("{\"values\":{\"reference1\":\"string1\",\"reference2\":\"string2\",\"referenceN\":\"stringN\"}}", outbound_message.payload);
-}
-
-void test_json_parser_json_deserialize_configuration_command_single(void)
-{
-    char buffer[PAYLOAD_SIZE];
-    configuration_command_t current_config_command;
-    int8_t num_deserialized_config_items = 1;
-
-    int8_t buffer_size = strlen("{\"EF\":\"T,H,P,ACL\"}")+1;
-    strncpy(buffer, "{\"EF\":\"T,H,P,ACL\"}", buffer_size);
-
-    TEST_ASSERT_EQUAL_INT(num_deserialized_config_items, json_deserialize_configuration_command(buffer, buffer_size, &current_config_command, num_deserialized_config_items));
-    TEST_ASSERT_EQUAL_STRING("EF", current_config_command.reference);
-    TEST_ASSERT_EQUAL_INT(CONFIGURATION_COMMAND_TYPE_SET, current_config_command.type);
-    TEST_ASSERT_EQUAL_STRING("T,H,P,ACL", current_config_command.value[0]);
-}
-
-void test_json_parser_json_deserialize_configuration_command_multi(void)
-{
-    char buffer[PAYLOAD_SIZE];
-    configuration_command_t current_config_command;
-    int8_t num_deserialized_config_items = 3;
-
-    int8_t buffer_size = strlen("{\"EF\":\"T,H,P,ACL\",\"HB\":\"5\",\"LL\":\"debug\"}")+1;
-    strncpy(buffer, "{\"EF\":\"T,H,P,ACL\",\"HB\":\"5\",\"LL\":\"debug\"}", buffer_size);
-
-    TEST_ASSERT_EQUAL_INT(num_deserialized_config_items, json_deserialize_configuration_command(buffer, buffer_size, &current_config_command, num_deserialized_config_items));
-    TEST_ASSERT_EQUAL_STRING("EF", current_config_command.reference);
-    TEST_ASSERT_EQUAL_INT(CONFIGURATION_COMMAND_TYPE_SET, current_config_command.type);
-    TEST_ASSERT_EQUAL_STRING("T,H,P,ACL", current_config_command.value[0]);
-    TEST_ASSERT_EQUAL_STRING("5", current_config_command.value[1]);
-    TEST_ASSERT_EQUAL_STRING("debug", current_config_command.value[2]);
-}
+#endif // TEST

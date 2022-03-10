@@ -17,8 +17,6 @@
 #include "model/parameter.h"
 #include "utility/wolk_utils.h"
 
-#include <stdbool.h>
-#include <stddef.h>
 #include <string.h>
 
 void parameter_init(parameter_t* message, char* name, char* value)
@@ -26,7 +24,7 @@ void parameter_init(parameter_t* message, char* name, char* value)
     strcpy(message->name, name);
     parameter_set_value(message, value);
 }
-
+// TODO: start using it, expose over wolk_
 void parameter_set_value(parameter_t* message, char* buffer)
 {
     /* Sanity check */
