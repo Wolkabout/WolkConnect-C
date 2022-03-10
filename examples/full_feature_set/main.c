@@ -52,6 +52,7 @@ wolk_numeric_feeds_t temperature_value = {0};
 wolk_numeric_feeds_t heartbeat_value = {0};
 wolk_boolean_feeds_t switch_value = {0};
 void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds);
+void parameter_value_handler(wolk_parameter_t* parameter_message, size_t number_of_parameters);
 
 /* System dependencies */
 static volatile bool keep_running = true;
@@ -152,6 +153,16 @@ void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds)
     }
 }
 
+void parameter_value_handler(wolk_parameter_t* parameter_message, size_t number_of_parameters)
+{
+    for (int i = 0; i < number_of_parameters; ++i) {
+        printf("Received is parameter with name: %s and value: %s\n", parameter_message->name,
+               parameter_message->value);
+
+        parameter_message++;
+    }
+}
+
 int main(int argc, char* argv[])
 {
     WOLK_UNUSED(argc);
@@ -179,7 +190,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init(&wolk, send_buffer, receive_buffer, device_key, device_password, PUSH, feed_value_handler, NULL, NULL)
+    if (wolk_init(&wolk, send_buffer, receive_buffer, device_key, device_password, PUSH, feed_value_handler,
+                  parameter_value_handler, NULL)
         != W_FALSE) {
         printf("Wolk client - Error initializing WolkConnect-C\n");
         return 1;
@@ -218,6 +230,13 @@ int main(int argc, char* argv[])
     //    }
 
     int32_t tick_count = 0;
+
+    // Parameters pull: FILE_TRANSFER_PLATFORM_ENABLED
+    wolk_parameter_t parameter[2];
+    wolk_init_parameter(&parameter[0], PARAMETER_FILE_TRANSFER_PLATFORM_ENABLED, "true");
+    wolk_init_parameter(&parameter[1], PARAMETER_FILE_TRANSFER_URL_ENABLED, "true");
+    wolk_sync_parameters(&wolk, &parameter, 2);
+    wolk_publish(&wolk);
 
     while (keep_running) {
         // Sending feeds on heartbeat

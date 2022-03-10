@@ -426,6 +426,26 @@ WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_registration_t* feeds, size_t 
 WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx);
 
 /**
+ * @brief Initialized parameter
+ *
+ * @param parameter Where it's data will be stored
+ * @param name parameter name, one of the define at types.h or custom
+ * @param value parameter value
+ *
+ * @return Error code
+ */
+WOLK_ERR_T wolk_init_parameter(parameter_t* parameter, char* name, char* value);
+
+/**
+ * @brief Set parameter value
+ *
+ * @param parameter Where it's data will be stored
+ * @param value parameter value
+ * @return
+ */
+WOLK_ERR_T wolk_set_value_parameter(parameter_t* parameter, char* value);
+
+/**
  * @brief Change existing parameters on the WolkAbout IoT Platform.
  * Updating parameters this way can lead to a misconfigured connection which might prevent further updates. Update
  * connectivity parameters responsibly!

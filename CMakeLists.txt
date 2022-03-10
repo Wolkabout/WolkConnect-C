@@ -61,7 +61,6 @@ file(GLOB_RECURSE REGISTER_FEED_AND_ATTRIBUTE_HEADER_FILES "examples/register_fe
 file(GLOB_RECURSE REGISTER_FEED_AND_ATTRIBUTE_SOURCE_FILES "examples/register_feed_and_attribute/*.c")
 file(GLOB_RECURSE FULL_EXAMPLE_HEADER_FILES "examples/full_feature_set/*.h")
 file(GLOB_RECURSE FULL_EXAMPLE_SOURCE_FILES "examples/full_feature_set/*.c")
-
 file(GLOB_RECURSE TESTS_SOURCE_FILES "tests/test/*.c")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/bin")

@@ -534,16 +534,11 @@ size_t json_deserialize_parameter_message(char* buffer, size_t buffer_size, para
     int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
 
     /* Received JSON must be valid, and top level element must be array */
-    if (parser_result < 1 || tokens[0].type != JSMN_ARRAY || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
+    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
         return false;
     }
-
-    if (tokens[1].type != JSMN_OBJECT) {
-        return false;
-    }
-
-    for (int i = 2; i < parser_result;
-         ++i) { // at 3rd position expects first json string; 2nd position is json object; 1st position is json array
+    // at 2nd position expects first json string; 1st position is json object
+    for (int i = 1; i < parser_result; i += 2) {
         if (tokens[i].type == JSMN_STRING) {
             // get name
             if (snprintf(parameter_message->name, WOLK_ARRAY_LENGTH(parameter_message->name), "%.*s",

@@ -479,6 +479,20 @@ WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx)
     return W_TRUE;
 }
 
+WOLK_ERR_T wolk_init_parameter(parameter_t* parameter, char* name, char* value)
+{
+    parameter_init(parameter, name, value);
+
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_set_value_parameter(parameter_t* parameter, char* value)
+{
+    parameter_set_value(parameter, value);
+
+    return W_FALSE;
+}
+
 WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter, size_t number_of_parameters)
 {
     outbound_message_t outbound_message = {0};

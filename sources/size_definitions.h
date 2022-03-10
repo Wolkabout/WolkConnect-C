@@ -41,7 +41,7 @@ enum {
     PAYLOAD_SIZE = 448,
 
     /* Maximum number of characters in a single feed */
-    FEED_ELEMENT_SIZE = 32,
+    FEED_ELEMENT_SIZE = 64,
     /* Maximum number of feeds*/
     FEEDS_MAX_NUMBER = 32,
 
