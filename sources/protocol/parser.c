@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 WolkAbout Technology s.r.o.
+ * Copyright 2022 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 #include "protocol/parser.h"
 #include "model/attribute.h"
-#include "model/feed_value_message.h"
 #include "model/file_management/file_management_parameter.h"
 #include "model/file_management/file_management_status.h"
 #include "protocol/json_parser.h"

@@ -51,6 +51,7 @@ static wolk_ctx_t wolk;
 wolk_numeric_feeds_t temperature_value = {0};
 wolk_numeric_feeds_t heartbeat_value = {0};
 wolk_boolean_feeds_t switch_value = {0};
+void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds);
 
 /* System dependencies */
 static volatile bool keep_running = true;
@@ -138,7 +139,7 @@ static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const in
 void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds)
 {
     for (int i = 0; i < number_of_feeds; ++i) {
-        printf("Received is feed with reference %s and value %s\n", feeds->reference, feeds->data);
+        printf("Received is feed with reference %s and value %s\n", feeds->reference, feeds->data[0]);
         if (strstr(feeds->reference, "SW")) {
             if (strstr(feeds->data[0], "true"))
                 switch_value.value = true;

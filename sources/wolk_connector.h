@@ -308,7 +308,7 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick);
  * @param feedType Can be IN or IN_OUT
  * @return
  */
-WOLK_ERR_T wolk_init_feed(feed_registration_t* feed, char* name, const char* reference, char* unit,
+WOLK_ERR_T wolk_init_feed(feed_registration_t* feed, char* name, const char* reference, const char* unit,
                           const feed_type_t feedType);
 
 /** @brief Add string feed

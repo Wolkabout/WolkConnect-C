@@ -17,7 +17,7 @@
 #include "feed.h"
 
 
-void feed_init(feed_t* feed, uint16_t feed_size, char* reference)
+void feed_initialize(feed_t* feed, uint16_t feed_size, char* reference)
 {
     feed->size = feed_size > FEEDS_MAX_NUMBER ? FEEDS_MAX_NUMBER : feed_size;
 
@@ -74,7 +74,7 @@ uint64_t feed_get_utc(feed_t* feed)
     return feed->utc;
 }
 
-void initialize_registration_feed(feed_registration_t* feed, char* name, const char* reference, char* unit,
+void feed_initialize_registration(feed_registration_t* feed, char* name, const char* reference, char* unit,
                                   const feed_type_t feedType)
 {
     strncpy(feed->name, name, ITEM_NAME_SIZE);
