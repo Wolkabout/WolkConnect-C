@@ -68,7 +68,6 @@ static void listener_file_management_on_file_list_status(file_management_t* file
                                                          size_t file_list_items);
 
 static void listener_firmware_update_on_status(firmware_update_t* firmware_update);
-static void listener_firmware_update_on_version(firmware_update_t* firmware_update, char* firmware_update_version);
 static void listener_firmware_update_on_verification(firmware_update_t* firmware_update);
 
 static void handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter);
@@ -157,19 +156,27 @@ WOLK_ERR_T wolk_init_file_management(
     file_management_is_url_download_done_t is_url_download_done, file_management_get_file_list_t get_file_list,
     file_management_remove_file_t remove_file, file_management_purge_files_t purge_files)
 {
-    if (chunk_size > (PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE)) {
+    if (chunk_size > (PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE)) { //TODO: unit is Kbytes
         chunk_size = PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE;
     }
 
-    file_management_init(&ctx->file_management, ctx->device_key, maximum_file_size, chunk_size, start, write_chunk,
+//    char parameter_value[PARAMETER_VALUE_SIZE];
+//    sprintf(parameter_value, "%d", chunk_size);
+//    parameter_t parameter;
+//    parameter_init(&parameter, PARAMETER_MAXIMUM_MESSAGE_SIZE, parameter_value);
+//    wolk_change_parameter(&ctx, &parameter, 1);
+
+    if( !file_management_init(ctx, &ctx->file_management, ctx->device_key, maximum_file_size, chunk_size, start, write_chunk,
                          read_chunk, abort, finalize, start_url_download, is_url_download_done, get_file_list,
-                         remove_file, purge_files, ctx);
+                         remove_file, purge_files))
+        return W_TRUE;
 
     file_management_set_on_status_listener(&ctx->file_management, listener_file_management_on_status);
     file_management_set_on_packet_request_listener(&ctx->file_management, listener_file_management_on_packet_request);
     file_management_set_on_url_download_status_listener(&ctx->file_management,
                                                         listener_file_management_on_url_download_status);
     file_management_set_on_file_list_listener(&ctx->file_management, listener_file_management_on_file_list_status);
+
     return W_FALSE;
 }
 
@@ -184,7 +191,6 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_inst
                          verification_read, get_version, abort_installation, ctx);
 
     firmware_update_set_on_status_listener(&ctx->firmware_update, listener_firmware_update_on_status);
-    firmware_update_set_on_version_listener(&ctx->firmware_update, listener_firmware_update_on_version);
     firmware_update_set_on_verification_listener(&ctx->firmware_update, listener_firmware_update_on_verification);
 
     return W_FALSE;
@@ -214,10 +220,11 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     subscribe_to(ctx, ctx->parser.DETAILS_SYNCHRONIZATION_TOPIC);
 
     subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC);
-    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_BINARY_RESPONSE_TOPIC);
     subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC);
     subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC);
     subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_FILE_LIST_TOPIC);
     subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_FILE_DELETE_TOPIC);
     subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_FILE_PURGE_TOPIC);
 
@@ -233,14 +240,6 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 
         listener_file_management_on_file_list_status(&ctx->file_management, file_list,
                                                      ctx->file_management.get_file_list(file_list));
-    }
-
-    char firmware_update_version[FIRMWARE_UPDATE_VERSION_SIZE] = {0};
-    if (ctx->firmware_update.is_initialized) {
-        listener_firmware_update_on_verification(&ctx->firmware_update);
-
-        ctx->firmware_update.get_version(firmware_update_version);
-        listener_firmware_update_on_version(&ctx->firmware_update, firmware_update_version);
     }
 
     return W_FALSE;
@@ -593,11 +592,11 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
         unsigned char retained;
         unsigned short msgid;
 
-        MQTTString topic_mqtt_str;
-        unsigned char* payload;
-        int payload_len;
-
-        if (MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &topic_mqtt_str, &payload, &payload_len, mqtt_packet,
+        MQTTString topic_mqtt_str = {0};
+        unsigned char* payload = '\0';
+        int payload_len = 0;
+//TODO: payload is nothing
+            if (MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &topic_mqtt_str, &payload, &payload_len, mqtt_packet,
                                     mqtt_packet_len)
             != 1) {
             return W_TRUE;
@@ -606,7 +605,7 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
         WOLK_ASSERT(TOPIC_SIZE > topic_mqtt_str.lenstring.len);
 
         char topic_str[TOPIC_SIZE] = "";
-        strncpy(&topic_str[0], topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
+        strncpy(&topic_str, topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
 
         if (strstr(topic_str, ctx->parser.FEED_VALUES_MESSAGE_TOPIC) != NULL) {
             feed_t feeds_received[FEED_ELEMENT_SIZE];
@@ -650,7 +649,7 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
             if (num_deserialized_parameter != 0) {
                 handle_file_management_parameter(&ctx->file_management, &file_management_parameter);
             }
-        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC)) {
+        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_BINARY_RESPONSE_TOPIC)) {
             handle_file_management_packet(&ctx->file_management, (uint8_t*)payload, (size_t)payload_len);
         } else if ((strstr(topic_str, ctx->parser.FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC))
                    || (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC))) {
@@ -888,7 +887,7 @@ static void listener_file_management_on_packet_request(file_management_t* file_m
     outbound_message_t outbound_message = {0};
     outbound_message_make_from_file_management_packet_request(&wolk_ctx->parser, wolk_ctx->device_key, &request,
                                                               &outbound_message);
-
+//TODO topic is not good
     publish(wolk_ctx, &outbound_message);
 }
 
@@ -940,21 +939,6 @@ static void listener_firmware_update_on_status(firmware_update_t* firmware_updat
 
     outbound_message_make_from_firmware_update_status(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update,
                                                       &outbound_message);
-
-    publish(wolk_ctx, &outbound_message);
-}
-
-static void listener_firmware_update_on_version(firmware_update_t* firmware_update, char* firmware_update_version)
-{
-    /* Sanity check */
-    WOLK_ASSERT(firmware_update);
-    WOLK_ASSERT(firmware_update_version);
-
-    wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
-    outbound_message_t outbound_message = {0};
-
-    outbound_message_make_from_firmware_update_version(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update_version,
-                                                       &outbound_message);
 
     publish(wolk_ctx, &outbound_message);
 }

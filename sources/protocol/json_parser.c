@@ -34,13 +34,6 @@
 #define JSON_TOKEN_SIZE FEEDS_MAX_NUMBER
 #define UTC_MILLISECONDS_LENGTH 14
 
-const char* JSON_FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC = "d2p/file_upload_status/d/";
-const char* JSON_FILE_MANAGEMENT_PACKET_REQUEST_TOPIC = "d2p/file_binary_request/d/";
-const char* JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS = "d2p/file_url_download_status/d/";
-const char* JSON_FILE_MANAGEMENT_FILE_LIST_UPDATE = "d2p/file_list_update/d/";
-
-const char* JSON_FIRMWARE_UPDATE_STATUS_TOPIC = "d2p/firmware_update_status/d/";
-const char* JSON_FIRMWARE_UPDATE_VERSION_TOPIC = "d2p/firmware_version_update/d/";
 
 const char JSON_P2D_TOPIC[TOPIC_DIRECTION_SIZE] = "p2d";
 const char JSON_D2P_TOPIC[TOPIC_DIRECTION_SIZE] = "d2p";
@@ -55,7 +48,23 @@ const char JSON_SYNC_PARAMETERS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "synchronize_pa
 const char JSON_SYNC_TIME_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "time";
 const char JSON_SYNC_DETAILS_SYNCHRONIZATION_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "details_synchronization";
 const char JSON_ERROR_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "error";
-const char JSON_DETAILS_SYNCHRONIZATION[TOPIC_MESSAGE_TYPE_SIZE] = "details_synchronization";
+const char JSON_DETAILS_SYNCHRONIZATION_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "details_synchronization";
+
+const char JSON_FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_upload_initiate";
+const char JSON_FILE_MANAGEMENT_FILE_UPLOAD_STATUS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_upload_status";
+const char JSON_FILE_MANAGEMENT_FILE_UPLOAD_ABORT_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_upload_abort";
+const char JSON_FILE_MANAGEMENT_FILE_BINARY_REQUEST_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_binary_request";
+const char JSON_FILE_MANAGEMENT_FILE_BINARY_RESPONSE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_binary_response";
+const char JSON_FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_url_download_initiate";
+const char JSON_FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_url_download_abort";
+const char JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_url_download_status";
+const char JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_list";
+const char JSON_FILE_MANAGEMENT_FILE_DELETE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_delete";
+const char JSON_FILE_MANAGEMENT_FILE_PURGE_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "file_purge";
+
+const char JSON_FIRMWARE_UPDATE_INSTALL_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "firmware_update_install";
+const char JSON_FIRMWARE_UPDATE_STATUS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "firmware_update_status";
+const char JSON_FIRMWARE_UPDATE_ABORT_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "firmware_update_abort";
 
 
 static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s)
@@ -73,9 +82,9 @@ bool json_serialize_file_management_status(const char* device_key,
                                            file_management_status_t* status, outbound_message_t* outbound_message)
 {
     /* Serialize topic */
-    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC,
-            strlen(JSON_FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC));
-    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_UPLOAD_STATUS_TOPIC),
+    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_FILE_UPLOAD_STATUS_TOPIC,
+            strlen(JSON_FILE_MANAGEMENT_FILE_UPLOAD_STATUS_TOPIC));
+    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_FILE_UPLOAD_STATUS_TOPIC),
                  WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return false;
@@ -105,8 +114,8 @@ bool json_serialize_file_management_status(const char* device_key,
 bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size,
                                                 file_management_parameter_t* parameter)
 {
-    jsmn_parser parser;
-    jsmntok_t tokens[JSON_TOKEN_SIZE];
+    jsmn_parser parser = {0};
+    jsmntok_t tokens[JSON_TOKEN_SIZE] = {0};
     jsmn_init(&parser);
     const int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
 
@@ -118,10 +127,10 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
     file_management_parameter_init(parameter);
 
     /* Obtain command type and value */
-    char value_buffer[FEED_ELEMENT_SIZE];
+    char value_buffer[FEED_ELEMENT_SIZE] = "";
 
     for (size_t i = 1; i < parser_result; i++) {
-        if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
+        if (json_token_str_equal(buffer, &tokens[i], "name")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
                 >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
@@ -135,7 +144,7 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
                 file_management_parameter_set_filename(parameter, value_buffer);
                 i++;
             }
-        } else if (json_token_str_equal(buffer, &tokens[i], "fileSize")) {
+        } else if (json_token_str_equal(buffer, &tokens[i], "size")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
                 >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
@@ -144,7 +153,7 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
 
             file_management_parameter_set_file_size(parameter, (size_t)atoi(value_buffer));
             i++;
-        } else if (json_token_str_equal(buffer, &tokens[i], "fileHash")) {
+        } else if (json_token_str_equal(buffer, &tokens[i], "hash")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
                 >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
@@ -157,7 +166,9 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
             }
             base64_decode(value_buffer, (BYTE*)parameter->file_hash, strlen(value_buffer));
             i++;
-        } else if (json_token_str_equal(buffer, &tokens[i], "fileUrl")) {
+        }
+        //TODO: will be used for serialize file_url_download_abort msg
+        else if (json_token_str_equal(buffer, &tokens[i], "fileUrl")) {
             if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
                          buffer + tokens[i + 1].start)
                 >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
@@ -165,14 +176,6 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
             }
 
             file_management_parameter_set_file_url(parameter, value_buffer);
-            i++;
-        } else if (json_token_str_equal(buffer, &tokens[i], "result")) {
-            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
-                         buffer + tokens[i + 1].start)
-                >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
-                return false;
-            }
-            file_management_parameter_set_result(parameter, value_buffer);
             i++;
         } else {
             return false;
@@ -185,21 +188,17 @@ bool json_serialize_file_management_packet_request(const char* device_key,
                                                    file_management_packet_request_t* file_management_packet_request,
                                                    outbound_message_t* outbound_message)
 {
+    char topic[TOPIC_SIZE] = "";
+
     /* Serialize topic */
-    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_PACKET_REQUEST_TOPIC,
-            strlen(JSON_FILE_MANAGEMENT_PACKET_REQUEST_TOPIC));
-    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_PACKET_REQUEST_TOPIC),
-                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
-        return false;
-    }
+    json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FILE_MANAGEMENT_FILE_BINARY_REQUEST_TOPIC, topic);
+    strncpy(outbound_message->topic, topic, TOPIC_SIZE);
 
     /* Serialize payload */
     if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
-                 "{\"fileName\": \"%s\", \"chunkIndex\":%llu, \"chunkSize\":%llu}",
+                 "{\"name\": \"%s\", \"chunkIndex\":%llu}",
                  file_management_packet_request_get_file_name(file_management_packet_request),
-                 (unsigned long long int)file_management_packet_request_get_chunk_index(file_management_packet_request),
-                 (unsigned long long int)file_management_packet_request_get_chunk_size(file_management_packet_request))
+                 (unsigned long long int)file_management_packet_request_get_chunk_index(file_management_packet_request))
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
         return false;
     }
@@ -213,9 +212,9 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
                                                         outbound_message_t* outbound_message)
 {
     /* Serialize topic */
-    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS,
-            strlen(JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS));
-    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS),
+    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS_TOPIC,
+            strlen(JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS_TOPIC));
+    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS_TOPIC),
                  WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return false;
@@ -256,9 +255,9 @@ bool json_serialize_file_management_file_list_update(const char* device_key, cha
                                                      outbound_message_t* outbound_message)
 {
     /* Serialize topic */
-    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_FILE_LIST_UPDATE,
-            strlen(JSON_FILE_MANAGEMENT_FILE_LIST_UPDATE));
-    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_FILE_LIST_UPDATE),
+    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC,
+            strlen(JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC));
+    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC),
                  WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
         return false;
@@ -370,26 +369,6 @@ bool json_serialize_firmware_update_status(const char* device_key, firmware_upda
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }
-    }
-
-    return true;
-}
-
-bool json_serialize_firmware_update_version(const char* device_key, char* firmware_update_version,
-                                            outbound_message_t* outbound_message)
-{
-    /* Serialize topic */
-    strncpy(outbound_message->topic, JSON_FIRMWARE_UPDATE_VERSION_TOPIC, strlen(JSON_FIRMWARE_UPDATE_VERSION_TOPIC));
-    if (snprintf(outbound_message->topic + strlen(JSON_FIRMWARE_UPDATE_VERSION_TOPIC),
-                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
-        return false;
-    }
-
-    /* Serialize payload */
-    if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload), "%s", firmware_update_version)
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
-        return false;
     }
 
     return true;

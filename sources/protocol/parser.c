@@ -43,7 +43,6 @@ void parser_init(parser_t* parser)
 
     parser->deserialize_firmware_update_parameter = json_deserialize_firmware_update_parameter;
     parser->serialize_firmware_update_status = json_serialize_firmware_update_status;
-    parser->serialize_firmware_update_version = json_serialize_firmware_update_version;
 
     parser->deserialize_time = json_deserialize_time;
     parser->deserialize_details_synchronization = json_deserialize_details_synchronization;
@@ -64,14 +63,17 @@ void parser_init(parser_t* parser)
 
     strncpy(parser->FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC, JSON_FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC,
             TOPIC_MESSAGE_TYPE_SIZE);
-    strncpy(parser->FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC, JSON_FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC,
+    strncpy(parser->FILE_MANAGEMENT_BINARY_REQUEST_TOPIC, JSON_FILE_MANAGEMENT_FILE_BINARY_REQUEST_TOPIC,
             TOPIC_MESSAGE_TYPE_SIZE);
-    strncpy(parser->FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC,
+    strncpy(parser->FILE_MANAGEMENT_BINARY_RESPONSE_TOPIC, JSON_FILE_MANAGEMENT_FILE_BINARY_RESPONSE_TOPIC,
+            TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_FILE_UPLOAD_ABORT_TOPIC,
             TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC,
             TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC,
             TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->FILE_MANAGEMENT_FILE_LIST_TOPIC, JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->FILE_MANAGEMENT_FILE_DELETE_TOPIC, JSON_FILE_MANAGEMENT_FILE_DELETE_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->FILE_MANAGEMENT_FILE_PURGE_TOPIC, JSON_FILE_MANAGEMENT_FILE_PURGE_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->FIRMWARE_UPDATE_INSTALL_TOPIC, JSON_FIRMWARE_UPDATE_INSTALL_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
@@ -88,7 +90,7 @@ void parser_init(parser_t* parser)
     strncpy(parser->SYNC_PARAMETERS_TOPIC, JSON_SYNC_PARAMETERS_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->SYNC_TIME_TOPIC, JSON_SYNC_TIME_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
     strncpy(parser->ERROR_TOPIC, JSON_ERROR_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
-    strncpy(parser->DETAILS_SYNCHRONIZATION_TOPIC, JSON_DETAILS_SYNCHRONIZATION, TOPIC_MESSAGE_TYPE_SIZE);
+    strncpy(parser->DETAILS_SYNCHRONIZATION_TOPIC, JSON_DETAILS_SYNCHRONIZATION_TOPIC, TOPIC_MESSAGE_TYPE_SIZE);
 }
 
 size_t parser_serialize_feeds(parser_t* parser, feed_t* readings, data_type_t type, size_t num_readings,
@@ -191,18 +193,6 @@ bool parse_serialize_firmware_update_status(parser_t* parser, const char* device
     WOLK_ASSERT(outbound_message);
 
     return parser->serialize_firmware_update_status(device_key, firmware_update, outbound_message);
-}
-
-bool parse_serialize_firmware_update_version(parser_t* parser, const char* device_key, char* firmware_update_version,
-                                             outbound_message_t* outbound_message)
-{
-    /* Sanity Check */
-    WOLK_ASSERT(parser);
-    WOLK_ASSERT(device_key);
-    WOLK_ASSERT(firmware_update_version);
-    WOLK_ASSERT(outbound_message);
-
-    return parser->serialize_firmware_update_version(device_key, firmware_update_version, outbound_message);
 }
 
 bool parser_is_initialized(parser_t* parser)

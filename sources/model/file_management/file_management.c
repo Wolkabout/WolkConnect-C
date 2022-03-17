@@ -63,13 +63,13 @@ static void listener_on_packet_request(file_management_t* file_management, file_
 static void listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
 static void listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t* file_list_size);
 
-void file_management_init(file_management_t* file_management, const char* device_key, size_t maximum_file_size,
+bool file_management_init(void* wolk_ctx, file_management_t* file_management, const char* device_key, size_t maximum_file_size,
                           size_t chunk_size, file_management_start_t start, file_management_write_chunk_t write_chunk,
                           file_management_read_chunk_t read_chunk, file_management_abort_t abort,
                           file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
                           file_management_is_url_download_done_t is_url_download_done,
                           file_management_get_file_list_t get_file_list, file_management_remove_file_t remove_file,
-                          file_management_purge_files_t purge_files, void* wolk_ctx)
+                          file_management_purge_files_t purge_files)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
@@ -110,7 +110,10 @@ void file_management_init(file_management_t* file_management, const char* device
     if (device_key == NULL || maximum_file_size == 0 || chunk_size == 0 || start == NULL || write_chunk == NULL
         || read_chunk == NULL || abort == NULL || finalize == NULL || wolk_ctx == NULL) {
         file_management->has_valid_configuration = false;
+        return false;
     }
+
+    return true;
 }
 
 void file_management_handle_parameter(file_management_t* file_management,
@@ -587,6 +590,7 @@ static void reset_state(file_management_t* file_management)
     file_management->file_size = 0;
 }
 
+//TODO: here is problem!
 static bool is_file_valid(file_management_t* file_management)
 {
     /* Sanity check */
@@ -601,7 +605,7 @@ static bool is_file_valid(file_management_t* file_management)
         sha256_hash(&sha256_ctx, read_data, read_data_size);
     }
 
-    uint8_t calculated_hash[FILE_MANAGEMENT_HASH_SIZE];
+    uint8_t calculated_hash[FILE_MANAGEMENT_HASH_SIZE] = {0};
     sha256_done(&sha256_ctx, calculated_hash);
 
     return memcmp(calculated_hash, file_management->file_hash, WOLK_ARRAY_LENGTH(calculated_hash)) == 0;

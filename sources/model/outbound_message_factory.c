@@ -118,20 +118,6 @@ bool outbound_message_make_from_firmware_update_status(parser_t* parser, const c
     return parse_serialize_firmware_update_status(parser, device_key, firmware_update, outbound_message);
 }
 
-
-bool outbound_message_make_from_firmware_update_version(parser_t* parser, const char* device_key,
-                                                        char* firmware_update_version,
-                                                        outbound_message_t* outbound_message)
-{
-    /* Sanity check */
-    WOLK_ASSERT(parser);
-    WOLK_ASSERT(device_key);
-    WOLK_ASSERT(firmware_update_version);
-
-    WOLK_ASSERT(outbound_message);
-
-    return parse_serialize_firmware_update_version(parser, device_key, firmware_update_version, outbound_message);
-}
 bool outbound_message_feed_registration(parser_t* parser, const char* device_key, feed_registration_t* feed,
                                         size_t number_of_feeds, outbound_message_t* outbound_message)
 {

@@ -51,10 +51,6 @@ bool outbound_message_make_from_firmware_update_status(parser_t* parser, const c
                                                        firmware_update_t* firmware_update,
                                                        outbound_message_t* outbound_message);
 
-bool outbound_message_make_from_firmware_update_version(parser_t* parser, const char* device_key,
-                                                        char* firmware_update_version,
-                                                        outbound_message_t* outbound_message);
-
 bool outbound_message_feed_registration(parser_t* parser, const char* device_key, feed_registration_t* feed,
                                         size_t number_of_feeds, outbound_message_t* outbound_message);
 

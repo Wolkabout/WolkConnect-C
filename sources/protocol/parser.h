@@ -39,12 +39,14 @@ typedef struct {
     bool is_initialized;
 
     char FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC[TOPIC_SIZE];
-    char FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC[TOPIC_SIZE];
+    char FILE_MANAGEMENT_BINARY_REQUEST_TOPIC[TOPIC_SIZE];
+    char FILE_MANAGEMENT_BINARY_RESPONSE_TOPIC[TOPIC_SIZE];
     char FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC[TOPIC_SIZE];
 
     char FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC[TOPIC_SIZE];
     char FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC[TOPIC_SIZE];
 
+    char FILE_MANAGEMENT_FILE_LIST_TOPIC[TOPIC_SIZE];
     char FILE_MANAGEMENT_FILE_DELETE_TOPIC[TOPIC_SIZE];
     char FILE_MANAGEMENT_FILE_PURGE_TOPIC[TOPIC_SIZE];
 
@@ -87,8 +89,6 @@ typedef struct {
                                                   firmware_update_t* parameter);
     bool (*serialize_firmware_update_status)(const char* device_key, firmware_update_t* firmware_update,
                                              outbound_message_t* outbound_message);
-    bool (*serialize_firmware_update_version)(const char* device_key, char* firmware_update_version,
-                                              outbound_message_t* outbound_message);
 
     bool (*deserialize_time)(char* buffer, size_t buffer_size, utc_command_t* utc_command);
     bool (*deserialize_details_synchronization)(char* buffer, size_t buffer_size, feed_registration_t* feeds,
@@ -151,8 +151,6 @@ bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* device_
 bool parse_serialize_firmware_update_status(parser_t* parser, const char* device_key,
                                             firmware_update_t* firmware_update, outbound_message_t* outbound_message);
 
-bool parse_serialize_firmware_update_version(parser_t* parser, const char* device_key, char* firmware_update_version,
-                                             outbound_message_t* outbound_message);
 /**** Firmware Update ****/
 
 bool parser_is_initialized(parser_t* parser);
