@@ -18,13 +18,13 @@
 #include "file_management_packet.h"
 #include "file_management_parameter.h"
 #include "size_definitions.h"
-#include "utility/wolk_utils.h"
 #include "utility/md5.h"
+#include "utility/wolk_utils.h"
 
-#include <stdio.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 typedef enum { STATE_IDLE = 0, STATE_PACKET_FILE_TRANSFER, STATE_URL_DOWNLOAD, STATE_FILE_OBTAINED } state_t;
@@ -64,10 +64,11 @@ static void listener_on_packet_request(file_management_t* file_management, file_
 static void listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
 static void listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t* file_list_size);
 
-bool file_management_init(void* wolk_ctx, file_management_t* file_management, const char* device_key, size_t maximum_file_size,
-                          size_t chunk_size, file_management_start_t start, file_management_write_chunk_t write_chunk,
-                          file_management_read_chunk_t read_chunk, file_management_abort_t abort,
-                          file_management_finalize_t finalize, file_management_start_url_download_t start_url_download,
+bool file_management_init(void* wolk_ctx, file_management_t* file_management, const char* device_key,
+                          size_t maximum_file_size, size_t chunk_size, file_management_start_t start,
+                          file_management_write_chunk_t write_chunk, file_management_read_chunk_t read_chunk,
+                          file_management_abort_t abort, file_management_finalize_t finalize,
+                          file_management_start_url_download_t start_url_download,
                           file_management_is_url_download_done_t is_url_download_done,
                           file_management_get_file_list_t get_file_list, file_management_remove_file_t remove_file,
                           file_management_purge_files_t purge_files)
@@ -166,7 +167,8 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
         return;
     }
 
-    if (memcmp(file_management->previous_packet_hash, file_management_packet_get_previous_packet_hash(packet, packet_size),
+    if (memcmp(file_management->previous_packet_hash,
+               file_management_packet_get_previous_packet_hash(packet, packet_size),
                WOLK_ARRAY_LENGTH(file_management->previous_packet_hash))
         != 0) {
         file_management_packet_request_t packet_request;
@@ -612,10 +614,11 @@ static bool is_file_valid(file_management_t* file_management)
 
     // hash to checksum
     for (int i = 0; i < FILE_MANAGEMENT_HASH_SIZE; ++i) {
-        sprintf(&calculated_file_checksum[i*2], "%02x", (unsigned int)calculated_file_hash[i]);
+        sprintf(&calculated_file_checksum[i * 2], "%02x", (unsigned int)calculated_file_hash[i]);
     }
 
-    return memcmp(calculated_file_checksum, file_management->file_hash, WOLK_ARRAY_LENGTH(calculated_file_checksum)) == 0;
+    return memcmp(calculated_file_checksum, file_management->file_hash, WOLK_ARRAY_LENGTH(calculated_file_checksum))
+           == 0;
 }
 
 static void listener_on_status(file_management_t* file_management, file_management_status_t status)
