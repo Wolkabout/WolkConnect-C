@@ -33,6 +33,7 @@
 #include "utility/jsmn.h"
 #include "utility/sha256.h"
 #include "utility/wolk_utils.h"
+#include "utility/md5.h"
 
 
 void setUp(void)
