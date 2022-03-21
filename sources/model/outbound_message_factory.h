@@ -44,8 +44,9 @@ bool outbound_message_make_from_file_management_packet_request(
     parser_t* parser, const char* device_key, file_management_packet_request_t* file_management_packet_request,
     outbound_message_t* outbound_message);
 
-bool outbound_message_make_from_file_management_file_list(parser_t* parser, const char* device_key, char* file_list,
-                                                          size_t file_list_items, outbound_message_t* outbound_message);
+bool outbound_message_make_from_file_management_file_list(parser_t* parser, const char* device_key,
+                                                          file_list_t* file_list, size_t file_list_items,
+                                                          outbound_message_t* outbound_message);
 
 bool outbound_message_make_from_firmware_update_status(parser_t* parser, const char* device_key,
                                                        firmware_update_t* firmware_update,

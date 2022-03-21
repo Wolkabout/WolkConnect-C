@@ -184,9 +184,9 @@ bool file_management_is_url_download_done(bool* success, char* downloaded_file_n
     return true;
 }
 
-size_t file_management_get_file_list(char* file_list)
+size_t file_management_get_file_list(file_list_t* file_list)
 {
-    struct dirent* de;
+    struct dirent* de = {0};
 
     DIR* dr = opendir(directory_name);
     if (dr == NULL) {
@@ -199,7 +199,19 @@ size_t file_management_get_file_list(char* file_list)
         if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) { // Ignore unix hidden files
             continue;
         } else {
-            strncpy(file_list + (file_list_items * FILE_MANAGEMENT_FILE_NAME_SIZE), de->d_name, strlen(de->d_name));
+            // getting file name
+            strncpy(file_list->file_name, de->d_name, strlen(de->d_name));
+
+            // getting file size
+            struct stat stats = {0};
+            char path[FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE] = {0};
+            snprintf(path, FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE, "%s%s", directory_name, de->d_name);
+            stat(path, &stats);
+            file_list->file_size = stats.st_size;
+
+            // move to next file list element
+            printf("File name: %s and size %d\n", file_list->file_name, file_list->file_size);
+            file_list++;
             file_list_items++;
         }
     }

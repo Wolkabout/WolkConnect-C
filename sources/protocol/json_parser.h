@@ -19,6 +19,7 @@
 
 #include "model/attribute.h"
 #include "model/feed.h"
+#include "model/file_management/file_management.h"
 #include "model/file_management/file_management_packet_request.h"
 #include "model/file_management/file_management_parameter.h"
 #include "model/file_management/file_management_status.h"
@@ -110,8 +111,8 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
                                                         file_management_parameter_t* file_management_parameter,
                                                         file_management_status_t* status,
                                                         outbound_message_t* outbound_message);
-bool json_serialize_file_management_file_list_update(const char* device_key, char* file_list, size_t file_list_items,
-                                                     outbound_message_t* outbound_message);
+bool json_serialize_file_management_file_list_update(const char* device_key, file_list_t* file_list,
+                                                     size_t file_list_items, outbound_message_t* outbound_message);
 
 bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, size_t buffer_size,
                                                 firmware_update_t* parameter);

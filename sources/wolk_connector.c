@@ -64,7 +64,7 @@ static void listener_file_management_on_packet_request(file_management_t* file_m
 static void listener_file_management_on_url_download_status(file_management_t* file_management,
                                                             file_management_status_t status);
 
-static void listener_file_management_on_file_list_status(file_management_t* file_management, char* file_list,
+static void listener_file_management_on_file_list_status(file_management_t* file_management, file_list_t* file_list,
                                                          size_t file_list_items);
 
 static void listener_firmware_update_on_status(firmware_update_t* firmware_update);
@@ -918,7 +918,7 @@ static void listener_file_management_on_url_download_status(file_management_t* f
     publish(wolk_ctx, &outbound_message);
 }
 
-static void listener_file_management_on_file_list_status(file_management_t* file_management, char* file_list,
+static void listener_file_management_on_file_list_status(file_management_t* file_management, file_list_t* file_list,
                                                          size_t file_list_items)
 {
     /* Sanity check */

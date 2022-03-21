@@ -19,6 +19,7 @@
 
 #include "model/attribute.h"
 #include "model/feed.h"
+#include "model/file_management/file_management.h"
 #include "model/file_management/file_management_packet_request.h"
 #include "model/file_management/file_management_parameter.h"
 #include "model/file_management/file_management_status.h"
@@ -82,7 +83,7 @@ typedef struct {
                                                           file_management_parameter_t* file_management_parameter,
                                                           file_management_status_t* status,
                                                           outbound_message_t* outbound_message);
-    bool (*serialize_file_management_file_list)(const char* device_key, char* file_list, size_t file_list_items,
+    bool (*serialize_file_management_file_list)(const char* device_key, file_list_t* file_list, size_t file_list_items,
                                                 outbound_message_t* outbound_message);
 
     bool (*deserialize_firmware_update_parameter)(char* device_key, char* buffer, size_t buffer_size,
@@ -140,7 +141,7 @@ bool parser_serialize_file_management_url_download(parser_t* parser, const char*
                                                    file_management_status_t* status,
                                                    outbound_message_t* outbound_message);
 
-bool parser_serialize_file_management_file_list(parser_t* parser, const char* device_key, char* file_list,
+bool parser_serialize_file_management_file_list(parser_t* parser, const char* device_key, file_list_t* file_list,
                                                 size_t file_list_items, outbound_message_t* outbound_message);
 /**** File Management ****/
 

@@ -93,8 +93,9 @@ bool outbound_message_make_from_file_management_url_download_status(
                                                          outbound_message);
 }
 
-bool outbound_message_make_from_file_management_file_list(parser_t* parser, const char* device_key, char* file_list,
-                                                          size_t file_list_items, outbound_message_t* outbound_message)
+bool outbound_message_make_from_file_management_file_list(parser_t* parser, const char* device_key,
+                                                          file_list_t* file_list, size_t file_list_items,
+                                                          outbound_message_t* outbound_message)
 {
     /* Sanity check */
     WOLK_ASSERT(parser);

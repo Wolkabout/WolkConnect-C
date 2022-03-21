@@ -51,7 +51,7 @@ static bool has_url_download(file_management_t* file_management);
 
 static void check_url_download(file_management_t* file_management);
 
-static uint8_t get_file_list(file_management_t* file_management, char* file_list);
+static uint8_t get_file_list(file_management_t* file_management, file_list_t* file_list);
 static bool remove_file(file_management_t* file_management, char* file_name);
 static bool purge_files(file_management_t* file_management);
 
@@ -62,7 +62,8 @@ static bool is_file_valid(file_management_t* file_management);
 static void listener_on_status(file_management_t* file_management, file_management_status_t status);
 static void listener_on_packet_request(file_management_t* file_management, file_management_packet_request_t request);
 static void listener_on_url_download_status(file_management_t* file_management, file_management_status_t status);
-static void listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t* file_list_size);
+static void listener_on_file_list_status(file_management_t* file_management, file_list_t* file_list,
+                                         size_t* file_list_size);
 
 bool file_management_init(void* wolk_ctx, file_management_t* file_management, const char* device_key,
                           size_t maximum_file_size, size_t chunk_size, file_management_start_t start,
@@ -670,7 +671,7 @@ static bool has_url_download(file_management_t* file_management)
     return file_management->start_url_download != NULL;
 }
 
-static uint8_t get_file_list(file_management_t* file_management, char* file_list)
+static uint8_t get_file_list(file_management_t* file_management, file_list_t* file_list)
 {
     /* Sanity Check */
     WOLK_ASSERT(file_management);
@@ -707,7 +708,8 @@ static void listener_on_url_download_status(file_management_t* file_management, 
     }
 }
 
-static void listener_on_file_list_status(file_management_t* file_management, char* file_list, size_t* file_list_size)
+static void listener_on_file_list_status(file_management_t* file_management, file_list_t* file_list,
+                                         size_t* file_list_size)
 {
     /* Sanity check */
     WOLK_ASSERT(file_mangement);

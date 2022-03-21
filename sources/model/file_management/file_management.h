@@ -30,6 +30,12 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+
+typedef struct file_list_t {
+    char file_name[FILE_MANAGEMENT_FILE_NAME_SIZE];
+    size_t file_size;
+} file_list_t;
+
 /**
  * @brief file_management_start signature.
  * Initializes File Management procedure with file named 'file_name' of size 'file_size'.
@@ -92,11 +98,11 @@ typedef bool (*file_management_is_url_download_done_t)(bool* success, char* down
 
 /**
  * @brief file_management_get_file_list_t signature.
- * Get file list in "file_list" as string array followed with number of files in "file_list_size"
+ * Get file list in "file_list" as file list array which consist of file name and size
  *
  * @return number of file presented in the list
  */
-typedef size_t (*file_management_get_file_list_t)(char* file_list);
+typedef size_t (*file_management_get_file_list_t)(file_list_t* file_list);
 
 /**
  * @brief file_management_remove_file_t signature.

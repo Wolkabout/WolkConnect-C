@@ -284,24 +284,24 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
     return true;
 }
 
-bool json_serialize_file_management_file_list_update(const char* device_key, char* file_list, size_t file_list_items,
-                                                     outbound_message_t* outbound_message)
+bool json_serialize_file_management_file_list_update(const char* device_key, file_list_t* file_list,
+                                                     size_t file_list_items, outbound_message_t* outbound_message)
 {
     /* Serialize topic */
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC, outbound_message->topic);
 
-    uint8_t file_size = 0;
-    char file_hash[3] = {0};
     /* Serialize payload */
     strncpy(outbound_message->payload, "[", strlen("["));
     for (size_t i = 0; i < file_list_items; i++) {
+        char file_hash[3] = {0}; // TODO: implement it, it's optional at the protocol
+
         if (snprintf(outbound_message->payload + strlen(outbound_message->payload),
                      WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"name\":\"%s\",\"size\":%d,\"hash\":\"%s\"},",
-                     (const char*)file_list + (i * FILE_MANAGEMENT_FILE_NAME_SIZE), file_size,
-                     file_hash) // TODO: it should be a structure!
+                     (const char*)file_list->file_name, file_list->file_size, file_hash)
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }
+        file_list++;
     }
 
     file_list_items == 0 ? strncpy(outbound_message->payload + strlen(outbound_message->payload), "]", strlen("]"))
