@@ -15,7 +15,7 @@
  */
 
 /**
- * @file WolkConn.h
+ * @file wolkconnector.h
  *
  * WolkConnect C
  *
@@ -378,6 +378,16 @@ WOLK_ERR_T wolk_add_bool_feeds(wolk_ctx_t* ctx, const char* reference, wolk_bool
 WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx);
 
 /**
+ * @brief Initialized attribute
+ *
+ * @param attribute Destination attribute
+ * @param name String name that will be associated with the attribute
+ * @param data_type String value  that will be associated with the attribute name
+ * @param value String value that will be associated with the attribute name
+ */
+WOLK_ERR_T wolk_init_attribute(wolk_attribute_t* attribute, char* name, char* data_type, char* value);
+
+/**
  * @brief Register and update attribute. The attribute name must be unique per device. All attributes created by a
  * device are always required and read-only. If an attribute with the given name already exists, the value will be
  * updated.
@@ -388,7 +398,7 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx);
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attributes, size_t number_of_attributes);
+WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, wolk_attribute_t* attributes, size_t number_of_attributes);
 
 /**
  * @brief Register feeds. If feed already exist error will be raised at the error channel. If bulk registration is

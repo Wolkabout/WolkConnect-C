@@ -18,9 +18,10 @@
 #include "file_management_packet.h"
 #include "file_management_parameter.h"
 #include "size_definitions.h"
-#include "utility/sha256.h"
 #include "utility/wolk_utils.h"
+#include "utility/md5.h"
 
+#include <stdio.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -95,7 +96,8 @@ bool file_management_init(void* wolk_ctx, file_management_t* file_management, co
     file_management->purge_files = purge_files;
 
     file_management->state = STATE_IDLE;
-    memset(file_management->last_packet_hash, 0, WOLK_ARRAY_LENGTH(file_management->last_packet_hash));
+    memset(file_management->previous_packet_hash, 0, WOLK_ARRAY_LENGTH(file_management->previous_packet_hash));
+    memset(file_management->current_packet_hash, 0, WOLK_ARRAY_LENGTH(file_management->current_packet_hash));
     file_management->next_chunk_index = 0;
     file_management->expected_number_of_chunks = 0;
     file_management->retry_count = 0;
@@ -164,8 +166,8 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
         return;
     }
 
-    if (memcmp(file_management->last_packet_hash, file_management_packet_get_previous_packet_hash(packet, packet_size),
-               WOLK_ARRAY_LENGTH(file_management->last_packet_hash))
+    if (memcmp(file_management->previous_packet_hash, file_management_packet_get_previous_packet_hash(packet, packet_size),
+               WOLK_ARRAY_LENGTH(file_management->previous_packet_hash))
         != 0) {
         file_management_packet_request_t packet_request;
         file_management_packet_request_init(&packet_request, file_management->file_name,
@@ -175,8 +177,8 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
         return;
     }
 
-    memcpy(file_management->last_packet_hash, file_management_packet_get_hash(packet, packet_size),
-           WOLK_ARRAY_LENGTH(file_management->last_packet_hash));
+    memcpy(file_management->previous_packet_hash, file_management_packet_get_hash(packet, packet_size),
+           WOLK_ARRAY_LENGTH(file_management->previous_packet_hash));
 
     if (!write_chunk(file_management, file_management_packet_get_data(packet, packet_size),
                      file_management_packet_get_data_size(packet, packet_size))) {
@@ -319,7 +321,7 @@ static void handle_file_management(file_management_t* file_management, file_mana
         }
 
         if (!strlen(file_management_parameter_get_file_name(parameter))) {
-            listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+            listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_UNKNOWN));
             return;
         }
 
@@ -331,7 +333,7 @@ static void handle_file_management(file_management_t* file_management, file_mana
 
         if (!update_sequence_init(file_management, file_management_parameter_get_file_name(parameter),
                                   file_management_parameter_get_file_size(parameter))) {
-            listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+            listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_UNKNOWN));
             return;
         }
 
@@ -435,7 +437,7 @@ static void check_url_download(file_management_t* file_management)
                                         file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
         if (!start_url_download(file_management, file_management->file_url)) {
             listener_on_url_download_status(file_management,
-                                            file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+                                            file_management_status_error(FILE_MANAGEMENT_ERROR_UNKNOWN));
 
             reset_state(file_management);
             return;
@@ -452,7 +454,7 @@ static void check_url_download(file_management_t* file_management)
         if (!success) {
             reset_state(file_management);
             listener_on_url_download_status(file_management,
-                                            file_management_status_error(FILE_MANAGEMENT_ERROR_UNSPECIFIED));
+                                            file_management_status_error(FILE_MANAGEMENT_ERROR_UNKNOWN));
             return;
         }
 
@@ -581,7 +583,8 @@ static void reset_state(file_management_t* file_management)
     WOLK_ASSERT(file_management);
 
     file_management->state = STATE_IDLE;
-    memset(file_management->last_packet_hash, 0, WOLK_ARRAY_LENGTH(file_management->last_packet_hash));
+    memset(file_management->previous_packet_hash, 0, WOLK_ARRAY_LENGTH(file_management->previous_packet_hash));
+    memset(file_management->current_packet_hash, 0, WOLK_ARRAY_LENGTH(file_management->current_packet_hash));
     file_management->next_chunk_index = 0;
     file_management->expected_number_of_chunks = 0;
 
@@ -590,25 +593,29 @@ static void reset_state(file_management_t* file_management)
     file_management->file_size = 0;
 }
 
-//TODO: here is problem!
 static bool is_file_valid(file_management_t* file_management)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
-    sha256_context sha256_ctx;
-    sha256_init(&sha256_ctx);
+    uint8_t read_data[FILE_VERIFICATION_CHUNK_SIZE] = {0};
+    uint8_t calculated_file_hash[FILE_MANAGEMENT_HASH_SIZE] = {0};
+    uint8_t calculated_file_checksum[FILE_MANAGEMENT_HASH_SIZE] = {0};
+    MD5_CTX md5_ctx;
+    md5_init(&md5_ctx);
 
     for (size_t i = 0; i < (size_t)WOLK_CEIL((double)file_management->file_size / FILE_VERIFICATION_CHUNK_SIZE); ++i) {
-        uint8_t read_data[FILE_VERIFICATION_CHUNK_SIZE];
         const size_t read_data_size = read_chunk(file_management, i, read_data, WOLK_ARRAY_LENGTH(read_data));
-        sha256_hash(&sha256_ctx, read_data, read_data_size);
+        md5_update(&md5_ctx, read_data, read_data_size);
+    }
+    md5_final(&md5_ctx, calculated_file_hash);
+
+    // hash to checksum
+    for (int i = 0; i < FILE_MANAGEMENT_HASH_SIZE; ++i) {
+        sprintf(&calculated_file_checksum[i*2], "%02x", (unsigned int)calculated_file_hash[i]);
     }
 
-    uint8_t calculated_hash[FILE_MANAGEMENT_HASH_SIZE] = {0};
-    sha256_done(&sha256_ctx, calculated_hash);
-
-    return memcmp(calculated_hash, file_management->file_hash, WOLK_ARRAY_LENGTH(calculated_hash)) == 0;
+    return memcmp(calculated_file_checksum, file_management->file_hash, WOLK_ARRAY_LENGTH(calculated_file_checksum)) == 0;
 }
 
 static void listener_on_status(file_management_t* file_management, file_management_status_t status)

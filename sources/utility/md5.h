@@ -15,7 +15,7 @@
 #include <string.h>
 
 /****************************** MACROS ******************************/
-#define MD5_BLOCK_SIZE 16               // MD5 outputs a 16 byte digest
+#define MD5_BLOCK_SIZE 32               // MD5 outputs a 32 byte digest
 typedef unsigned char BYTE;             // 8-bit byte
 typedef unsigned int  WORD;             // 32-bit word, change to "long" for 16-bit machines
 

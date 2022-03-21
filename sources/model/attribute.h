@@ -28,7 +28,7 @@ typedef struct {
     char data_type[ITEM_DATA_TYPE_SIZE];
     char value[FEED_ELEMENT_SIZE];
 } attribute_t;
-// TODO: start using it over wolk_
+
 void attribute_init(attribute_t* attribute, char* name, char* data_type, char* value);
 
 #ifdef __cplusplus

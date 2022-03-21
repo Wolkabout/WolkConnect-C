@@ -62,9 +62,9 @@ uint8_t* file_management_packet_get_previous_packet_hash(uint8_t* packet, size_t
     /* Sanity check */
     WOLK_ASSERT(packet);
     WOLK_ASSERT(packet_size > 2 * FILE_MANAGEMENT_HASH_SIZE);
-
     WOLK_UNUSED(packet_size);
 
+    // previous sha256 hash is located at the first 32 bytes
     return packet;
 }
 

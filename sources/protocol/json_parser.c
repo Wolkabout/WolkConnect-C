@@ -67,6 +67,11 @@ const char JSON_FIRMWARE_UPDATE_STATUS_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "firmwar
 const char JSON_FIRMWARE_UPDATE_ABORT_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "firmware_update_abort";
 
 
+static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s);
+static const char* file_management_status_get_error_as_str(file_management_status_t* status);
+static const char* firmware_update_status_as_str(firmware_update_t* firmware_update);
+
+
 static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s)
 {
     if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start
@@ -77,35 +82,68 @@ static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s
     return false;
 }
 
+static const char* file_management_status_get_error_as_str(file_management_status_t* status)
+{
+    /* Sanity check */
+    WOLK_ASSERT(status);
+
+    switch (status->error) {
+    case FILE_MANAGEMENT_ERROR_NONE:
+        return "FILE_MANAGEMENT_ERROR_NONE";
+
+    case FILE_MANAGEMENT_ERROR_UNKNOWN:
+        return "FILE_MANAGEMENT_ERROR_UNKNOWN";
+
+    case FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED:
+        return "FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED";
+
+    case FILE_MANAGEMENT_ERROR_UNSUPPORTED_FILE_SIZE:
+        return "FILE_MANAGEMENT_ERROR_UNSUPPORTED_FILE_SIZE";
+
+    case FILE_MANAGEMENT_ERROR_MALFORMED_URL:
+        return "FILE_MANAGEMENT_ERROR_MALFORMED_URL";
+
+    case FILE_MANAGEMENT_ERROR_FILE_HASH_MISMATCH:
+        return "FILE_MANAGEMENT_ERROR_FILE_HASH_MISMATCH";
+
+    case FILE_MANAGEMENT_ERROR_FILE_SYSTEM:
+        return "FILE_MANAGEMENT_ERROR_FILE_SYSTEM";
+
+    case FILE_MANAGEMENT_ERROR_RETRY_COUNT_EXCEEDED:
+        return "FILE_MANAGEMENT_ERROR_RETRY_COUNT_EXCEEDED";
+
+    default:
+        WOLK_ASSERT(false);
+        return "";
+    }
+}
+
 bool json_serialize_file_management_status(const char* device_key,
                                            file_management_packet_request_t* file_management_packet_request,
                                            file_management_status_t* status, outbound_message_t* outbound_message)
 {
     /* Serialize topic */
-    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_FILE_UPLOAD_STATUS_TOPIC,
-            strlen(JSON_FILE_MANAGEMENT_FILE_UPLOAD_STATUS_TOPIC));
-    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_FILE_UPLOAD_STATUS_TOPIC),
-                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
-        return false;
+    json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FILE_MANAGEMENT_FILE_UPLOAD_STATUS_TOPIC, outbound_message->topic);
+
+    /* Check for errors*/
+    char file_management_error[ITEM_NAME_SIZE] = {0};
+    if(file_management_status_get_state(status) == FILE_MANAGEMENT_STATE_ERROR)
+    {
+        if (snprintf(file_management_error, WOLK_ARRAY_LENGTH(file_management_error),
+                     "\"error\": \"%s\",", file_management_status_get_error_as_str(status))
+            >= (int)WOLK_ARRAY_LENGTH(file_management_error)) {
+            return false;
+        }
     }
 
     /* Serialize payload */
     if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
-                 "{\"fileName\": \"%s\", \"status\": \"%s\"}",
+                 "{\"name\": \"%s\",%s\"status\": \"%s\"}",
                  file_management_packet_request_get_file_name(file_management_packet_request),
+                 file_management_error,
                  file_management_status_as_str(status))
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
         return false;
-    }
-
-    file_management_error_t error = file_management_status_get_error(status);
-    if (error >= 0) {
-        if (snprintf(outbound_message->payload + strlen(outbound_message->payload) - 1,
-                     WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"error\":%d}", error)
-            >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
-            return false;
-        }
     }
 
     return true;
@@ -160,11 +198,9 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
                 return false;
             }
 
-            const size_t output_size = base64_decode(value_buffer, NULL, strlen(value_buffer));
-            if (output_size > FILE_MANAGEMENT_HASH_SIZE) {
+            if (strlen(value_buffer) > FILE_MANAGEMENT_HASH_SIZE)
                 return false;
-            }
-            base64_decode(value_buffer, (BYTE*)parameter->file_hash, strlen(value_buffer));
+            strcpy((BYTE*)parameter->file_hash, value_buffer); // file MD5 checksum
             i++;
         }
         //TODO: will be used for serialize file_url_download_abort msg
@@ -188,11 +224,8 @@ bool json_serialize_file_management_packet_request(const char* device_key,
                                                    file_management_packet_request_t* file_management_packet_request,
                                                    outbound_message_t* outbound_message)
 {
-    char topic[TOPIC_SIZE] = "";
-
     /* Serialize topic */
-    json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FILE_MANAGEMENT_FILE_BINARY_REQUEST_TOPIC, topic);
-    strncpy(outbound_message->topic, topic, TOPIC_SIZE);
+    json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FILE_MANAGEMENT_FILE_BINARY_REQUEST_TOPIC, outbound_message->topic);
 
     /* Serialize payload */
     if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
@@ -255,20 +288,16 @@ bool json_serialize_file_management_file_list_update(const char* device_key, cha
                                                      outbound_message_t* outbound_message)
 {
     /* Serialize topic */
-    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC,
-            strlen(JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC));
-    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC),
-                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
-        return false;
-    }
+    json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC, outbound_message->topic);
 
+    uint8_t file_size = 0;
+    char file_hash[3] = {0};
     /* Serialize payload */
     strncpy(outbound_message->payload, "[", strlen("["));
     for (size_t i = 0; i < file_list_items; i++) {
         if (snprintf(outbound_message->payload + strlen(outbound_message->payload),
-                     WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"fileName\":\"%s\"},",
-                     (const char*)file_list + (i * FILE_MANAGEMENT_FILE_NAME_SIZE))
+                     WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"name\":\"%s\",\"size\":%d,\"hash\":\"%s\"},",
+                     (const char*)file_list + (i * FILE_MANAGEMENT_FILE_NAME_SIZE), file_size, file_hash) //TODO: it should be a structure!
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }
@@ -279,6 +308,7 @@ bool json_serialize_file_management_file_list_update(const char* device_key, cha
 
     return true;
 }
+
 
 static const char* firmware_update_status_as_str(firmware_update_t* firmware_update)
 {

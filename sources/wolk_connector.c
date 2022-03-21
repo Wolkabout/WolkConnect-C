@@ -538,6 +538,13 @@ WOLK_ERR_T wolk_details_synchronization(wolk_ctx_t* ctx)
     return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
+WOLK_ERR_T wolk_init_attribute(wolk_attribute_t* attribute, char* name, char* data_type, char* value)
+{
+    attribute_init(attribute, name, data_type, value);
+
+    return W_FALSE;
+}
+
 WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attributes, size_t number_of_attributes)
 {
     outbound_message_t outbound_message = {0};
@@ -593,9 +600,9 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
         unsigned short msgid;
 
         MQTTString topic_mqtt_str = {0};
-        unsigned char* payload = '\0';
+        unsigned char* payload;
         int payload_len = 0;
-//TODO: payload is nothing
+
             if (MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &topic_mqtt_str, &payload, &payload_len, mqtt_packet,
                                     mqtt_packet_len)
             != 1) {

@@ -145,7 +145,8 @@ struct file_management {
     file_management_purge_files_t purge_files;
 
     uint8_t state;
-    uint8_t last_packet_hash[FILE_MANAGEMENT_HASH_SIZE];
+    uint8_t previous_packet_hash[FILE_MANAGEMENT_HASH_SIZE];
+    uint8_t current_packet_hash[FILE_MANAGEMENT_HASH_SIZE];
     size_t next_chunk_index;
 
     size_t expected_number_of_chunks;
