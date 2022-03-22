@@ -35,8 +35,8 @@ enum { FILE_VERIFICATION_CHUNK_SIZE = 1024 };
 
 static void handle_file_management(file_management_t* file_management, file_management_parameter_t* parameter);
 static void handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
-static void handle_abort(file_management_t* file_management);
-static void handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter);
+static void handle_abort(file_management_t* file_management, uint8_t* packet);
+static void handle_file_delete(file_management_t* file_management, file_list_t* file_list, size_t number_of_files);
 static void handle_file_purge(file_management_t* file_management);
 
 static bool update_sequence_init(file_management_t* file_management, const char* file_name, size_t file_size);
@@ -153,10 +153,10 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
         file_management->retry_count += 1;
         if (file_management->retry_count >= MAX_RETRIES) {
             update_abort(file_management);
-            reset_state(file_management);
-
             listener_on_status(file_management,
                                file_management_status_error(FILE_MANAGEMENT_ERROR_RETRY_COUNT_EXCEEDED));
+
+            reset_state(file_management);
             return;
         }
 
@@ -185,9 +185,9 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
 
     if (!write_chunk(file_management, file_management_packet_get_data(packet, packet_size),
                      file_management_packet_get_data_size(packet, packet_size))) {
-        reset_state(file_management);
-
         listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_FILE_SYSTEM));
+
+        reset_state(file_management);
         return;
     }
 
@@ -204,9 +204,9 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
 
     if (!is_file_valid(file_management)) {
         update_abort(file_management);
-        reset_state(file_management);
+        listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_FILE_HASH_MISMATCH));
 
-        listener_on_status(file_management, file_management_status_error(FILE_MANAGEMENT_ERROR_FILE_SYSTEM));
+        reset_state(file_management);
         return;
     }
 
@@ -219,16 +219,17 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
     reset_state(file_management);
 }
 
-void file_management_handle_abort(file_management_t* file_management)
+void file_management_handle_abort(file_management_t* file_management, uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
+    WOLK_ASSERT(packet_size > FILE_MANAGEMENT_FILE_NAME_SIZE);
 
     if (!file_management->has_valid_configuration) {
         return;
     }
 
-    handle_abort(file_management);
+    handle_abort(file_management, packet);
 }
 
 void file_management_handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
@@ -240,13 +241,14 @@ void file_management_handle_url_download(file_management_t* file_management, fil
     handle_url_download(file_management, parameter);
 }
 
-void file_management_handle_file_delete(file_management_t* file_management, file_management_t* parameter)
+void file_management_handle_file_delete(file_management_t* file_management, file_list_t* file_list,
+                                        size_t number_of_files)
 {
     /* Sanity Check*/
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    handle_file_delete(file_management, parameter);
+    handle_file_delete(file_management, file_list, number_of_files);
 }
 
 void file_management_handle_file_purge(file_management_t* file_management)
@@ -356,7 +358,8 @@ static void handle_file_management(file_management_t* file_management, file_mana
         file_management->next_chunk_index = 0;
 
         file_management->expected_number_of_chunks =
-            (size_t)WOLK_CEIL((double)file_management_parameter_get_file_size(parameter) / file_management->chunk_size);
+            (size_t)WOLK_CEIL((double)file_management_parameter_get_file_size(parameter)
+                              / (file_management->chunk_size - 2 * FILE_MANAGEMENT_HASH_SIZE));
         file_management->retry_count = 0;
 
         listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
@@ -455,9 +458,10 @@ static void check_url_download(file_management_t* file_management)
         }
 
         if (!success) {
-            reset_state(file_management);
             listener_on_url_download_status(file_management,
                                             file_management_status_error(FILE_MANAGEMENT_ERROR_UNKNOWN));
+
+            reset_state(file_management);
             return;
         }
 
@@ -476,50 +480,60 @@ static void check_url_download(file_management_t* file_management)
     }
 }
 
-static void handle_abort(file_management_t* file_management)
+static void handle_abort(file_management_t* file_management, uint8_t* packet)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
     char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
 
-    switch (file_management->state) {
-    case STATE_IDLE:
-        break;
-    case STATE_FILE_OBTAINED:
-    case STATE_PACKET_FILE_TRANSFER:
-        update_abort(file_management);
-        listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
+    if (strstr(packet, file_management->file_name)) {
 
+        switch (file_management->state) {
+        case STATE_IDLE:
+            break;
+        case STATE_FILE_OBTAINED:
+        case STATE_PACKET_FILE_TRANSFER:
+            update_abort(file_management);
+            listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
+
+            listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
+
+            reset_state(file_management);
+            break;
+        case STATE_URL_DOWNLOAD:
+            update_abort(file_management);
+            file_management_parameter_t file_management_parameter;
+            file_management_parameter_set_file_url(&file_management_parameter, file_management->file_url);
+            listener_on_url_download_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
+
+            listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
+
+            reset_state(file_management);
+            break;
+        default:
+            /* Sanity check */
+            WOLK_ASSERT(false);
+        }
+    } else {
+        listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ERROR));
         listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
-
         reset_state(file_management);
-        break;
-    case STATE_URL_DOWNLOAD:
-        update_abort(file_management);
-        file_management_parameter_t file_management_parameter;
-        file_management_parameter_set_file_url(&file_management_parameter, file_management->file_url);
-        listener_on_url_download_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_ABORTED));
-
-        listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
-
-        reset_state(file_management);
-        break;
-    default:
-        /* Sanity check */
-        WOLK_ASSERT(false);
     }
 }
 
-static void handle_file_delete(file_management_t* file_management, file_management_parameter_t* parameter)
+static void handle_file_delete(file_management_t* file_management, file_list_t* file_list, size_t number_of_files)
 {
     /* Sanity Check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    remove_file(file_management, parameter->file_name);
+    // remove one by one file
+    for (int i = 0; i < number_of_files; ++i) {
+        remove_file(file_management, file_list);
+        file_list++;
+    }
 
-    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
     listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
 }
 
@@ -601,13 +615,13 @@ static bool is_file_valid(file_management_t* file_management)
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
-    uint8_t read_data[FILE_VERIFICATION_CHUNK_SIZE] = {0};
+    uint8_t read_data[FILE_VERIFICATION_CHUNK_SIZE] = {0}; // todo: have to be chunks size define in the init
     uint8_t calculated_file_hash[FILE_MANAGEMENT_HASH_SIZE] = {0};
     uint8_t calculated_file_checksum[FILE_MANAGEMENT_HASH_SIZE] = {0};
     MD5_CTX md5_ctx;
     md5_init(&md5_ctx);
 
-    for (size_t i = 0; i < (size_t)WOLK_CEIL((double)file_management->file_size / FILE_VERIFICATION_CHUNK_SIZE); ++i) {
+    for (size_t i = 0; i < file_management->expected_number_of_chunks; ++i) {
         const size_t read_data_size = read_chunk(file_management, i, read_data, WOLK_ARRAY_LENGTH(read_data));
         md5_update(&md5_ctx, read_data, read_data_size);
     }

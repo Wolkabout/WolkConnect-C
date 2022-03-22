@@ -103,6 +103,8 @@ bool json_serialize_file_management_status(const char* device_key,
 bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size,
                                                 file_management_parameter_t* parameter);
 
+size_t json_deserialize_file_delete(char* buffer, size_t buffer_size, file_list_t* file_list);
+
 bool json_serialize_file_management_packet_request(const char* device_key,
                                                    file_management_packet_request_t* file_management_packet_request,
                                                    outbound_message_t* outbound_message);

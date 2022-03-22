@@ -51,11 +51,11 @@ static void handle_error_message(wolk_ctx_t* ctx, char* error);
 static void handle_file_management_parameter(file_management_t* file_management,
                                              file_management_parameter_t* file_management_parameter);
 static void handle_file_management_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
-static void handle_file_management_abort(file_management_t* file_management);
+static void handle_file_management_abort(file_management_t* file_management, uint8_t* packet, size_t packet_size);
 static void handle_file_management_url_download(file_management_t* file_management,
                                                 file_management_parameter_t* parameter);
-static void handle_file_management_file_delete(file_management_t* file_management,
-                                               file_management_parameter_t* parameter);
+static void handle_file_management_file_delete(file_management_t* file_management, file_list_t* file_list,
+                                               size_t number_of_files);
 static void handle_file_management_file_purge(file_management_t* file_management);
 
 static void listener_file_management_on_status(file_management_t* file_management, file_management_status_t status);
@@ -237,7 +237,6 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
 
     char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
     if (ctx->file_management.has_valid_configuration) {
-
         listener_file_management_on_file_list_status(&ctx->file_management, file_list,
                                                      ctx->file_management.get_file_list(file_list));
     }
@@ -660,12 +659,7 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
             handle_file_management_packet(&ctx->file_management, (uint8_t*)payload, (size_t)payload_len);
         } else if ((strstr(topic_str, ctx->parser.FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC))
                    || (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC))) {
-            file_management_parameter_t file_management_parameter;
-            const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
-                &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
-            if (num_deserialized_parameter != 0) {
-                handle_file_management_abort(&ctx->file_management);
-            }
+            handle_file_management_abort(&ctx->file_management, (uint8_t*)payload, (size_t)payload_len);
         } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized = parser_deserialize_file_management_parameter(
@@ -674,11 +668,11 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
                 handle_file_management_url_download(&ctx->file_management, &file_management_parameter);
             }
         } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_FILE_DELETE_TOPIC)) {
-            file_management_parameter_t file_management_parameter;
-            const size_t num_deserialized = parser_deserialize_file_management_parameter(
-                &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
-            if (num_deserialized != 0) {
-                handle_file_management_file_delete(&ctx->file_management, &file_management_parameter);
+            char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+            const size_t number_deserialized =
+                parser_deserialize_file_delete(&ctx->parser, (char*)payload, (size_t)payload_len, file_list);
+            if (number_deserialized) {
+                handle_file_management_file_delete(&ctx->file_management, file_list, number_deserialized);
             }
         } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_FILE_PURGE_TOPIC)) {
             handle_file_management_file_purge(&ctx->file_management);
@@ -832,12 +826,12 @@ static void handle_file_management_packet(file_management_t* file_management, ui
     file_management_handle_packet(file_management, packet, packet_size);
 }
 
-static void handle_file_management_abort(file_management_t* file_management)
+static void handle_file_management_abort(file_management_t* file_management, uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
-    file_management_handle_abort(file_management);
+    file_management_handle_abort(file_management, packet, packet_size);
 }
 
 static void handle_file_management_url_download(file_management_t* file_management,
@@ -850,14 +844,14 @@ static void handle_file_management_url_download(file_management_t* file_manageme
     file_management_handle_url_download(file_management, parameter);
 }
 
-static void handle_file_management_file_delete(file_management_t* file_management,
-                                               file_management_parameter_t* parameter)
+static void handle_file_management_file_delete(file_management_t* file_management, file_list_t* file_list,
+                                               size_t number_of_files)
 {
     /* Sanity Check*/
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    file_management_handle_file_delete(file_management, parameter);
+    file_management_handle_file_delete(file_management, file_list, number_of_files);
 }
 
 static void handle_file_management_file_purge(file_management_t* file_management)
@@ -894,7 +888,7 @@ static void listener_file_management_on_packet_request(file_management_t* file_m
     outbound_message_t outbound_message = {0};
     outbound_message_make_from_file_management_packet_request(&wolk_ctx->parser, wolk_ctx->device_key, &request,
                                                               &outbound_message);
-    // TODO topic is not good
+
     publish(wolk_ctx, &outbound_message);
 }
 

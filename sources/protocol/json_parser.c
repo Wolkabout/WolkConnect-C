@@ -34,6 +34,9 @@
 #define JSON_TOKEN_SIZE FEEDS_MAX_NUMBER
 #define UTC_MILLISECONDS_LENGTH 14
 
+#define JSON_ARRAY_LEFT_BRACKET "["
+#define JSON_ARRAY_RIGHT_BRACKET "]"
+#define JSON_ELEMENTS_SEPARATORS "[,]\""
 
 const char JSON_P2D_TOPIC[TOPIC_DIRECTION_SIZE] = "p2d";
 const char JSON_D2P_TOPIC[TOPIC_DIRECTION_SIZE] = "d2p";
@@ -219,6 +222,31 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
     return true;
 }
 
+size_t json_deserialize_file_delete(char* buffer, size_t buffer_size, file_list_t* file_list)
+{
+    size_t number_of_files_to_be_deleted = 0;
+
+    char* files = strtok(buffer, JSON_ELEMENTS_SEPARATORS);
+    for (int i = 0; i < buffer_size; ++i) {
+        // end of the list
+        if (files == NULL) {
+            break;
+        }
+        // eliminate '[', ']' and ' '
+        if (strstr(files, JSON_ARRAY_LEFT_BRACKET) == NULL && strstr(files, JSON_ARRAY_RIGHT_BRACKET) == NULL
+            && strcmp(files, " ") != 0) {
+            strncpy(file_list->file_name, files, strlen(files));
+            file_list++;
+            number_of_files_to_be_deleted++;
+        }
+
+        // take next element
+        files = strtok(NULL, JSON_ELEMENTS_SEPARATORS);
+    }
+
+    return number_of_files_to_be_deleted;
+}
+
 bool json_serialize_file_management_packet_request(const char* device_key,
                                                    file_management_packet_request_t* file_management_packet_request,
                                                    outbound_message_t* outbound_message)
@@ -291,7 +319,7 @@ bool json_serialize_file_management_file_list_update(const char* device_key, fil
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FILE_MANAGEMENT_FILE_LIST_TOPIC, outbound_message->topic);
 
     /* Serialize payload */
-    strncpy(outbound_message->payload, "[", strlen("["));
+    strncpy(outbound_message->payload, JSON_ARRAY_LEFT_BRACKET, strlen(JSON_ARRAY_LEFT_BRACKET));
     for (size_t i = 0; i < file_list_items; i++) {
         char file_hash[3] = {0}; // TODO: implement it, it's optional at the protocol
 
@@ -304,8 +332,10 @@ bool json_serialize_file_management_file_list_update(const char* device_key, fil
         file_list++;
     }
 
-    file_list_items == 0 ? strncpy(outbound_message->payload + strlen(outbound_message->payload), "]", strlen("]"))
-                         : strncpy(outbound_message->payload + strlen(outbound_message->payload) - 1, "]", strlen("]"));
+    file_list_items == 0 ? strncpy(outbound_message->payload + strlen(outbound_message->payload),
+                                   JSON_ARRAY_RIGHT_BRACKET, strlen(JSON_ARRAY_RIGHT_BRACKET))
+                         : strncpy(outbound_message->payload + strlen(outbound_message->payload) - 1,
+                                   JSON_ARRAY_RIGHT_BRACKET, strlen(JSON_ARRAY_RIGHT_BRACKET));
 
     return true;
 }
@@ -602,7 +632,7 @@ static size_t serialize_feeds(feed_t* feeds, data_type_t type, size_t number_of_
     WOLK_UNUSED(number_of_feeds);
 
     char data_buffer[PAYLOAD_SIZE] = "";
-    strcat(buffer, "[");
+    strcat(buffer, JSON_ARRAY_LEFT_BRACKET);
 
     for (size_t i = 0; i < number_of_feeds; ++i) {
         // when it consists of more feeds with the same reference it has to have utc
@@ -619,7 +649,7 @@ static size_t serialize_feeds(feed_t* feeds, data_type_t type, size_t number_of_
         feeds++;
     }
 
-    strcat(buffer, "]");
+    strcat(buffer, JSON_ARRAY_RIGHT_BRACKET);
     return true;
 }
 
@@ -643,7 +673,7 @@ bool json_serialize_attribute(const char* device_key, attribute_t* attributes, s
 
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_ATTRIBUTE_REGISTRATION_TOPIC, outbound_message->topic);
 
-    strncpy(outbound_message->payload, "[", 1);
+    strncpy(outbound_message->payload, JSON_ARRAY_LEFT_BRACKET, 1);
     for (int i = 0; i < number_of_attributes; ++i) {
         if (sprintf(payload, "{\"name\": \"%s\", \"dataType\": \"%s\", \"value\": \"%s\"}%s", attributes->name,
                     attributes->data_type, attributes->value,
@@ -657,7 +687,7 @@ bool json_serialize_attribute(const char* device_key, attribute_t* attributes, s
         strcat(outbound_message->payload, payload);
         attributes++;
     }
-    strcat(outbound_message->payload, "]");
+    strcat(outbound_message->payload, JSON_ARRAY_RIGHT_BRACKET);
 
     return true;
 }
@@ -693,7 +723,7 @@ bool json_serialize_feed_registration(const char* device_key, feed_registration_
 
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FEED_REGISTRATION_TOPIC, outbound_message->topic);
 
-    strcat(outbound_message->payload, "[");
+    strcat(outbound_message->payload, JSON_ARRAY_LEFT_BRACKET);
     for (int i = 0; i < number_of_feeds; ++i) {
         if (sprintf(payload, "{\"name\": \"%s\", \"type\": \"%s\", \"unitGuid\": \"%s\", \"reference\": \"%s\"}%s",
                     feed->name, feed_type_to_string(feed->feedType), feed->unit, feed->reference,
@@ -707,7 +737,7 @@ bool json_serialize_feed_registration(const char* device_key, feed_registration_
         strcat(outbound_message->payload, payload);
         feed++;
     }
-    strcat(outbound_message->payload, "]");
+    strcat(outbound_message->payload, JSON_ARRAY_RIGHT_BRACKET);
 
     return true;
 }
@@ -717,7 +747,7 @@ bool json_serialize_feed_removal(const char* device_key, feed_registration_t* fe
     char payload[PAYLOAD_SIZE] = "";
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FEED_REMOVAL_TOPIC, outbound_message->topic);
 
-    strcat(outbound_message->payload, "[");
+    strcat(outbound_message->payload, JSON_ARRAY_LEFT_BRACKET);
     for (int i = 0; i < number_of_feeds; ++i) {
         if (sprintf(payload, "\"%s\"%s", feed->name, (number_of_feeds > 1 && i < (number_of_feeds - 1) ? "," : ""))
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload))
@@ -729,7 +759,7 @@ bool json_serialize_feed_removal(const char* device_key, feed_registration_t* fe
         strcat(outbound_message->payload, payload);
         feed++;
     }
-    strcat(outbound_message->payload, "]");
+    strcat(outbound_message->payload, JSON_ARRAY_RIGHT_BRACKET);
 
     return true;
 }
@@ -752,7 +782,7 @@ bool json_serialize_sync_parameters(const char* device_key, parameter_t* paramet
 {
     json_create_topic(JSON_D2P_TOPIC, device_key, JSON_SYNC_PARAMETERS_TOPIC, outbound_message->topic);
 
-    strcat(outbound_message->payload, "[");
+    strcat(outbound_message->payload, JSON_ARRAY_LEFT_BRACKET);
     for (int i = 0; i < number_of_parameters; ++i) {
         strcat(outbound_message->payload, "\"");
         if (strlen(parameters->name) > (PAYLOAD_SIZE - strlen(outbound_message->payload)))
@@ -765,7 +795,7 @@ bool json_serialize_sync_parameters(const char* device_key, parameter_t* paramet
 
         parameters++;
     }
-    strcat(outbound_message->payload, "]");
+    strcat(outbound_message->payload, JSON_ARRAY_RIGHT_BRACKET);
 
     return true;
 }

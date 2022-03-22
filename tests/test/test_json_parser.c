@@ -166,4 +166,17 @@ void test_json_parser_json_serialize_feed_multivalue(void)
     TEST_ASSERT_EQUAL_STRING("[{\"FB\":\"true,false\",\"timestamp\":1646815080000}]", buffer);
 }
 
+void test_json_json_deserialize_file_delete(void)
+{
+    char received_payload[100];
+    strcpy(received_payload, "[\"My file\", \"My other file\", \"firmware_1.0.0.firmware\"]");
+    size_t buffer_size = 40;
+    file_list_t file_list[10];
+
+    TEST_ASSERT_EQUAL_INT(3, json_deserialize_file_delete((char*)received_payload, buffer_size, file_list));
+    TEST_ASSERT_EQUAL_STRING("My file", file_list[0].file_name);
+    TEST_ASSERT_EQUAL_STRING("My other file", file_list[1].file_name);
+    TEST_ASSERT_EQUAL_STRING("firmware_1.0.0.firmware", file_list[2].file_name);
+}
+
 #endif // TEST

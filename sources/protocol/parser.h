@@ -76,6 +76,7 @@ typedef struct {
                                              file_management_status_t* status, outbound_message_t* outbound_message);
     bool (*deserialize_file_management_parameter)(char* buffer, size_t buffer_size,
                                                   file_management_parameter_t* parameter);
+    size_t (*deserialize_file_delete)(char* buffer, size_t buffer_size, file_list_t* file_list);
     bool (*serialize_file_management_packet_request)(const char* device_key,
                                                      file_management_packet_request_t* file_management_packet_request,
                                                      outbound_message_t* outbound_message);
@@ -131,6 +132,8 @@ bool parser_serialize_file_management_status(parser_t* parser, const char* devic
 
 bool parser_deserialize_file_management_parameter(parser_t* parser, char* buffer, size_t buffer_size,
                                                   file_management_parameter_t* parameter);
+
+size_t parser_deserialize_file_delete(parser_t* parser, char* buffer, size_t buffer_size, file_list_t* file_list);
 
 bool parser_serialize_file_management_packet_request(parser_t* parser, const char* device_key,
                                                      file_management_packet_request_t* file_management_packet_request,

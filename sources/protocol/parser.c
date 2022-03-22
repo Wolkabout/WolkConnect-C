@@ -37,6 +37,7 @@ void parser_init(parser_t* parser)
 
     parser->serialize_file_management_status = json_serialize_file_management_status;
     parser->deserialize_file_management_parameter = json_deserialize_file_management_parameter;
+    parser->deserialize_file_delete = json_deserialize_file_delete;
     parser->serialize_file_management_packet_request = json_serialize_file_management_packet_request;
     parser->serialize_file_management_url_download_status = json_serialize_file_management_url_download_status;
     parser->serialize_file_management_file_list = json_serialize_file_management_file_list_update;
@@ -127,6 +128,16 @@ bool parser_deserialize_file_management_parameter(parser_t* parser, char* buffer
     WOLK_ASSERT(parameter);
 
     return parser->deserialize_file_management_parameter(buffer, buffer_size, parameter);
+}
+
+size_t parser_deserialize_file_delete(parser_t* parser, char* buffer, size_t buffer_size, file_list_t* file_list)
+{
+    /* Sanity check */
+    WOLK_ASSERT(parser);
+    WOLK_ASSERT(buffer);
+    WOLK_ASSERT(parameter);
+
+    return parser->deserialize_file_delete(buffer, buffer_size, file_list);
 }
 
 bool parser_serialize_file_management_packet_request(parser_t* parser, const char* device_key,
