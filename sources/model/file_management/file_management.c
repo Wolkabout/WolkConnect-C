@@ -463,7 +463,11 @@ static void check_url_download(file_management_t* file_management)
 
     case STATE_FILE_OBTAINED:
         if (!is_url_download_done(file_management, &success, &downloaded_file_name)) {
-            return;//TODO: here is problem with wrong: implement some mechanism
+            listener_on_url_download_status(file_management,
+                                            file_management_status_error(FILE_MANAGEMENT_ERROR_MALFORMED_URL));
+
+            reset_state(file_management);
+            return;
         }
 
         if (!success) {

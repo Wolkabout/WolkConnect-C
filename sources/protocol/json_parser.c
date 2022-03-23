@@ -92,28 +92,28 @@ static const char* file_management_status_get_error_as_str(file_management_statu
 
     switch (status->error) {
     case FILE_MANAGEMENT_ERROR_NONE:
-        return "FILE_MANAGEMENT_ERROR_NONE";
+        return "NONE";
 
     case FILE_MANAGEMENT_ERROR_UNKNOWN:
-        return "FILE_MANAGEMENT_ERROR_UNKNOWN";
+        return "UNKNOWN";
 
     case FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED:
-        return "FILE_MANAGEMENT_ERROR_TRANSFER_PROTOCOL_DISABLED";
+        return "TRANSFER_PROTOCOL_DISABLED";
 
     case FILE_MANAGEMENT_ERROR_UNSUPPORTED_FILE_SIZE:
-        return "FILE_MANAGEMENT_ERROR_UNSUPPORTED_FILE_SIZE";
+        return "UNSUPPORTED_FILE_SIZE";
 
     case FILE_MANAGEMENT_ERROR_MALFORMED_URL:
-        return "FILE_MANAGEMENT_ERROR_MALFORMED_URL";
+        return "MALFORMED_URL";
 
     case FILE_MANAGEMENT_ERROR_FILE_HASH_MISMATCH:
-        return "FILE_MANAGEMENT_ERROR_FILE_HASH_MISMATCH";
+        return "FILE_HASH_MISMATCH";
 
     case FILE_MANAGEMENT_ERROR_FILE_SYSTEM:
-        return "FILE_MANAGEMENT_ERROR_FILE_SYSTEM";
+        return "FILE_SYSTEM_ERROR";
 
     case FILE_MANAGEMENT_ERROR_RETRY_COUNT_EXCEEDED:
-        return "FILE_MANAGEMENT_ERROR_RETRY_COUNT_EXCEEDED";
+        return "RETRY_COUNT_EXCEEDED";
 
     default:
         WOLK_ASSERT(false);
@@ -217,7 +217,7 @@ bool json_deserialize_url_download(char* buffer, size_t buffer_size, char* url_d
         return false;
 
     // eliminate quotes by start copying from 2nd position and don't copying last two(" and \0)
-    if (buffer[0]==34 && buffer[buffer_size-1]==34) // Decimal 34 is double quotes ascii value
+    if (buffer[0] == 34 && buffer[buffer_size - 1] == 34) // Decimal 34 is double quotes ascii value
     {
         strncpy(url_download, buffer + 1, buffer_size - 2);
         return true;
@@ -290,11 +290,10 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
     }
 
     if (file_management_status_get_state(status) == FILE_MANAGEMENT_STATE_ERROR) {
-        file_management_error_t error = file_management_status_get_error(status);
-        if (error >= 0) {
+        if (file_management_status_get_error(status) >= 0) {
             if (snprintf(outbound_message->payload + strlen(outbound_message->payload),
-                         WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"error\":%d,\"status\":\"%s\"}", error,
-                         file_management_status_as_str(status))
+                         WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"error\":\"%s\",\"status\":\"%s\"}",
+                         file_management_status_get_error_as_str(status), file_management_status_as_str(status))
                 >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
                 return false;
             }
