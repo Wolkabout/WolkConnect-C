@@ -157,7 +157,8 @@ WOLK_ERR_T wolk_init_file_management(
     file_management_remove_file_t remove_file, file_management_purge_files_t purge_files)
 {
     if (chunk_size > (PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE)) {
-        chunk_size = PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE;
+        printf("Failed to accept defined chunk size. It is higher than payload size. See size_definition.h file!\n");
+        return W_TRUE;
     }
 
     if (!file_management_init(ctx, &ctx->file_management, ctx->device_key, maximum_file_size, chunk_size, start,
