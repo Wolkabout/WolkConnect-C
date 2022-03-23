@@ -204,22 +204,26 @@ bool json_deserialize_file_management_parameter(char* buffer, size_t buffer_size
                 return false;
             strcpy((BYTE*)parameter->file_hash, value_buffer); // file MD5 checksum
             i++;
-        }
-        // TODO: will be used for serialize file_url_download_abort msg
-        else if (json_token_str_equal(buffer, &tokens[i], "fileUrl")) {
-            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
-                         buffer + tokens[i + 1].start)
-                >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
-                return false;
-            }
-
-            file_management_parameter_set_file_url(parameter, value_buffer);
-            i++;
         } else {
             return false;
         }
     }
     return true;
+}
+
+bool json_deserialize_url_download(char* buffer, size_t buffer_size, char* url_download)
+{
+    if (buffer_size > FILE_MANAGEMENT_URL_SIZE)
+        return false;
+
+    // eliminate quotes by start copying from 2nd position and don't copying last two(" and \0)
+    if (buffer[0]==34 && buffer[buffer_size-1]==34) // Decimal 34 is double quotes ascii value
+    {
+        strncpy(url_download, buffer + 1, buffer_size - 2);
+        return true;
+    }
+
+    return false;
 }
 
 size_t json_deserialize_file_delete(char* buffer, size_t buffer_size, file_list_t* file_list)
@@ -273,37 +277,32 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
                                                         outbound_message_t* outbound_message)
 {
     /* Serialize topic */
-    strncpy(outbound_message->topic, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS_TOPIC,
-            strlen(JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS_TOPIC));
-    if (snprintf(outbound_message->topic + strlen(JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS_TOPIC),
-                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
-        return false;
-    }
+    json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FILE_MANAGEMENT_URL_DOWNLOAD_STATUS_TOPIC,
+                      outbound_message->topic);
 
     /* Serialize payload */
     if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload),
-                 "{\"fileUrl\": \"%s\", \"status\": \"%s\"}",
+                 "{\"fileUrl\":\"%s\",\"fileName\":\"%s\"",
                  file_management_parameter_get_file_url(file_management_parameter),
-                 file_management_status_as_str(status))
+                 file_management_packet_request_get_file_name(file_management_parameter))
         >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
         return false;
     }
 
-    file_management_error_t error = file_management_status_get_error(status);
-    if (error >= 0) {
-        if (snprintf(outbound_message->payload + strlen(outbound_message->payload) - 1,
-                     WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"error\":%d}", error)
-            >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
-            return false;
+    if (file_management_status_get_state(status) == FILE_MANAGEMENT_STATE_ERROR) {
+        file_management_error_t error = file_management_status_get_error(status);
+        if (error >= 0) {
+            if (snprintf(outbound_message->payload + strlen(outbound_message->payload),
+                         WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"error\":%d,\"status\":\"%s\"}", error,
+                         file_management_status_as_str(status))
+                >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
+                return false;
+            }
         }
-    }
-
-    file_management_state_t state = file_management_status_get_state(status);
-    if (state == FILE_MANAGEMENT_STATE_FILE_READY) {
-        if (snprintf(outbound_message->payload + strlen(outbound_message->payload) - 1,
-                     WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"fileName\":\"%s\"}",
-                     file_management_packet_request_get_file_name(file_management_parameter))
+    } else {
+        if (snprintf(outbound_message->payload + strlen(outbound_message->payload),
+                     WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"status\": \"%s\"}",
+                     file_management_status_as_str(status))
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }

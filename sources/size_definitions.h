@@ -23,7 +23,7 @@ extern "C" {
 
 enum {
     /* Maximum size of MQTT packet in bytes */
-    MQTT_PACKET_SIZE = 1024,
+    MQTT_PACKET_SIZE = 2048,
 
     /* Maximum number of characters in device key string */
     DEVICE_KEY_SIZE = 64,
@@ -38,7 +38,7 @@ enum {
     TOPIC_SIZE = TOPIC_DIRECTION_SIZE + DEVICE_KEY_SIZE + TOPIC_MESSAGE_TYPE_SIZE,
 
     /* Maximum number of bytes in payload string */
-    PAYLOAD_SIZE = 1024,
+    PAYLOAD_SIZE = 2048,
 
     /* Maximum number of characters in a single feed */
     FEED_ELEMENT_SIZE = 64,
@@ -72,6 +72,8 @@ enum {
     FILE_MANAGEMENT_URL_SIZE = 64,
     /* Size of hash used for file management file transfer (SHA-256) */
     FILE_MANAGEMENT_HASH_SIZE = 32,
+    /* Size of the chunks read from file during verification phase. Don't change it */
+    FILE_MANAGEMENT_VERIFICATION_CHUNK_SIZE = 1024,
 
     /* Maximum number of characters in firmware update version */
     FIRMWARE_UPDATE_VERSION_SIZE = 16,

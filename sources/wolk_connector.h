@@ -444,7 +444,7 @@ WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx);
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_init_parameter(parameter_t* parameter, char* name, char* value);
+WOLK_ERR_T wolk_init_parameter(parameter_t* parameter, const char* name, char* value);
 
 /**
  * @brief Set parameter value

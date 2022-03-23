@@ -31,11 +31,10 @@ typedef enum { STATE_IDLE = 0, STATE_PACKET_FILE_TRANSFER, STATE_URL_DOWNLOAD, S
 
 enum { MAX_RETRIES = 3 };
 
-enum { FILE_VERIFICATION_CHUNK_SIZE = 1024 };
-
 static void handle_file_management(file_management_t* file_management, file_management_parameter_t* parameter);
-static void handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
+static void handle_url_download(file_management_t* file_management, char* url_download);
 static void handle_abort(file_management_t* file_management, uint8_t* packet);
+static void handle_file_list(file_management_t* file_management);
 static void handle_file_delete(file_management_t* file_management, file_list_t* file_list, size_t number_of_files);
 static void handle_file_purge(file_management_t* file_management);
 
@@ -232,13 +231,21 @@ void file_management_handle_abort(file_management_t* file_management, uint8_t* p
     handle_abort(file_management, packet);
 }
 
-void file_management_handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
+void file_management_handle_url_download(file_management_t* file_management, char* url_download)
 {
     /*Sanity check*/
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    handle_url_download(file_management, parameter);
+    handle_url_download(file_management, url_download);
+}
+
+void file_management_handle_file_list(file_management_t* file_management)
+{
+    /*Sanity check*/
+    WOLK_ASSERT(file_management);
+
+    handle_file_list(file_management);
 }
 
 void file_management_handle_file_delete(file_management_t* file_management, file_list_t* file_list,
@@ -384,7 +391,7 @@ static void handle_file_management(file_management_t* file_management, file_mana
     }
 }
 
-static void handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter)
+static void handle_url_download(file_management_t* file_management, char* url_download)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
@@ -393,12 +400,12 @@ static void handle_url_download(file_management_t* file_management, file_managem
     switch (file_management->state) {
     case STATE_IDLE:
     case STATE_PACKET_FILE_TRANSFER:
-        if ((strlen(parameter->file_url) >= FILE_MANAGEMENT_URL_SIZE) || (strlen(parameter->file_url) == 0)) {
+        if ((strlen(url_download) >= FILE_MANAGEMENT_URL_SIZE) || (strlen(url_download) == 0)) {
             listener_on_url_download_status(file_management,
                                             file_management_status_error(FILE_MANAGEMENT_ERROR_MALFORMED_URL));
             return;
         }
-        strcpy(file_management->file_url, file_management_parameter_get_file_url(parameter));
+        strcpy(file_management->file_url, url_download);
         memset(file_management->file_name, '\0', sizeof(file_management->file_name));
 
         if (!has_url_download(file_management)) {
@@ -407,6 +414,8 @@ static void handle_url_download(file_management_t* file_management, file_managem
             return;
         }
 
+        listener_on_url_download_status(file_management,
+                                        file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_TRANSFER));
         file_management->state = STATE_URL_DOWNLOAD;
         break;
 
@@ -454,7 +463,7 @@ static void check_url_download(file_management_t* file_management)
 
     case STATE_FILE_OBTAINED:
         if (!is_url_download_done(file_management, &success, &downloaded_file_name)) {
-            return;
+            return;//TODO: here is problem with wrong: implement some mechanism
         }
 
         if (!success) {
@@ -520,6 +529,16 @@ static void handle_abort(file_management_t* file_management, uint8_t* packet)
         listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
         reset_state(file_management);
     }
+}
+
+static void handle_file_list(file_management_t* file_management)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(file_management);
+    WOLK_ASSERT(parameter);
+    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+
+    listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
 }
 
 static void handle_file_delete(file_management_t* file_management, file_list_t* file_list, size_t number_of_files)
@@ -615,7 +634,7 @@ static bool is_file_valid(file_management_t* file_management)
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
-    uint8_t read_data[FILE_VERIFICATION_CHUNK_SIZE] = {0}; // todo: have to be chunks size define in the init
+    uint8_t read_data[FILE_MANAGEMENT_VERIFICATION_CHUNK_SIZE] = {0};
     uint8_t calculated_file_hash[FILE_MANAGEMENT_HASH_SIZE] = {0};
     uint8_t calculated_file_checksum[FILE_MANAGEMENT_HASH_SIZE] = {0};
     MD5_CTX md5_ctx;

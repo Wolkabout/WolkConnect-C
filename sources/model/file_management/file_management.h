@@ -196,8 +196,8 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
 
 void file_management_handle_abort(file_management_t* file_management, uint8_t* packet, size_t packet_size);
 
-void file_management_handle_url_download(file_management_t* file_management, file_management_parameter_t* parameter);
-
+void file_management_handle_url_download(file_management_t* file_management, char* url_download);
+void file_management_handle_file_list(file_management_t* file_management);
 void file_management_handle_file_delete(file_management_t* file_management, file_list_t* file_list,
                                         size_t number_of_files);
 void file_management_handle_file_purge(file_management_t* file_management);

@@ -31,7 +31,7 @@ static size_t file_management_current_number_of_files = 0;
 static size_t get_downloaded_file_position_in_list(char* first_file_list, size_t first_file_list_number_of_files,
                                                    char* second_file_list, size_t second_file_list_number_of_files)
 {
-    int position_in_list = 0;
+    size_t position_in_list = 0;
     for (size_t i = 0; i < (first_file_list_number_of_files); i++) {
         bool found_match = false;
 
@@ -207,10 +207,10 @@ size_t file_management_get_file_list(file_list_t* file_list)
             char path[FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE] = {0};
             snprintf(path, FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE, "%s%s", directory_name, de->d_name);
             stat(path, &stats);
-            file_list->file_size = stats.st_size;
+            file_list->file_size = (size_t)stats.st_size;
 
             // move to next file list element
-            printf("File name: %s and size %d\n", file_list->file_name, file_list->file_size);
+            printf("File name: %s and size %d\n", file_list->file_name, (int)file_list->file_size);
             file_list++;
             file_list_items++;
         }
