@@ -221,7 +221,8 @@ WOLK_ERR_T wolk_init_custom_persistence(wolk_ctx_t* ctx, persistence_push_t push
  *
  * @param ctx Context
  * @param maximum_file_size Maximum acceptable size of file, in bytes
- * @param chunk_size file is transferred in chunks of size 'chunk_size'
+ * @param chunk_size file is transferred in chunks of size 'chunk_size'. Unit is Kbytes defined during device creation
+ * on the platform as "Maximum message size" Connectivity property
  * @param start Function pointer to 'file_management_start' implementation
  * @param write_chunk Function pointer to 'file_management_write_chunk' implementation
  * @param read_chunk Function pointer to 'file_management_read_chunk' implementation

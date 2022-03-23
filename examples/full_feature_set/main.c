@@ -36,9 +36,9 @@ static SSL_CTX* ctx;
 static BIO* sockfd;
 
 /* WolkAbout Platform device connection parameters */
-static const char* device_key = "wolk-ffs";
-static const char* device_password = "8KLY1DA5H2";
-static const char* hostname = "integration5.wolkabout.com";
+static const char* device_key = "device_key";
+static const char* device_password = "some_password";
+static const char* hostname = "api-demo.wolkabout.com";
 static int portno = 8883;
 static char certs[] = "../ca.crt";
 
@@ -139,15 +139,15 @@ static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const in
 
 void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds)
 {
-    for (int i = 0; i < number_of_feeds; ++i) {
+    for (int i = 0; i < (int)number_of_feeds; ++i) {
         printf("Received is feed with reference %s and value %s\n", feeds->reference, feeds->data[0]);
         if (strstr(feeds->reference, "SW")) {
             if (strstr(feeds->data[0], "true"))
-                switch_value.value = true;
+                switch_value.value = (bool*)true;
             else
-                switch_value.value = false;
+                switch_value.value = (bool*)false;
         } else if (strstr(feeds->reference, "HB")) {
-            heartbeat_value.value = atol(feeds->data[0]);
+            heartbeat_value.value = (double)atol(feeds->data[0]);
         }
         feeds++;
     }
@@ -155,7 +155,7 @@ void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds)
 
 void parameter_value_handler(wolk_parameter_t* parameter_message, size_t number_of_parameters)
 {
-    for (int i = 0; i < number_of_parameters; ++i) {
+    for (int i = 0; i < (int)number_of_parameters; ++i) {
         printf("Received is parameter with name: %s and value: %s\n", parameter_message->name,
                parameter_message->value);
 
@@ -202,6 +202,24 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 1024, file_management_start, file_management_chunk_write,
+                                  file_management_chunk_read, file_management_abort, file_management_finalize,
+                                  file_management_start_url_download, file_management_is_url_download_done,
+                                  file_management_get_file_list, file_management_remove_file,
+                                  file_management_purge_files)
+        != W_FALSE) {
+        printf("Error initializing File Management");
+        return 1;
+    }
+
+    if (wolk_init_firmware_update(&wolk, firmware_update_start_installation, firmware_update_is_installation_completed,
+                                  firmware_update_verification_store, firmware_update_verification_read,
+                                  firmware_update_get_version, firmware_update_abort_installation)
+        != W_FALSE) {
+        printf("Error initializing Firmware Update");
+        return 1;
+    }
+
     printf("Wolk client - Connecting to server\n");
     if (wolk_connect(&wolk) != W_FALSE) {
         printf("Wolk client - Error connecting to server\n");
@@ -209,38 +227,14 @@ int main(int argc, char* argv[])
     }
     printf("Wolk client - Connected to server\n");
 
-    //    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 500, file_management_start,
-    //    file_management_chunk_write,
-    //                                  file_management_chunk_read, file_management_abort, file_management_finalize,
-    //                                  file_management_start_url_download, file_management_is_url_download_done,
-    //                                  file_management_get_file_list, file_management_remove_file,
-    //                                  file_management_purge_files)
-    //        != W_FALSE) {
-    //        printf("Error initializing File Management");
-    //        return 1;
-    //    }
-
-    //    if (wolk_init_firmware_update(&wolk, firmware_update_start_installation,
-    //    firmware_update_is_installation_completed,
-    //                                  firmware_update_verification_store, firmware_update_verification_read,
-    //                                  firmware_update_get_version, firmware_update_abort_installation)
-    //        != W_FALSE) {
-    //        printf("Error initializing Firmware Update");
-    //        return 1;
-    //    }
+    wolk_sync_time_request(&wolk);
+    wolk_publish(&wolk);
 
     int32_t tick_count = 0;
 
-    // Parameters pull: FILE_TRANSFER_PLATFORM_ENABLED
-    wolk_parameter_t parameter[2];
-    wolk_init_parameter(&parameter[0], PARAMETER_FILE_TRANSFER_PLATFORM_ENABLED, "true");
-    wolk_init_parameter(&parameter[1], PARAMETER_FILE_TRANSFER_URL_ENABLED, "true");
-    wolk_sync_parameters(&wolk, &parameter, 2);
-    wolk_publish(&wolk);
-
     while (keep_running) {
         // Sending feeds on heartbeat
-        if (tick_count > (heartbeat_value.value) * 1000) {
+        if (tick_count > (heartbeat_value.value) * 100000) {
             printf("Wolk client - Sending feed readings:\n");
 
             temperature_value.value = rand() % 100 - 20;
@@ -250,7 +244,7 @@ int main(int argc, char* argv[])
             printf("Heartbeat feed with value: %lf seconds\n", heartbeat_value.value);
             wolk_add_numeric_feed(&wolk, "HB", &heartbeat_value, 1);
 
-            printf("Switch feed with value: %d\n", switch_value.value);
+            printf("Switch feed with value: %s\n", switch_value.value == (bool*)true ? "true" : "false");
             wolk_add_bool_feeds(&wolk, "SW", &switch_value, 1);
 
             if (wolk_publish(&wolk)) {
@@ -263,7 +257,7 @@ int main(int argc, char* argv[])
 
         // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
         // you can change this parameters, but keep it's multiplication
-        usleep(1000);
+        usleep(10);
         wolk_process(&wolk, 1);
 
         tick_count++;

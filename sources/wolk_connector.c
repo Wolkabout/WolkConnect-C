@@ -156,15 +156,9 @@ WOLK_ERR_T wolk_init_file_management(
     file_management_is_url_download_done_t is_url_download_done, file_management_get_file_list_t get_file_list,
     file_management_remove_file_t remove_file, file_management_purge_files_t purge_files)
 {
-    if (chunk_size > (PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE)) { // TODO: unit is Kbytes
+    if (chunk_size > (PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE)) {
         chunk_size = PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE;
     }
-
-    //    char parameter_value[PARAMETER_VALUE_SIZE];
-    //    sprintf(parameter_value, "%d", chunk_size);
-    //    parameter_t parameter;
-    //    parameter_init(&parameter, PARAMETER_MAXIMUM_MESSAGE_SIZE, parameter_value);
-    //    wolk_change_parameter(&ctx, &parameter, 1);
 
     if (!file_management_init(ctx, &ctx->file_management, ctx->device_key, maximum_file_size, chunk_size, start,
                               write_chunk, read_chunk, abort, finalize, start_url_download, is_url_download_done,
