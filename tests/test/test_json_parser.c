@@ -193,6 +193,7 @@ void test_json_deserialize_url_download(void)
     TEST_ASSERT_FALSE(json_deserialize_url_download("\"https://www.modbusdriver.com/downloads/modpoll.tgz\"",
                                                     strlen("\"https://www.modbusdriver.com/downloads/modpoll.tgz"),
                                                     url_download));
+    TEST_ASSERT_FALSE(json_deserialize_url_download("", 0, url_download));
 }
 
 

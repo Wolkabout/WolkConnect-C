@@ -194,7 +194,7 @@ bool parser_serialize_file_management_file_list(parser_t* parser, const char* de
     return parser->serialize_file_management_file_list(device_key, file_list, file_list_items, outbound_message);
 }
 
-bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* device_key, char* buffer, size_t buffer_size,
+bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* buffer, size_t buffer_size,
                                                  firmware_update_t* firmware_update_parameter)
 {
     WOLK_ASSERT(parser);
@@ -202,7 +202,7 @@ bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* device_
     WOLK_ASSERT(buffer_size);
     WOLK_ASSERT(firmware_update_parameter);
 
-    return parser->deserialize_firmware_update_parameter(device_key, buffer, buffer_size, firmware_update_parameter);
+    return parser->deserialize_firmware_update_parameter(buffer, buffer_size, firmware_update_parameter);
 }
 
 bool parse_serialize_firmware_update_status(parser_t* parser, const char* device_key,

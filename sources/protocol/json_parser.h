@@ -118,8 +118,7 @@ bool json_serialize_file_management_url_download_status(const char* device_key,
 bool json_serialize_file_management_file_list_update(const char* device_key, file_list_t* file_list,
                                                      size_t file_list_items, outbound_message_t* outbound_message);
 
-bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, size_t buffer_size,
-                                                firmware_update_t* parameter);
+bool json_deserialize_firmware_update_parameter(char* buffer, size_t buffer_size, firmware_update_t* parameter);
 bool json_serialize_firmware_update_status(const char* device_key, firmware_update_t* firmware_update,
                                            outbound_message_t* outbound_message);
 

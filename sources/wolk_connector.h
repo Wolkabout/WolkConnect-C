@@ -249,7 +249,6 @@ WOLK_ERR_T wolk_init_file_management(
  * @param function pointer to 'is_installation_completed' implementation
  * @param function pointer to 'verification_store' implementation
  * @param function pointer to 'verification_read' implementation
- * @param function pointer to 'get_version' implementation
  * @param function pointer to 'abort_installation' implementation
  *
  * @return Error code
@@ -258,7 +257,6 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_inst
                                      firmware_update_is_installation_completed_t is_installation_completed,
                                      firmware_update_verification_store_t verification_store,
                                      firmware_update_verification_read_t verification_read,
-                                     firmware_update_get_version_t get_version,
                                      firmware_update_abort_t abort_installation);
 
 /**

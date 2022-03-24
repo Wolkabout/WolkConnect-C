@@ -73,18 +73,19 @@ typedef uint8_t (*firmware_update_verification_read_t)(void);
 
 
 typedef enum {
-    FIRMWARE_UPDATE_STATUS_INSTALLATION = 0,
-    FIRMWARE_UPDATE_STATUS_COMPLETED = 1,
-    FIRMWARE_UPDATE_STATUS_ERROR = 2,
-    FIRMWARE_UPDATE_STATUS_ABORTED = 3
+    FIRMWARE_UPDATE_STATUS_AWAITING_DEVICE = 0,
+    FIRMWARE_UPDATE_STATUS_INSTALLING = 1,
+    FIRMWARE_UPDATE_STATUS_SUCCESS = 2,
+    FIRMWARE_UPDATE_STATUS_ERROR = 3,
+    FIRMWARE_UPDATE_STATUS_ABORTED = 4,
+    FIRMWARE_UPDATE_STATUS_UNKNOWN = 5
 } firmware_update_status_t;
 
 typedef enum {
     FIRMWARE_UPDATE_ERROR_NONE = -1,
-    FIRMWARE_UPDATE_UNSPECIFIED_ERROR = 0,
-    FIRMWARE_UPDATE_FILE_NOT_PRESENT = 1,
-    FIRMWARE_UPDATE_FILE_SYSTEM_ERROR = 2,
-    FIRMWARE_UPDATE_INSTALLATION_FAILED = 3
+    FIRMWARE_UPDATE_ERROR_UNKNOWN = 0,
+    FIRMWARE_UPDATE_ERROR_UNKNOWN_FILE = 1,
+    FIRMWARE_UPDATE_ERROR_INSTALLATION_FAILED = 2
 } firmware_update_error_t;
 
 typedef struct firmware_update firmware_update_t;
@@ -105,12 +106,10 @@ struct firmware_update {
     firmware_update_is_installation_completed_t is_installation_completed;
     firmware_update_verification_store_t verification_store;
     firmware_update_verification_read_t verification_read;
-    firmware_update_get_version_t get_version;
     firmware_update_abort_t abort_installation;
 
     /* Listeners */
     firmware_update_on_status_listener get_status;
-    firmware_update_on_version_listener on_version;
     firmware_update_on_verification_listener on_verification;
     /* Listeners */
 
@@ -121,8 +120,7 @@ void firmware_update_init(firmware_update_t* firmware_update, firmware_update_st
                           firmware_update_is_installation_completed_t is_installation_completed,
                           firmware_update_verification_store_t verification_store,
                           firmware_update_verification_read_t verification_read,
-                          firmware_update_get_version_t get_version, firmware_update_abort_t abort_installation,
-                          void* wolk_ctx);
+                          firmware_update_abort_t abort_installation, void* wolk_ctx);
 void firmware_update_parameter_init(firmware_update_t* parameter);
 void firmware_update_parameter_set_filename(firmware_update_t* parameter, const char* file_name);
 void firmware_update_handle_parameter(firmware_update_t* firmware_update, firmware_update_t* parameter);
@@ -130,10 +128,11 @@ void firmware_update_handle_verification(firmware_update_t* firmware_update);
 void firmware_update_handle_abort(firmware_update_t* firmware_update);
 void firmware_update_set_on_status_listener(firmware_update_t* firmware_update,
                                             firmware_update_on_status_listener status);
-void firmware_update_set_on_version_listener(firmware_update_t* firmware_update,
-                                             firmware_update_on_version_listener version);
 void firmware_update_set_on_verification_listener(firmware_update_t* firmware_update,
                                                   firmware_update_on_verification_listener verification);
 void firmware_update_process(firmware_update_t* firmware_update);
+
+const char* firmware_update_status_as_str(firmware_update_t* firmware_update);
+const char* firmware_update_error_as_str(firmware_update_t* firmware_update);
 
 #endif // WOLKCONNECTOR_C_FIRMWARE_UPDATE_H

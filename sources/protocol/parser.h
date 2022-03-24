@@ -88,8 +88,7 @@ typedef struct {
     bool (*serialize_file_management_file_list)(const char* device_key, file_list_t* file_list, size_t file_list_items,
                                                 outbound_message_t* outbound_message);
 
-    bool (*deserialize_firmware_update_parameter)(char* device_key, char* buffer, size_t buffer_size,
-                                                  firmware_update_t* parameter);
+    bool (*deserialize_firmware_update_parameter)(char* buffer, size_t buffer_size, firmware_update_t* parameter);
     bool (*serialize_firmware_update_status)(const char* device_key, firmware_update_t* firmware_update,
                                              outbound_message_t* outbound_message);
 
@@ -152,7 +151,7 @@ bool parser_serialize_file_management_file_list(parser_t* parser, const char* de
 /**** File Management ****/
 
 /**** Firmware Update ****/
-bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* device_key, char* buffer, size_t buffer_size,
+bool parse_deserialize_firmware_update_parameter(parser_t* parser, char* buffer, size_t buffer_size,
                                                  firmware_update_t* firmware_update_parameter);
 
 bool parse_serialize_firmware_update_status(parser_t* parser, const char* device_key,

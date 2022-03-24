@@ -179,11 +179,10 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_inst
                                      firmware_update_is_installation_completed_t is_installation_completed,
                                      firmware_update_verification_store_t verification_store,
                                      firmware_update_verification_read_t verification_read,
-                                     firmware_update_get_version_t get_version,
                                      firmware_update_abort_t abort_installation)
 {
     firmware_update_init(&ctx->firmware_update, start_installation, is_installation_completed, verification_store,
-                         verification_read, get_version, abort_installation, ctx);
+                         verification_read, abort_installation, ctx);
 
     firmware_update_set_on_status_listener(&ctx->firmware_update, listener_firmware_update_on_status);
     firmware_update_set_on_verification_listener(&ctx->firmware_update, listener_firmware_update_on_verification);
@@ -234,6 +233,10 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     if (ctx->file_management.has_valid_configuration) {
         listener_file_management_on_file_list_status(&ctx->file_management, file_list,
                                                      ctx->file_management.get_file_list(file_list));
+    }
+
+    if (ctx->firmware_update.is_initialized) {
+        listener_firmware_update_on_verification(&ctx->firmware_update);
     }
 
     return W_FALSE;
@@ -672,9 +675,8 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
             handle_file_management_file_purge(&ctx->file_management);
         } else if (strstr(topic_str, ctx->parser.FIRMWARE_UPDATE_INSTALL_TOPIC)) {
             firmware_update_t firmware_update_parameter;
-            const size_t num_deserialized = parse_deserialize_firmware_update_parameter(
-                &ctx->parser, (char*)ctx->device_key, (char*)payload, (size_t)payload_len, &firmware_update_parameter);
-            if (num_deserialized != 0) {
+            if (parse_deserialize_firmware_update_parameter(&ctx->parser, (char*)payload, (size_t)payload_len,
+                                                            &firmware_update_parameter)) {
                 handle_firmware_update_installation(&ctx->firmware_update, &firmware_update_parameter);
             }
         } else if (strstr(topic_str, ctx->parser.FIRMWARE_UPDATE_ABORT_TOPIC)) {

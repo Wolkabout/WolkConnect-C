@@ -72,7 +72,6 @@ const char JSON_FIRMWARE_UPDATE_ABORT_TOPIC[TOPIC_MESSAGE_TYPE_SIZE] = "firmware
 
 static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s);
 static const char* file_management_status_get_error_as_str(file_management_status_t* status);
-static const char* firmware_update_status_as_str(firmware_update_t* firmware_update);
 
 
 static bool json_token_str_equal(const char* json, jsmntok_t* tok, const char* s)
@@ -338,81 +337,30 @@ bool json_serialize_file_management_file_list_update(const char* device_key, fil
     return true;
 }
 
-
-static const char* firmware_update_status_as_str(firmware_update_t* firmware_update)
+bool json_deserialize_firmware_update_parameter(char* buffer, size_t buffer_size, firmware_update_t* parameter)
 {
-    /* Sanity check */
-    WOLK_ASSERT(firmware_update);
-
-    switch (firmware_update->status) {
-    case FIRMWARE_UPDATE_STATUS_INSTALLATION:
-        return "INSTALLATION";
-
-    case FIRMWARE_UPDATE_STATUS_COMPLETED:
-        return "COMPLETED";
-
-    case FIRMWARE_UPDATE_STATUS_ERROR:
-        return "ERROR";
-
-    case FIRMWARE_UPDATE_STATUS_ABORTED:
-        return "ABORTED";
-
-    default:
-        WOLK_ASSERT(false);
-        return "";
-    }
-}
-
-bool json_deserialize_firmware_update_parameter(char* device_key, char* buffer, size_t buffer_size,
-                                                firmware_update_t* parameter)
-{
-    jsmn_parser parser;
-    jsmntok_t tokens[JSON_TOKEN_SIZE];
-    jsmn_init(&parser);
-    const int parser_result = jsmn_parse(&parser, buffer, buffer_size, tokens, WOLK_ARRAY_LENGTH(tokens));
-
-    /* Received JSON must be valid, and top level element must be object */
-    if (parser_result < 1 || tokens[0].type != JSMN_OBJECT || parser_result >= (int)WOLK_ARRAY_LENGTH(tokens)) {
-        return false;
-    }
-
+    char firmware_update_file_installation_name[FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
     firmware_update_parameter_init(parameter);
+    if (buffer_size > FILE_MANAGEMENT_FILE_NAME_SIZE)
+        return false;
 
-    /* Obtain command type and value */
-    char value_buffer[FEED_ELEMENT_SIZE];
+    // eliminate quotes by start copying from 2nd position and don't copying last two(" and \0)
+    if (buffer[0] == 34 && buffer[buffer_size - 1] == 34) // Decimal 34 is double quotes ascii value
+    {
+        strncpy(firmware_update_file_installation_name, buffer + 1, buffer_size - 2);
+        firmware_update_parameter_set_filename(parameter, firmware_update_file_installation_name);
 
-    for (size_t i = 1; i < parser_result; i++) {
-        if (json_token_str_equal(buffer, &tokens[i], "devices")) {
-            if (!json_token_str_equal(buffer, &tokens[i + 2], device_key)) {
-                return false;
-            }
-            i += 2; // jump over JSON array
-        } else if (json_token_str_equal(buffer, &tokens[i], "fileName")) {
-            if (snprintf(value_buffer, WOLK_ARRAY_LENGTH(value_buffer), "%.*s", tokens[i + 1].end - tokens[i + 1].start,
-                         buffer + tokens[i + 1].start)
-                >= (int)WOLK_ARRAY_LENGTH(value_buffer)) {
-                return false;
-            }
-
-            firmware_update_parameter_set_filename(parameter, value_buffer);
-            i++;
-        } else {
-            return false;
-        }
+        return true;
     }
-    return true;
+
+    return false;
 }
 
 bool json_serialize_firmware_update_status(const char* device_key, firmware_update_t* firmware_update,
                                            outbound_message_t* outbound_message)
 {
     /* Serialize topic */
-    strncpy(outbound_message->topic, JSON_FIRMWARE_UPDATE_STATUS_TOPIC, strlen(JSON_FIRMWARE_UPDATE_STATUS_TOPIC));
-    if (snprintf(outbound_message->topic + strlen(JSON_FIRMWARE_UPDATE_STATUS_TOPIC),
-                 WOLK_ARRAY_LENGTH(outbound_message->topic), "%s", device_key)
-        >= (int)WOLK_ARRAY_LENGTH(outbound_message->topic)) {
-        return false;
-    }
+    json_create_topic(JSON_D2P_TOPIC, device_key, JSON_FIRMWARE_UPDATE_STATUS_TOPIC, outbound_message->topic);
 
     /* Serialize payload */
     if (snprintf(outbound_message->payload, WOLK_ARRAY_LENGTH(outbound_message->payload), "{\"status\": \"%s\"}",
@@ -421,10 +369,10 @@ bool json_serialize_firmware_update_status(const char* device_key, firmware_upda
         return false;
     }
 
-    size_t error = firmware_update->error;
-    if (error >= 0) {
+    if (firmware_update->error >= 0) {
         if (snprintf(outbound_message->payload + strlen(outbound_message->payload) - 1,
-                     WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"error\":%d}", error)
+                     WOLK_ARRAY_LENGTH(outbound_message->payload), ",\"error\":\"%s\"}",
+                     firmware_update_error_as_str(firmware_update))
             >= (int)WOLK_ARRAY_LENGTH(outbound_message->payload)) {
             return false;
         }
