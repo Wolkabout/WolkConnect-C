@@ -109,7 +109,8 @@ typedef void (*feed_handler_t)(wolk_feed_t* feeds, size_t number_of_feeds);
 typedef void (*parameter_handler_t)(wolk_parameter_t* parameter_message, size_t number_of_parameters);
 
 /**
- * @brief Declaration of parameter handler.
+ * @brief Declaration of details synchronization handler. It will be called as a response on the
+ * wolk_details_synchronization() call. It will give list of the all feeds and attributes from the platform.
  *
  * @param parameter_message Parameters received as name:value pairs from WolkAbout IoT Platform.
  * @param number_of_parameters number of received parameters
@@ -204,7 +205,8 @@ WOLK_ERR_T wolk_init_in_memory_persistence(wolk_ctx_t* ctx, void* storage, uint3
  * @brief Initializes persistence mechanism with custom implementation
  *
  * @param ctx Context
- * @param push Function pointer to 'push' implemenation
+ * @param push Function pointer to 'push' implementation
+ * @param peek Function pointer to 'peek' implementation
  * @param pop Function pointer to 'pop' implementation
  * @param is_empty Function pointer to 'is empty' implementation
  *
@@ -480,8 +482,9 @@ WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter, size_t
 WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx);
 
 /**
- * @brief A request from the device to the WolkAbout IoT platform for the current values of device parameters.
- * The payload should contain a list of parameter names that will be contained in the response with it's values.
+ * @brief A request from the device to the WolkAbout IoT platform for the current values of particular device
+ * parameters. The payload should contain a list of parameter names that will be contained in the response with it's
+ * values.
  *
  * @param ctx Context
  * @param parameters List of parameters
@@ -502,7 +505,7 @@ WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx, parameter_t* parameters, size_t
 WOLK_ERR_T wolk_sync_time_request(wolk_ctx_t* ctx);
 
 /**
- * @brief Requesting known information about device from platform
+ * @brief Requesting list of the feeds and attributes from the WolkAbout IoT platform
  *
  * @param ctx Context
  * @return Error code

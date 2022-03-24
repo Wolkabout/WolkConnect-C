@@ -53,6 +53,8 @@ wolk_numeric_feeds_t heartbeat_value = {0};
 wolk_boolean_feeds_t switch_value = {0};
 void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds);
 void parameter_value_handler(wolk_parameter_t* parameter_message, size_t number_of_parameters);
+void details_synchronization_value_handler(wolk_feed_registration_t* feeds, size_t number_of_received_feeds,
+                                           wolk_attribute_t* attributes, size_t number_of_received_attributes);
 
 /* System dependencies */
 static volatile bool keep_running = true;
@@ -163,6 +165,20 @@ void parameter_value_handler(wolk_parameter_t* parameter_message, size_t number_
     }
 }
 
+void details_synchronization_value_handler(wolk_feed_registration_t* feeds, size_t number_of_received_feeds,
+                                           wolk_attribute_t* attributes, size_t number_of_received_attributes)
+{
+    for (int i = 0; i < (int)number_of_received_feeds; ++i) {
+        printf("Received is feed with name: %s\n", feeds->name);
+        feeds++;
+    }
+
+    for (int i = 0; i < (int)number_of_received_attributes; ++i) {
+        printf("Received is attributes with name: %s\n", attributes->name);
+        attributes++;
+    }
+}
+
 int main(int argc, char* argv[])
 {
     WOLK_UNUSED(argc);
@@ -191,7 +207,7 @@ int main(int argc, char* argv[])
     }
 
     if (wolk_init(&wolk, send_buffer, receive_buffer, device_key, device_password, PUSH, feed_value_handler,
-                  parameter_value_handler, NULL)
+                  parameter_value_handler, details_synchronization_value_handler)
         != W_FALSE) {
         printf("Wolk client - Error initializing WolkConnect-C\n");
         return 1;
@@ -228,6 +244,7 @@ int main(int argc, char* argv[])
     printf("Wolk client - Connected to server\n");
 
     wolk_sync_time_request(&wolk);
+    wolk_details_synchronization(&wolk);
     wolk_publish(&wolk);
 
     int32_t tick_count = 0;
