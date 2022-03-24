@@ -143,9 +143,9 @@ void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds)
         printf("Received is feed with reference %s and value %s\n", feeds->reference, feeds->data[0]);
         if (strstr(feeds->reference, "SW")) {
             if (strstr(feeds->data[0], "true"))
-                switch_value.value = (bool*)true;
+                switch_value.value = (bool)true;
             else
-                switch_value.value = (bool*)false;
+                switch_value.value = (bool)false;
         } else if (strstr(feeds->reference, "HB")) {
             heartbeat_value.value = (double)atol(feeds->data[0]);
         }
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
             printf("Heartbeat feed with value: %lf seconds\n", heartbeat_value.value);
             wolk_add_numeric_feed(&wolk, "HB", &heartbeat_value, 1);
 
-            printf("Switch feed with value: %s\n", switch_value.value == (bool*)true ? "true" : "false");
+            printf("Switch feed with value: %s\n", switch_value.value == (bool)true ? "true" : "false");
             wolk_add_bool_feeds(&wolk, "SW", &switch_value, 1);
 
             if (wolk_publish(&wolk)) {

@@ -17,7 +17,7 @@
 #include "feed.h"
 
 
-void feed_initialize(feed_t* feed, uint16_t feed_size, char* reference)
+void feed_initialize(feed_t* feed, uint16_t feed_size, const char* reference)
 {
     feed->size = feed_size > FEEDS_MAX_NUMBER ? FEEDS_MAX_NUMBER : feed_size;
 

@@ -229,7 +229,7 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
         return W_TRUE;
     }
 
-    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+    file_list_t file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {0};
     if (ctx->file_management.has_valid_configuration) {
         listener_file_management_on_file_list_status(&ctx->file_management, file_list,
                                                      ctx->file_management.get_file_list(file_list));
@@ -475,7 +475,7 @@ WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx)
     return W_TRUE;
 }
 
-WOLK_ERR_T wolk_init_parameter(parameter_t* parameter, const char* name, char* value)
+WOLK_ERR_T wolk_init_parameter(parameter_t* parameter, char* name, char* value)
 {
     parameter_init(parameter, name, value);
 
@@ -609,7 +609,7 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
         WOLK_ASSERT(TOPIC_SIZE > topic_mqtt_str.lenstring.len);
 
         char topic_str[TOPIC_SIZE] = "";
-        strncpy(&topic_str, topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
+        strncpy(topic_str, topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
 
         if (strstr(topic_str, ctx->parser.FEED_VALUES_MESSAGE_TOPIC) != NULL) {
             feed_t feeds_received[FEED_ELEMENT_SIZE];
@@ -642,9 +642,9 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
             size_t number_of_feeds = 0;
             size_t number_of_attributes = 0;
 
-            if (parser_deserialize_details_synchronization(&ctx->parser, (char*)payload, (size_t)payload_len, &feeds,
-                                                           &number_of_feeds, &attributes, &number_of_attributes)) {
-                handle_details_synchronization_message(ctx, &feeds, number_of_feeds, &attributes, number_of_attributes);
+            if (parser_deserialize_details_synchronization(&ctx->parser, (char*)payload, (size_t)payload_len, feeds,
+                                                           &number_of_feeds, attributes, &number_of_attributes)) {
+                handle_details_synchronization_message(ctx, feeds, number_of_feeds, attributes, number_of_attributes);
             }
         } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
@@ -661,11 +661,11 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
         } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC)) {
             char url_download[FILE_MANAGEMENT_URL_SIZE] = {0};
             if (parser_deserialize_url_download(&ctx->parser, (char*)payload, (size_t)payload_len, url_download))
-                handle_file_management_url_download(&ctx->file_management, &url_download);
+                handle_file_management_url_download(&ctx->file_management, url_download);
         } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_FILE_LIST_TOPIC)) {
             handle_file_management_file_list(&ctx->file_management);
         } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_FILE_DELETE_TOPIC)) {
-            char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+            file_list_t file_list[FILE_MANAGEMENT_FILE_LIST_SIZE];
             const size_t number_deserialized =
                 parser_deserialize_file_delete(&ctx->parser, (char*)payload, (size_t)payload_len, file_list);
             if (number_deserialized) {

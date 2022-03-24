@@ -159,8 +159,6 @@ bool parse_serialize_firmware_update_status(parser_t* parser, const char* device
 
 /**** Firmware Update ****/
 
-bool parser_is_initialized(parser_t* parser);
-
 /**** Utility ****/
 bool parser_deserialize_time(parser_t* parser, char* buffer, size_t buffer_size, utc_command_t* utc_command);
 bool parser_deserialize_details_synchronization(parser_t* parser, char* buffer, size_t buffer_size,
@@ -196,6 +194,7 @@ bool parser_serialize_attribute(parser_t* parser, const char* device_key, attrib
 
 bool parser_serialize_parameter(parser_t* parser, const char* device_key, parameter_t* parameter,
                                 size_t number_of_parameters, outbound_message_t* outbound_message);
+/**** Utility ****/
 
 #ifdef __cplusplus
 }

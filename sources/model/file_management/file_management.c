@@ -213,7 +213,7 @@ void file_management_handle_packet(file_management_t* file_management, uint8_t* 
     listener_on_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
     update_finalize(file_management);
 
-    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+    file_list_t file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {0};
     listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
     reset_state(file_management);
 }
@@ -481,7 +481,7 @@ static void check_url_download(file_management_t* file_management)
         strncpy(file_management->file_name, downloaded_file_name, strlen(downloaded_file_name));
         listener_on_url_download_status(file_management, file_management_status_ok(FILE_MANAGEMENT_STATE_FILE_READY));
 
-        char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+        file_list_t file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {0};
         listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
 
         file_management->state = STATE_IDLE;
@@ -498,7 +498,7 @@ static void handle_abort(file_management_t* file_management, uint8_t* packet)
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
-    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+    file_list_t file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {0};
 
     if (strstr(packet, file_management->file_name)) {
 
@@ -540,7 +540,7 @@ static void handle_file_list(file_management_t* file_management)
     /* Sanity Check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
-    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+    file_list_t file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {0};
 
     listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
 }
@@ -566,7 +566,7 @@ static void handle_file_purge(file_management_t* file_management)
 
     purge_files(file_management);
 
-    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+    file_list_t file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {0};
     listener_on_file_list_status(file_management, file_list, get_file_list(file_management, file_list));
 }
 

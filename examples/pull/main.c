@@ -52,6 +52,9 @@ static volatile bool received_parameters = false;
 wolk_boolean_feeds_t switch_feed = {0};
 wolk_numeric_feeds_t heartbeat_feed = {0};
 
+void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds);
+void parameters_value_handler(wolk_parameter_t* parameters, size_t number_of_parameters);
+
 static void int_handler(int dummy)
 {
     WOLK_UNUSED(dummy);
@@ -137,15 +140,15 @@ void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds)
 {
     printf("Receiving feeds.\n");
 
-    for (int i = 0; i < number_of_feeds; ++i) {
-        printf("Received is feed with reference %s and value %s\n", feeds->reference, feeds->data);
+    for (size_t i = 0; i < number_of_feeds; ++i) {
+        printf("Received is feed with reference %s and value %s\n", feeds->reference, feeds->data[i]);
         if (strstr(feeds->reference, "SW")) {
             if (strstr(feeds->data[0], "true"))
-                switch_feed.value = true;
+                switch_feed.value = (bool)true;
             else
-                switch_feed.value = false;
+                switch_feed.value = (bool)false;
         } else if (strstr(feeds->reference, "HB")) {
-            heartbeat_feed.value = atol(feeds->data[0]);
+            heartbeat_feed.value = (double)atol(feeds->data[0]);
         }
         feeds++;
     }
@@ -156,7 +159,7 @@ void parameters_value_handler(wolk_parameter_t* parameters, size_t number_of_par
 {
     printf("Receiving parameters.\n");
 
-    for (int i = 0; i < number_of_parameters; ++i) {
+    for (size_t i = 0; i < number_of_parameters; ++i) {
         printf("Received is parameters with name %s and value %s\n", parameters->name, parameters->value);
         parameters++;
     }
@@ -245,7 +248,7 @@ int main(int argc, char* argv[])
         BIO_free_all(sockfd);
 
         printf("Wolk client - Entering sleep mode.\n");
-        sleep(heartbeat_feed.value); // Sleep commanded value from platform
+        sleep((unsigned int)heartbeat_feed.value); // Sleep commanded value from platform
     }
 
     printf("Wolk client - Disconnecting\n");

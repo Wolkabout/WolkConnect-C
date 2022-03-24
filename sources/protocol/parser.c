@@ -217,14 +217,6 @@ bool parse_serialize_firmware_update_status(parser_t* parser, const char* device
     return parser->serialize_firmware_update_status(device_key, firmware_update, outbound_message);
 }
 
-bool parser_is_initialized(parser_t* parser)
-{
-    /* Sanity check */
-    WOLK_ASSERT(parser);
-
-    return parser->is_initialized;
-}
-
 bool parser_deserialize_time(parser_t* parser, char* buffer, size_t buffer_size, utc_command_t* utc_command)
 {
     return parser->deserialize_time(buffer, buffer_size, utc_command);

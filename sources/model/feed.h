@@ -47,7 +47,7 @@ typedef struct {
     uint64_t utc;
 } feed_t;
 
-void feed_initialize(feed_t* feed, uint16_t feed_size, char* reference);
+void feed_initialize(feed_t* feed, uint16_t feed_size, const char* reference);
 
 void feed_clear(feed_t* feed);
 

@@ -98,7 +98,7 @@ static void handle_verification(firmware_update_t* firmware_update)
         /* Sanity check */
         WOLK_ASSERT(false);
 
-        firmware_update->state = STATE_ERROR;
+        firmware_update->state = STATE_IDLE;
     }
 }
 
@@ -111,6 +111,9 @@ static void handle_abort(firmware_update_t* firmware_update)
     case STATE_IDLE:
     case STATE_COMPLETED:
     case STATE_ERROR:
+        if (update_abort(firmware_update)) {
+            set_status(firmware_update, FIRMWARE_UPDATE_STATUS_ABORTED);
+        }
         listener_on_firmware_update_status(firmware_update);
         break;
     case STATE_INSTALLATION:

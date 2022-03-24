@@ -73,7 +73,7 @@ typedef struct wolk_string_feeds_t {
  * @brief  WolkAbout IoT Platform boolean feed type.
  */
 typedef struct wolk_boolean_feeds_t {
-    bool* value;
+    bool value;
     uint64_t utc_time;
 } wolk_boolean_feeds_t;
 
@@ -443,7 +443,7 @@ WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx);
  *
  * @return Error code
  */
-WOLK_ERR_T wolk_init_parameter(parameter_t* parameter, const char* name, char* value);
+WOLK_ERR_T wolk_init_parameter(parameter_t* parameter, char* name, char* value);
 
 /**
  * @brief Set parameter value

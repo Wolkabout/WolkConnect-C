@@ -137,7 +137,7 @@ bool file_management_start_url_download(const char* url)
 
     /* Download from URL */
     /* NOTE: system() function works only on UNIX systems, for bare-metal implementation this is irrelevant */
-    int8_t WGET_COMMAND_LENGTH = 9;
+    size_t WGET_COMMAND_LENGTH = 9;
     char web_address[FILE_MANAGEMENT_URL_SIZE + DIRECTORY_NAME_SIZE + WGET_COMMAND_LENGTH];
     if (snprintf(web_address, FILE_MANAGEMENT_URL_SIZE + DIRECTORY_NAME_SIZE + WGET_COMMAND_LENGTH, "wget -P files/ %s",
                  url)
