@@ -42,12 +42,20 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: make tests
 
+      # Build the HTML documentation
     - name: Doxygen Action
-      run: doxygen Doxyfile
-      shell: bash
+      uses: mattnotmitt/doxygen-action@v1.1.0
+      with:
+        doxyfile-path: ./Doxyfile
+        working-directory: .
 
-    - name: Documentation Deployment
+      # Deploy the HTML documentation to GitHub Pages
+    - name: GH Pages Deployment
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doc/html/
+        enable_jekyll: false
+        allow_empty_commit: false
+        force_orphan: true
         publish_branch: gh-pages
