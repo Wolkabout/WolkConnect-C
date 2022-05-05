@@ -50,6 +50,8 @@ jobs:
         working-directory: .
 
   deploy:
+    runs-on: ubuntu-latest
+    steps:
     # Deploy the HTML documentation to GitHub Pages
     - name: GH Pages Deployment
       uses: peaceiris/actions-gh-pages@v3
