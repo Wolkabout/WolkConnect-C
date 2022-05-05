@@ -44,3 +44,9 @@ jobs:
 
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@1.9.3
+            peaceiris/actions-gh-pages@v3
+      with:
+        working-directory: 'doc/'
+        doxyfile-path: ''
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
