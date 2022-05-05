@@ -45,6 +45,9 @@ jobs:
     - name: Doxygen Action
       run: doxygen
       shell: bash
+    - name: Create .nojekyll
+      run: touch ${{ inputs.folder }}/.nojekyll
+      shell: bash
 
     - name: Documentation Deployment
       uses: peaceiris/actions-gh-pages@v3
