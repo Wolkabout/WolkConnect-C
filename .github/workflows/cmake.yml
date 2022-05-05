@@ -44,8 +44,6 @@ jobs:
 
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@1.9.3
-      with:
-        working-directory: 'docs/'
     - name: Documentation Deployment
       uses: peaceiris/actions-gh-pages@v3
       with:
