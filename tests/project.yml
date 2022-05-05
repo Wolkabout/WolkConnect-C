@@ -13,7 +13,7 @@
 #  :release_build: TRUE
   :test_file_prefix: test_
   :which_ceedling: gem
-  :ceedling_version: 0.30.0
+  :ceedling_version: 0.31.1
   :default_tasks:
     - test:all
 
@@ -34,10 +34,8 @@
     - +:test/**
     - -:test/support
   :source:
-    - ../sources/**
     - ../dependencies/pahomqttembeddedc/MQTTPacket/src/**
-    - src/**
-    - ../examples/full_feature_set/**
+    - ../sources/**
   :support:
     - test/support
   :libraries: []
@@ -78,16 +76,10 @@
     :html_medium_threshold: 75
     :html_high_threshold: 90
 
-:tools:
-  :pre_test_fixture_execute:
-    :executable: valgrind
-    :arguments:
-      - --track-origins=yes
-      - --leak-check=full
-      - --show-leak-kinds=all
-      - --errors-for-leak-kinds=all
-      - --error-exitcode=10
-      - ${1}
+#:tools:
+# Ceedling defaults to using gcc for compiling, linking, etc.
+# As [:tools] is blank, gcc will be used (so long as it's in your system path)
+# See documentation to configure a given toolchain for use
 
 # LIBRARIES
 # These libraries are automatically injected into the build process. Those specified as

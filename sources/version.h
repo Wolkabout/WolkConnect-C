@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 WolkAbout Technology s.r.o.
+ * Copyright 2022 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
+#ifndef VERSION_H
+#define VERSION_H
 
-#ifndef WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
-#define WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+/**
+ * @brief Library versioning
+ */
+enum { WOLK_VERSION_MAJOR = 5, WOLK_VERSION_MINOR = 0, WOLK_VERSION_PATCH = 0 };
 
-#include <stdbool.h>
-
-bool firmware_update_start_installation(const char* file_name);
-bool firmware_update_is_installation_completed(bool* success);
-bool firmware_update_verification_store(uint8_t parameter);
-uint8_t firmware_update_verification_read(void);
-bool firmware_update_abort_installation(void);
-
-#endif // WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+#endif // VERSION_H

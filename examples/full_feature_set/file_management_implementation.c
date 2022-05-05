@@ -31,11 +31,11 @@ static size_t file_management_current_number_of_files = 0;
 static size_t get_downloaded_file_position_in_list(char* first_file_list, size_t first_file_list_number_of_files,
                                                    char* second_file_list, size_t second_file_list_number_of_files)
 {
-    int position_in_list = 0;
-    for (int i = 0; i < (first_file_list_number_of_files); i++) {
+    size_t position_in_list = 0;
+    for (size_t i = 0; i < (first_file_list_number_of_files); i++) {
         bool found_match = false;
 
-        for (int y = 0; y < second_file_list_number_of_files; y++) {
+        for (size_t y = 0; y < second_file_list_number_of_files; y++) {
             if (strcmp(&first_file_list[i * FILE_MANAGEMENT_FILE_NAME_SIZE],
                        &second_file_list[y * FILE_MANAGEMENT_FILE_NAME_SIZE])
                 == 0) {
@@ -137,7 +137,7 @@ bool file_management_start_url_download(const char* url)
 
     /* Download from URL */
     /* NOTE: system() function works only on UNIX systems, for bare-metal implementation this is irrelevant */
-    int8_t WGET_COMMAND_LENGTH = 9;
+    size_t WGET_COMMAND_LENGTH = 9;
     char web_address[FILE_MANAGEMENT_URL_SIZE + DIRECTORY_NAME_SIZE + WGET_COMMAND_LENGTH];
     if (snprintf(web_address, FILE_MANAGEMENT_URL_SIZE + DIRECTORY_NAME_SIZE + WGET_COMMAND_LENGTH, "wget -P files/ %s",
                  url)
@@ -184,9 +184,9 @@ bool file_management_is_url_download_done(bool* success, char* downloaded_file_n
     return true;
 }
 
-size_t file_management_get_file_list(char* file_list)
+size_t file_management_get_file_list(file_list_t* file_list)
 {
-    struct dirent* de;
+    struct dirent* de = {0};
 
     DIR* dr = opendir(directory_name);
     if (dr == NULL) {
@@ -199,7 +199,19 @@ size_t file_management_get_file_list(char* file_list)
         if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) { // Ignore unix hidden files
             continue;
         } else {
-            strncpy(file_list + (file_list_items * FILE_MANAGEMENT_FILE_NAME_SIZE), de->d_name, strlen(de->d_name));
+            // getting file name
+            strncpy(file_list->file_name, de->d_name, strlen(de->d_name));
+
+            // getting file size
+            struct stat stats = {0};
+            char path[FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE] = {0};
+            snprintf(path, FILE_MANAGEMENT_FILE_NAME_SIZE + DIRECTORY_NAME_SIZE, "%s%s", directory_name, de->d_name);
+            stat(path, &stats);
+            file_list->file_size = (size_t)stats.st_size;
+
+            // move to next file list element
+            printf("File name: %s and size %d\n", file_list->file_name, (int)file_list->file_size);
+            file_list++;
             file_list_items++;
         }
     }

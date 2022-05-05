@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 WolkAbout Technology s.r.o.
+ * Copyright 2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,29 @@
  * limitations under the License.
  */
 
+#ifndef PARAMETER_H
+#define PARAMETER_H
 
-#ifndef WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
-#define WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "size_definitions.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 
-bool firmware_update_start_installation(const char* file_name);
-bool firmware_update_is_installation_completed(bool* success);
-bool firmware_update_verification_store(uint8_t parameter);
-uint8_t firmware_update_verification_read(void);
-bool firmware_update_abort_installation(void);
+typedef struct {
+    char name[PARAMETER_TYPE_SIZE];
+    char value[PARAMETER_VALUE_SIZE];
+} parameter_t;
 
-#endif // WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+void parameter_init(parameter_t* parameter_message, char* name, char* value);
+
+void parameter_set_value(parameter_t* parameter_message, char* buffer);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 WolkAbout Technology s.r.o.
+ * Copyright 2022 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@
 
 #include "wolk_connector.h"
 #include "MQTTPacket.h"
-#include "actuator_command.h"
-#include "file_management.h"
-#include "file_management_parameter.h"
-#include "firmware_update.h"
-#include "in_memory_persistence.h"
-#include "outbound_message.h"
-#include "outbound_message_factory.h"
-#include "parser.h"
-#include "persistence.h"
-#include "wolk_utils.h"
+#include "model/file_management/file_management.h"
+#include "model/file_management/file_management_parameter.h"
+#include "model/firmware_update.h"
+#include "model/outbound_message.h"
+#include "model/outbound_message_factory.h"
+#include "persistence/in_memory_persistence.h"
+#include "persistence/persistence.h"
+#include "protocol/parser.h"
+#include "utility/wolk_utils.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -33,54 +32,30 @@
 
 #define MQTT_KEEP_ALIVE_INTERVAL 60 // Unit: s
 
-#define PING_KEEP_ALIVE_INTERVAL (10 * 1000) // Unit: ms
-
-static const char* PONG_TOPIC = "pong/";
-
-static const char* LASTWILL_TOPIC = "lastwill/";
-static char* LASTWILL_MESSAGE = "Gone offline";
-
-static const char* ACTUATOR_COMMANDS_TOPIC = "p2d/actuator_set/d/";
-
-static const char* CONFIGURATION_COMMANDS = "p2d/configuration_set/d/";
-
-static const char* FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC = "p2d/file_upload_initiate/d/";
-static const char* FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC = "p2d/file_binary_response/d/";
-static const char* FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC = "p2d/file_upload_abort/d/";
-
-static const char* FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC = "p2d/file_url_download_initiate/d/";
-static const char* FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC = "p2d/file_url_download_abort/d/";
-
-static const char* FILE_MANAGEMENT_FILE_DELETE_TOPIC = "p2d/file_delete/d/";
-static const char* FILE_MANAGEMENT_FILE_PURGE_TOPIC = "p2d/file_purge/d/";
-
-static const char* FIRMWARE_UPDATE_INSTALL_TOPIC = "p2d/firmware_update_install/d/";
-static const char* FIRMWARE_UPDATE_ABORT_TOPIC = "p2d/firmware_update_abort/d/";
-
 static WOLK_ERR_T mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
-static WOLK_ERR_T ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick);
 
 static WOLK_ERR_T receive(wolk_ctx_t* ctx);
 
 static WOLK_ERR_T publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message);
 static WOLK_ERR_T subscribe(wolk_ctx_t* ctx, const char* topic);
 
-static void parser_init_parameters(wolk_ctx_t* ctx, protocol_t protocol);
-
 static bool is_wolk_initialized(wolk_ctx_t* ctx);
 
-static void handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command);
-static void handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command);
+static void handle_feeds(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds);
+static void handle_parameter_message(wolk_ctx_t* ctx, parameter_t* parameter_message, size_t number_of_parameters);
 static void handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc);
+static void handle_details_synchronization_message(wolk_ctx_t* ctx, feed_registration_t* feeds, size_t number_of_feeds,
+                                                   attribute_t* attributes, size_t number_of_attributes);
+static void handle_error_message(wolk_ctx_t* ctx, char* error);
 
 static void handle_file_management_parameter(file_management_t* file_management,
                                              file_management_parameter_t* file_management_parameter);
 static void handle_file_management_packet(file_management_t* file_management, uint8_t* packet, size_t packet_size);
-static void handle_file_management_abort(file_management_t* file_management);
-static void handle_file_management_url_download(file_management_t* file_management,
-                                                file_management_parameter_t* parameter);
-static void handle_file_management_file_delete(file_management_t* file_management,
-                                               file_management_parameter_t* parameter);
+static void handle_file_management_abort(file_management_t* file_management, uint8_t* packet, size_t packet_size);
+static void handle_file_management_url_download(file_management_t* file_management, char* url_download);
+static void handle_file_management_file_list(file_management_t* file_management);
+static void handle_file_management_file_delete(file_management_t* file_management, file_list_t* file_list,
+                                               size_t number_of_files);
 static void handle_file_management_file_purge(file_management_t* file_management);
 
 static void listener_file_management_on_status(file_management_t* file_management, file_management_status_t status);
@@ -89,22 +64,21 @@ static void listener_file_management_on_packet_request(file_management_t* file_m
 static void listener_file_management_on_url_download_status(file_management_t* file_management,
                                                             file_management_status_t status);
 
-static void listener_file_management_on_file_list_status(file_management_t* file_management, char* file_list,
+static void listener_file_management_on_file_list_status(file_management_t* file_management, file_list_t* file_list,
                                                          size_t file_list_items);
 
 static void listener_firmware_update_on_status(firmware_update_t* firmware_update);
-static void listener_firmware_update_on_version(firmware_update_t* firmware_update, char* firmware_update_version);
 static void listener_firmware_update_on_verification(firmware_update_t* firmware_update);
 
 static void handle_firmware_update_installation(firmware_update_t* firmware_update, firmware_update_t* parameter);
 static void handle_firmware_update_abort(firmware_update_t* firmware_update);
 
+static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[TOPIC_MESSAGE_TYPE_SIZE]);
 
-WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, actuation_handler_t actuation_handler,
-                     actuator_status_provider_t actuator_status_provider, configuration_handler_t configuration_handler,
-                     configuration_provider_t configuration_provider, const char* device_key,
-                     const char* device_password, protocol_t protocol, const char** actuator_references,
-                     uint32_t num_actuator_references)
+WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func, const char* device_key,
+                     const char* device_password, outbound_mode_t outbound_mode, feed_handler_t feed_handler,
+                     parameter_handler_t parameter_handler,
+                     details_synchronization_handler_t details_synchronization_handler)
 {
     /* Sanity check */
     WOLK_ASSERT(snd_func != NULL);
@@ -116,18 +90,6 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     WOLK_ASSERT(strlen(device_key) < DEVICE_KEY_SIZE);
     WOLK_ASSERT(strlen(device_password) < DEVICE_PASSWORD_SIZE);
 
-    WOLK_ASSERT(protocol == PROTOCOL_WOLKABOUT);
-
-    if (num_actuator_references > 0 && (actuation_handler == NULL || actuator_status_provider == NULL)) {
-        WOLK_ASSERT(false);
-        return W_TRUE;
-    }
-
-    if ((configuration_handler != NULL && configuration_provider == NULL)
-        || (configuration_handler == NULL && configuration_provider != NULL)) {
-        WOLK_ASSERT(false);
-        return W_TRUE;
-    }
     /* Sanity check */
 
     MQTTPacket_connectData connectData = MQTTPacket_connectData_initializer;
@@ -154,20 +116,14 @@ WOLK_ERR_T wolk_init(wolk_ctx_t* ctx, send_func_t snd_func, recv_func_t rcv_func
     ctx->connectData.username.cstring = &ctx->device_key[0];
     ctx->connectData.password.cstring = &ctx->device_password[0];
 
-    ctx->actuation_handler = actuation_handler;
-    ctx->actuator_status_provider = actuator_status_provider;
+    ctx->feed_handler = feed_handler;
+    ctx->parameter_handler = parameter_handler;
+    ctx->details_synchronization_handler = details_synchronization_handler;
 
-    ctx->configuration_handler = configuration_handler;
-    ctx->configuration_provider = configuration_provider;
+    ctx->outbound_mode = outbound_mode;
 
-    ctx->protocol = protocol;
-    parser_init_parameters(ctx, protocol);
+    parser_init(&ctx->parser);
 
-    ctx->actuator_references = actuator_references;
-    ctx->num_actuator_references = num_actuator_references;
-
-    ctx->is_keep_ping_alive_enabled = true;
-    ctx->milliseconds_since_last_ping_keep_alive = PING_KEEP_ALIVE_INTERVAL;
     ctx->utc = 0;
 
     ctx->is_initialized = true;
@@ -201,18 +157,21 @@ WOLK_ERR_T wolk_init_file_management(
     file_management_remove_file_t remove_file, file_management_purge_files_t purge_files)
 {
     if (chunk_size > (PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE)) {
-        chunk_size = PAYLOAD_SIZE - 4 * FILE_MANAGEMENT_HASH_SIZE;
+        printf("Failed to accept defined chunk size. It is higher than payload size. See size_definition.h file!\n");
+        return W_TRUE;
     }
 
-    file_management_init(&ctx->file_management, ctx->device_key, maximum_file_size, chunk_size, start, write_chunk,
-                         read_chunk, abort, finalize, start_url_download, is_url_download_done, get_file_list,
-                         remove_file, purge_files, ctx);
+    if (!file_management_init(ctx, &ctx->file_management, ctx->device_key, maximum_file_size, chunk_size, start,
+                              write_chunk, read_chunk, abort, finalize, start_url_download, is_url_download_done,
+                              get_file_list, remove_file, purge_files))
+        return W_TRUE;
 
     file_management_set_on_status_listener(&ctx->file_management, listener_file_management_on_status);
     file_management_set_on_packet_request_listener(&ctx->file_management, listener_file_management_on_packet_request);
     file_management_set_on_url_download_status_listener(&ctx->file_management,
                                                         listener_file_management_on_url_download_status);
     file_management_set_on_file_list_listener(&ctx->file_management, listener_file_management_on_file_list_status);
+
     return W_FALSE;
 }
 
@@ -220,34 +179,14 @@ WOLK_ERR_T wolk_init_firmware_update(wolk_ctx_t* ctx, firmware_update_start_inst
                                      firmware_update_is_installation_completed_t is_installation_completed,
                                      firmware_update_verification_store_t verification_store,
                                      firmware_update_verification_read_t verification_read,
-                                     firmware_update_get_version_t get_version,
                                      firmware_update_abort_t abort_installation)
 {
     firmware_update_init(&ctx->firmware_update, start_installation, is_installation_completed, verification_store,
-                         verification_read, get_version, abort_installation, ctx);
+                         verification_read, abort_installation, ctx);
 
     firmware_update_set_on_status_listener(&ctx->firmware_update, listener_firmware_update_on_status);
-    firmware_update_set_on_version_listener(&ctx->firmware_update, listener_firmware_update_on_version);
     firmware_update_set_on_verification_listener(&ctx->firmware_update, listener_firmware_update_on_verification);
 
-    return W_FALSE;
-}
-
-WOLK_ERR_T wolk_enable_ping_keep_alive(wolk_ctx_t* ctx)
-{
-    /* Sanity check */
-    WOLK_ASSERT(ctx);
-
-    ctx->is_keep_ping_alive_enabled = true;
-    return W_FALSE;
-}
-
-WOLK_ERR_T wolk_disable_ping_keep_alive(wolk_ctx_t* ctx)
-{
-    /* Sanity check */
-    WOLK_ASSERT(ctx);
-
-    ctx->is_keep_ping_alive_enabled = false;
     return W_FALSE;
 }
 
@@ -261,169 +200,43 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     char topic_buf[TOPIC_SIZE];
 
     /* Setup and Connect to MQTT */
-    char lastwill_topic[TOPIC_SIZE];
-    MQTTString lastwill_topic_string = MQTTString_initializer;
-    MQTTString lastwill_message_string = MQTTString_initializer;
-
-    memset(lastwill_topic, 0, TOPIC_SIZE);
-    strcpy(lastwill_topic, LASTWILL_TOPIC);
-    strcat(lastwill_topic, ctx->device_key);
-
-    lastwill_topic_string.cstring = lastwill_topic;
-    lastwill_message_string.cstring = LASTWILL_MESSAGE;
-
-    ctx->connectData.will.topicName = lastwill_topic_string;
-    ctx->connectData.will.message = lastwill_message_string;
-    ctx->connectData.willFlag = 1;
 
     int len = MQTTSerialize_connect((unsigned char*)buf, sizeof(buf), &ctx->connectData);
     if (transmission_buffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
         return W_TRUE;
     }
 
-    /* Enable PING Keepalive */
-    wolk_enable_ping_keep_alive(ctx);
+    /* Subscribe to topics */
+    subscribe_to(ctx, ctx->parser.FEED_VALUES_MESSAGE_TOPIC);
+    subscribe_to(ctx, ctx->parser.PARAMETERS_TOPIC);
+    subscribe_to(ctx, ctx->parser.SYNC_TIME_TOPIC);
+    subscribe_to(ctx, ctx->parser.ERROR_TOPIC);
+    subscribe_to(ctx, ctx->parser.DETAILS_SYNCHRONIZATION_TOPIC);
 
-    /* Subscribe to PONG */
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], PONG_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_BINARY_RESPONSE_TOPIC);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_FILE_LIST_TOPIC);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_FILE_DELETE_TOPIC);
+    subscribe_to(ctx, ctx->parser.FILE_MANAGEMENT_FILE_PURGE_TOPIC);
 
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    /* Subscribe to ACTUATORS */
-    for (i = 0; i < ctx->num_actuator_references; ++i) {
-        const char* reference = ctx->actuator_references[i];
-        memset(topic_buf, '\0', sizeof(topic_buf));
-
-        strcpy(&topic_buf[0], ACTUATOR_COMMANDS_TOPIC);
-        strcat(&topic_buf[0], ctx->device_key);
-        strcat(&topic_buf[0], "/r/");
-        strcat(&topic_buf[0], reference);
-
-        if (subscribe(ctx, topic_buf) != W_FALSE) {
-            return W_TRUE;
-        }
-    }
-
-    /* Subscribe to CONFIGURATION */
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], CONFIGURATION_COMMANDS);
-    strcat(&topic_buf[0], ctx->device_key);
+    subscribe_to(ctx, ctx->parser.FIRMWARE_UPDATE_INSTALL_TOPIC);
+    subscribe_to(ctx, ctx->parser.FIRMWARE_UPDATE_ABORT_TOPIC);
 
     if (subscribe(ctx, topic_buf) != W_FALSE) {
         return W_TRUE;
     }
 
-    /* Subscribe to FILE MANAGEMENT */
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_FILE_DELETE_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FILE_MANAGEMENT_FILE_PURGE_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    /* Firmware Update */
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FIRMWARE_UPDATE_INSTALL_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    memset(topic_buf, '\0', sizeof(topic_buf));
-    strcpy(&topic_buf[0], FIRMWARE_UPDATE_ABORT_TOPIC);
-    strcat(&topic_buf[0], ctx->device_key);
-
-    if (subscribe(ctx, topic_buf) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    /* Publish initial values */
-    for (i = 0; i < ctx->num_actuator_references; ++i) {
-        const char* reference = ctx->actuator_references[i];
-
-        actuator_status_t actuator_status = ctx->actuator_status_provider(reference);
-        outbound_message_t outbound_message;
-        if (!outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference,
-                                                        &outbound_message)) {
-            continue;
-        }
-
-        if (publish(ctx, &outbound_message) != W_FALSE) {
-            persistence_push(&ctx->persistence, &outbound_message);
-        }
-    }
-
-    configuration_command_t configuration_command;
-    configuration_command_init(&configuration_command, CONFIGURATION_COMMAND_TYPE_GET);
-    handle_configuration_command(ctx, &configuration_command);
-
-    char file_list[FILE_MANAGEMENT_FILE_LIST_SIZE][FILE_MANAGEMENT_FILE_NAME_SIZE] = {0};
+    file_list_t file_list[FILE_MANAGEMENT_FILE_LIST_SIZE] = {0};
     if (ctx->file_management.has_valid_configuration) {
-
         listener_file_management_on_file_list_status(&ctx->file_management, file_list,
                                                      ctx->file_management.get_file_list(file_list));
     }
 
-    char firmware_update_version[FIRMWARE_UPDATE_VERSION_SIZE] = {0};
     if (ctx->firmware_update.is_initialized) {
         listener_firmware_update_on_verification(&ctx->firmware_update);
-
-        ctx->firmware_update.get_version(firmware_update_version);
-        listener_firmware_update_on_version(&ctx->firmware_update, firmware_update_version);
     }
 
     return W_FALSE;
@@ -434,33 +247,11 @@ WOLK_ERR_T wolk_disconnect(wolk_ctx_t* ctx)
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
 
-    unsigned char buf[MQTT_PACKET_SIZE];
-    memset(buf, 0, MQTT_PACKET_SIZE);
-
-    /* lastwill message */
-    MQTTString lastwill_topic_string = MQTTString_initializer;
-    MQTTString lastwill_message_string = MQTTString_initializer;
-
-    char lastwill_topic[TOPIC_SIZE];
-    memset(lastwill_topic, 0, TOPIC_SIZE);
-    strcpy(lastwill_topic, LASTWILL_TOPIC);
-    strcat(lastwill_topic, ctx->device_key);
-
-    lastwill_topic_string.cstring = lastwill_topic;
-    lastwill_message_string.cstring = LASTWILL_MESSAGE;
-
-    int len =
-        MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 1, 0, 0, lastwill_topic_string, lastwill_message_string.cstring,
-                              (int)strlen((const char*)lastwill_message_string.cstring));
-    if (transmission_buffer(ctx->sock, (unsigned char*)buf, len) == TRANSPORT_DONE) {
-        return W_TRUE;
-    }
-
-    memset(buf, 0, MQTT_PACKET_SIZE);
+    unsigned char buf[MQTT_PACKET_SIZE] = "";
 
     /* disconnect message */
-    len = MQTTSerialize_disconnect(buf, sizeof(buf));
-    if (transmission_buffer(ctx->sock, buf, len) == TRANSPORT_DONE) {
+    int length = MQTTSerialize_disconnect(buf, sizeof(buf));
+    if (transmission_buffer(ctx->sock, buf, length) == TRANSPORT_DONE) {
         return W_TRUE;
     }
 
@@ -476,10 +267,6 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
         return W_TRUE;
     }
 
-    if (ping_keep_alive(ctx, tick) != W_FALSE) {
-        return W_TRUE;
-    }
-
     if (receive(ctx) != W_FALSE) {
         return W_TRUE;
     }
@@ -490,202 +277,156 @@ WOLK_ERR_T wolk_process(wolk_ctx_t* ctx, uint64_t tick)
     return W_FALSE;
 }
 
-WOLK_ERR_T wolk_add_string_sensor_reading(wolk_ctx_t* ctx, const char* reference, const char* value, uint64_t utc_time)
+WOLK_ERR_T wolk_init_feed(feed_registration_t* feed, char* name, const char* reference, const char* unit,
+                          const feed_type_t feedType)
 {
-    /* Sanity check */
-    WOLK_ASSERT(is_wolk_initialized(ctx));
-
-    manifest_item_t string_sensor;
-    manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
-
-    reading_t reading;
-    reading_init(&reading, &string_sensor);
-    reading_set_data(&reading, value);
-    reading_set_rtc(&reading, utc_time);
-
-    outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
-
-    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
-}
-
-WOLK_ERR_T wolk_add_multi_value_string_sensor_reading(wolk_ctx_t* ctx, const char* reference,
-                                                      const char (*values)[READING_SIZE], uint16_t values_size,
-                                                      uint64_t utc_time)
-{
-    /* Sanity check */
-    WOLK_ASSERT(is_wolk_initialized(ctx));
-    WOLK_ASSERT(READING_DIMENSIONS > 1);
-
-    manifest_item_t string_sensor;
-    manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
-    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, values_size, DATA_DELIMITER);
-
-    reading_t reading;
-    reading_init(&reading, &string_sensor);
-    reading_set_rtc(&reading, utc_time);
-
-    for (uint32_t i = 0; i < values_size; ++i) {
-        reading_set_data_at(&reading, values[i], i);
-    }
-
-    outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
-
-    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
-}
-
-WOLK_ERR_T wolk_add_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double value, uint64_t utc_time)
-{
-    /* Sanity check */
-    WOLK_ASSERT(is_wolk_initialized(ctx));
-
-    manifest_item_t numeric_sensor;
-    manifest_item_init(&numeric_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
-
-    char value_str[READING_SIZE];
-    memset(value_str, 0, sizeof(value_str));
-    if (!snprintf(value_str, READING_SIZE, "%f", value)) {
-        return W_TRUE;
-    }
-
-    reading_t reading;
-    reading_init(&reading, &numeric_sensor);
-    reading_set_data(&reading, value_str);
-    reading_set_rtc(&reading, utc_time);
-
-    outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
-
-    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
-}
-
-WOLK_ERR_T wolk_add_multi_value_numeric_sensor_reading(wolk_ctx_t* ctx, const char* reference, double* values,
-                                                       uint16_t values_size, uint64_t utc_time)
-{
-    /* Sanity check */
-    WOLK_ASSERT(is_wolk_initialized(ctx));
-    WOLK_ASSERT(READING_DIMENSIONS > 1);
-
-    manifest_item_t numeric_sensor;
-    manifest_item_init(&numeric_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_NUMERIC);
-    manifest_item_set_reading_dimensions_and_delimiter(&numeric_sensor, values_size, DATA_DELIMITER);
-
-    reading_t reading;
-    reading_init(&reading, &numeric_sensor);
-    reading_set_rtc(&reading, utc_time);
-
-    for (uint32_t i = 0; i < values_size; ++i) {
-        char value_str[READING_SIZE];
-        memset(value_str, 0, sizeof(value_str));
-        if (!snprintf(value_str, READING_SIZE, "%f", values[i])) {
-            return W_TRUE;
-        }
-
-        reading_set_data_at(&reading, value_str, i);
-    }
-
-    outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
-
-    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
-}
-
-WOLK_ERR_T wolk_add_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool value, uint64_t utc_time)
-{
-    /* Sanity check */
-    WOLK_ASSERT(is_wolk_initialized(ctx));
-
-    manifest_item_t bool_sensor;
-    manifest_item_init(&bool_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_BOOLEAN);
-
-    reading_t reading;
-    reading_init(&reading, &bool_sensor);
-    reading_set_data(&reading, BOOL_TO_STR(value));
-    reading_set_rtc(&reading, utc_time);
-
-    outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
-
-    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
-}
-
-WOLK_ERR_T wolk_add_multi_value_bool_sensor_reading(wolk_ctx_t* ctx, const char* reference, bool* values,
-                                                    uint16_t values_size, uint64_t utc_time)
-{
-    /* Sanity check */
-    WOLK_ASSERT(is_wolk_initialized(ctx));
-    WOLK_ASSERT(READING_DIMENSIONS > 1);
-
-    manifest_item_t string_sensor;
-    manifest_item_init(&string_sensor, reference, READING_TYPE_SENSOR, DATA_TYPE_STRING);
-    manifest_item_set_reading_dimensions_and_delimiter(&string_sensor, values_size, DATA_DELIMITER);
-
-    reading_t reading;
-    reading_init(&reading, &string_sensor);
-    reading_set_rtc(&reading, utc_time);
-
-    for (uint32_t i = 0; i < values_size; ++i) {
-        reading_set_data_at(&reading, BOOL_TO_STR(values[i]), i);
-    }
-
-    outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &reading, 1, &outbound_message);
-
-    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
-}
-
-WOLK_ERR_T wolk_add_alarm(wolk_ctx_t* ctx, const char* reference, bool state, uint64_t utc_time)
-{
-    /* Sanity check */
-    WOLK_ASSERT(is_wolk_initialized(ctx));
-
-    manifest_item_t alarm;
-    manifest_item_init(&alarm, reference, READING_TYPE_ALARM, DATA_TYPE_STRING);
-
-    reading_t alarm_reading;
-    reading_init(&alarm_reading, &alarm);
-    reading_set_rtc(&alarm_reading, utc_time);
-    reading_set_data(&alarm_reading, (state == true ? "true" : "false"));
-
-    outbound_message_t outbound_message;
-    outbound_message_make_from_readings(&ctx->parser, ctx->device_key, &alarm_reading, 1, &outbound_message);
-
-    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
-}
-
-WOLK_ERR_T wolk_publish_actuator_status(wolk_ctx_t* ctx, const char* reference)
-{
-    /* Sanity check */
-    WOLK_ASSERT(is_wolk_initialized(ctx));
-
-    if (ctx->actuator_status_provider != NULL) {
-        actuator_status_t actuator_status = ctx->actuator_status_provider(reference);
-
-        outbound_message_t outbound_message;
-        if (!outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference,
-                                                        &outbound_message)) {
-            return W_TRUE;
-        }
-
-        if (publish(ctx, &outbound_message) != W_FALSE) {
-            persistence_push(&ctx->persistence, &outbound_message);
-        }
-    }
+    feed_initialize_registration(feed, name, reference, unit, feedType);
 
     return W_FALSE;
 }
+
+WOLK_ERR_T wolk_add_string_feed(wolk_ctx_t* ctx, const char* reference, wolk_string_feeds_t* feeds,
+                                size_t number_of_feeds)
+{
+    /* Sanity check */
+    WOLK_ASSERT(is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(reference));
+    WOLK_ASSERT(is_wolk_initialized(feeds));
+    WOLK_ASSERT(is_wolk_initialized(number_of_feeds));
+    WOLK_ASSERT(number_of_feeds > FEEDS_MAX_NUMBER);
+
+    feed_t feed;
+    feed_initialize(&feed, number_of_feeds, reference);
+
+    for (size_t i = 0; i < number_of_feeds; ++i) {
+        if (feeds->utc_time < 1000000000000 && feeds->utc_time != 0) // Unit ms and zero is valid value
+        {
+            printf("Failed UTC attached to feed with reference %s. It has to be in ms!\n", reference);
+            return W_TRUE;
+        }
+
+        feed_set_data_at(&feed, feeds->value, i);
+        feed_set_utc(&feed, feeds->utc_time);
+
+        feeds++;
+    }
+
+    outbound_message_t outbound_message = {0};
+    outbound_message_make_from_feeds(&ctx->parser, ctx->device_key, &feed, STRING, number_of_feeds, 1,
+                                     &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+WOLK_ERR_T wolk_add_numeric_feed(wolk_ctx_t* ctx, const char* reference, wolk_numeric_feeds_t* feeds,
+                                 size_t number_of_feeds)
+{
+    /* Sanity check */
+    WOLK_ASSERT(is_wolk_initialized(ctx));
+    WOLK_ASSERT(is_wolk_initialized(reference));
+    WOLK_ASSERT(is_wolk_initialized(feeds));
+    WOLK_ASSERT(is_wolk_initialized(number_of_feeds));
+    WOLK_ASSERT(number_of_feeds > FEEDS_MAX_NUMBER);
+
+    char value_string[FEED_ELEMENT_SIZE] = "";
+    feed_t feed;
+    feed_initialize(&feed, number_of_feeds, reference);
+
+    for (size_t i = 0; i < number_of_feeds; ++i) {
+        if (feeds->utc_time < 1000000000000 && feeds->utc_time != 0) // Unit ms and zero is valid value
+        {
+            printf("Failed UTC attached to feed with reference %s. It has to be in ms!\n", reference);
+            return W_TRUE;
+        }
+
+        if (!snprintf(value_string, FEED_ELEMENT_SIZE, "%2f", feeds->value)) {
+            return W_TRUE;
+        }
+
+        feed_set_data_at(&feed, value_string, i);
+        feed_set_utc(&feed, feeds->utc_time);
+
+        feeds++;
+    }
+
+    outbound_message_t outbound_message = {0};
+    outbound_message_make_from_feeds(&ctx->parser, ctx->device_key, &feed, NUMERIC, number_of_feeds, 1,
+                                     &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+WOLK_ERR_T wolk_add_multi_value_numeric_feed(wolk_ctx_t* ctx, const char* reference, double* values,
+                                             uint16_t value_size, uint64_t utc_time)
+{
+    /* Sanity check */
+    WOLK_ASSERT(is_wolk_initialized(ctx));
+    WOLK_ASSERT(value_size > FEEDS_MAX_NUMBER);
+
+    if (utc_time < 1000000000000 && utc_time != 0) // Unit ms and zero is valid value
+    {
+        printf("Failed UTC attached to feeds. It has to be in ms!\n");
+        return W_TRUE;
+    }
+
+    feed_t feed;
+    feed_initialize(&feed, 1, reference); // one feed consisting of N numeric values
+    feed_set_utc(&feed, utc_time);
+
+    char value_string_representation[FEED_ELEMENT_SIZE] = "";
+    for (size_t i = 0; i < value_size; ++i) {
+        if (!snprintf(value_string_representation, FEED_ELEMENT_SIZE, "%f", values[i])) {
+            return W_TRUE;
+        }
+
+        feed_set_data_at(&feed, value_string_representation, i);
+    }
+
+    outbound_message_t outbound_message = {0};
+    outbound_message_make_from_feeds(&ctx->parser, ctx->device_key, &feed, VECTOR, 1, value_size, &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+WOLK_ERR_T wolk_add_bool_feeds(wolk_ctx_t* ctx, const char* reference, wolk_boolean_feeds_t* feeds,
+                               size_t number_of_feeds)
+{
+    /* Sanity check */
+    WOLK_ASSERT(is_wolk_initialized(ctx));
+
+    feed_t feed;
+    feed_initialize(&feed, number_of_feeds, reference);
+
+    for (size_t i = 0; i < number_of_feeds; ++i) {
+        if (feeds->utc_time < 1000000000000 && feeds->utc_time != 0) // Unit ms and zero is valid value
+        {
+            printf("Failed UTC attached to feed with reference %s. It has to be in ms!\n", reference);
+            return W_TRUE;
+        }
+
+        feed_set_data_at(&feed, BOOL_TO_STR(feeds->value), i);
+        feed_set_utc(&feed, feeds->utc_time);
+
+        feeds++;
+    }
+
+    outbound_message_t outbound_message = {0};
+    outbound_message_make_from_feeds(&ctx->parser, ctx->device_key, &feed, BOOLEAN, number_of_feeds, 1,
+                                     &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
 
 WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
 {
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
 
-    uint8_t i;
-    uint16_t batch_size = 50;
-    outbound_message_t outbound_message;
+    uint16_t i;
+    outbound_message_t outbound_message = {0};
 
-    for (i = 0; i < batch_size; ++i) {
+    for (i = 0; i < PUBLISH_BATCH_SIZE; ++i) {
         if (persistence_is_empty(&ctx->persistence)) {
             return W_FALSE;
         }
@@ -704,18 +445,119 @@ WOLK_ERR_T wolk_publish(wolk_ctx_t* ctx)
     return W_FALSE;
 }
 
-uint64_t wolk_request_timestamp(wolk_ctx_t* ctx)
+WOLK_ERR_T wolk_register_feed(wolk_ctx_t* ctx, feed_registration_t* feeds, size_t number_of_feeds)
 {
-    return ctx->utc;
+    outbound_message_t outbound_message = {0};
+    if (!outbound_message_feed_registration(&ctx->parser, ctx->device_key, feeds, number_of_feeds, &outbound_message))
+        return W_TRUE;
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
 }
 
-/* Local function definition */
+WOLK_ERR_T wolk_remove_feed(wolk_ctx_t* ctx, feed_registration_t* feeds, size_t number_of_feeds)
+{
+    outbound_message_t outbound_message = {0};
+    if (!outbound_message_feed_removal(&ctx->parser, ctx->device_key, feeds, number_of_feeds, &outbound_message))
+        return W_TRUE;
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+WOLK_ERR_T wolk_pull_feed_values(wolk_ctx_t* ctx)
+{
+    if (ctx->outbound_mode == PULL) {
+        outbound_message_t outbound_message = {0};
+        outbound_message_pull_feed_values(&ctx->parser, ctx->device_key, &outbound_message);
+
+        return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+    }
+
+    return W_TRUE;
+}
+
+WOLK_ERR_T wolk_init_parameter(parameter_t* parameter, char* name, char* value)
+{
+    parameter_init(parameter, name, value);
+
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_set_value_parameter(parameter_t* parameter, char* value)
+{
+    parameter_set_value(parameter, value);
+
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_change_parameter(wolk_ctx_t* ctx, parameter_t* parameter, size_t number_of_parameters)
+{
+    outbound_message_t outbound_message = {0};
+    outbound_message_update_parameters(&ctx->parser, ctx->device_key, parameter, number_of_parameters,
+                                       &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+WOLK_ERR_T wolk_pull_parameters(wolk_ctx_t* ctx)
+{
+    if (ctx->outbound_mode == PULL) {
+        outbound_message_t outbound_message = {0};
+        outbound_message_pull_parameters(&ctx->parser, ctx->device_key, &outbound_message);
+
+        return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+    }
+
+    return W_TRUE;
+}
+
+WOLK_ERR_T wolk_sync_parameters(wolk_ctx_t* ctx, parameter_t* parameters, size_t number_of_parameters)
+{
+    outbound_message_t outbound_message = {0};
+    outbound_message_synchronize_parameters(&ctx->parser, ctx->device_key, parameters, number_of_parameters,
+                                            &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+WOLK_ERR_T wolk_sync_time_request(wolk_ctx_t* ctx)
+{
+    outbound_message_t outbound_message = {0};
+    outbound_message_synchronize_time(&ctx->parser, ctx->device_key, &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+WOLK_ERR_T wolk_details_synchronization(wolk_ctx_t* ctx)
+{
+    outbound_message_t outbound_message = {0};
+    outbound_message_details_synchronize(&ctx->parser, ctx->device_key, &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+WOLK_ERR_T wolk_init_attribute(wolk_attribute_t* attribute, char* name, char* data_type, char* value)
+{
+    attribute_init(attribute, name, data_type, value);
+
+    return W_FALSE;
+}
+
+WOLK_ERR_T wolk_register_attribute(wolk_ctx_t* ctx, attribute_t* attributes, size_t number_of_attributes)
+{
+    outbound_message_t outbound_message = {0};
+    outbound_message_attribute_registration(&ctx->parser, ctx->device_key, attributes, number_of_attributes,
+                                            &outbound_message);
+
+    return persistence_push(&ctx->persistence, &outbound_message) ? W_FALSE : W_TRUE;
+}
+
+/* Local function definitions */
+
 static WOLK_ERR_T mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
 {
-    unsigned char buf[MQTT_PACKET_SIZE];
-    memset(buf, 0, MQTT_PACKET_SIZE);
+    unsigned char buf[MQTT_PACKET_SIZE] = "";
 
-    if (ctx->connectData.keepAliveInterval < (MQTT_KEEP_ALIVE_INTERVAL * 1000)) { // Convert to Unit: ms
+    if (ctx->connectData.keepAliveInterval < (MQTT_KEEP_ALIVE_INTERVAL * 1000)) { // Convert to ms
         ctx->connectData.keepAliveInterval += tick;
         return W_FALSE;
     }
@@ -743,27 +585,6 @@ static WOLK_ERR_T mqtt_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
     } while (true);
 }
 
-static WOLK_ERR_T ping_keep_alive(wolk_ctx_t* ctx, uint64_t tick)
-{
-    if (!ctx->is_keep_ping_alive_enabled) {
-        return W_FALSE;
-    }
-
-    if (ctx->milliseconds_since_last_ping_keep_alive < PING_KEEP_ALIVE_INTERVAL) {
-        ctx->milliseconds_since_last_ping_keep_alive += tick;
-        return W_FALSE;
-    }
-
-    outbound_message_t outbound_message;
-    outbound_message_make_from_keep_alive_message(&ctx->parser, ctx->device_key, &outbound_message);
-    if (publish(ctx, &outbound_message) != W_FALSE) {
-        return W_TRUE;
-    }
-
-    ctx->milliseconds_since_last_ping_keep_alive = 0;
-    return W_FALSE;
-}
-
 static WOLK_ERR_T receive(wolk_ctx_t* ctx)
 {
     unsigned char mqtt_packet[MQTT_PACKET_SIZE];
@@ -775,9 +596,9 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
         unsigned char retained;
         unsigned short msgid;
 
-        MQTTString topic_mqtt_str;
+        MQTTString topic_mqtt_str = {0};
         unsigned char* payload;
-        int payload_len;
+        int payload_len = 0;
 
         if (MQTTDeserialize_publish(&dup, &qos, &retained, &msgid, &topic_mqtt_str, &payload, &payload_len, mqtt_packet,
                                     mqtt_packet_len)
@@ -787,72 +608,78 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
 
         WOLK_ASSERT(TOPIC_SIZE > topic_mqtt_str.lenstring.len);
 
-        char topic_str[TOPIC_SIZE];
-        memset(&topic_str[0], '\0', TOPIC_SIZE);
-        strncpy(&topic_str[0], topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
+        char topic_str[TOPIC_SIZE] = "";
+        strncpy(topic_str, topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
 
-        if (strstr(topic_str, PONG_TOPIC)) {
+        if (strstr(topic_str, ctx->parser.FEED_VALUES_MESSAGE_TOPIC) != NULL) {
+            feed_t feeds_received[FEED_ELEMENT_SIZE];
+            const size_t number_of_deserialized_feeds =
+                parser_deserialize_feeds_message(&ctx->parser, (char*)payload, (size_t)payload_len, &feeds_received);
+            if (number_of_deserialized_feeds != 0) {
+                handle_feeds(ctx, &feeds_received, number_of_deserialized_feeds);
+            }
+        } else if (strstr(topic_str, ctx->parser.PARAMETERS_TOPIC)) {
+            parameter_t parameter_message[FEED_ELEMENT_SIZE];
+            const size_t number_of_deserialized_parameters = parser_deserialize_parameter_message(
+                &ctx->parser, (char*)payload, (size_t)payload_len, &parameter_message);
+            if (number_of_deserialized_parameters != 0) {
+                handle_parameter_message(ctx, &parameter_message, number_of_deserialized_parameters);
+            }
+        } else if (strstr(topic_str, ctx->parser.SYNC_TIME_TOPIC)) {
             utc_command_t utc_command;
-            const size_t response = parser_deserialize_pong_keep_alive_message(&ctx->parser, (char*)payload,
-                                                                               (size_t)payload_len, &utc_command);
-            if (response != 0) {
+            const size_t num_deserialized_commands =
+                parser_deserialize_time(&ctx->parser, (char*)payload, (size_t)payload_len, &utc_command);
+            if (num_deserialized_commands != 0) {
                 handle_utc_command(ctx, &utc_command);
             }
-        } else if (strstr(topic_str, ACTUATOR_COMMANDS_TOPIC) != NULL) {
-            actuator_command_t actuator_command;
-            const size_t num_deserialized_commands = parser_deserialize_actuator_commands(
-                &ctx->parser, topic_str, strlen(topic_str), (char*)payload, (size_t)payload_len, &actuator_command, 1);
-            if (num_deserialized_commands != 0) {
-                handle_actuator_command(ctx, &actuator_command);
+        } else if (strstr(topic_str, ctx->parser.ERROR_TOPIC)) {
+            if (payload_len != 0) {
+                handle_error_message(ctx, &payload);
             }
-        } else if (strstr(topic_str, CONFIGURATION_COMMANDS)) {
-            configuration_command_t configuration_command;
-            const size_t num_deserialized_commands = parser_deserialize_configuration_commands(
-                &ctx->parser, (char*)payload, (size_t)payload_len, &configuration_command, 1);
-            if (num_deserialized_commands != 0) {
-                handle_configuration_command(ctx, &configuration_command);
+        } else if (strstr(topic_str, ctx->parser.DETAILS_SYNCHRONIZATION_TOPIC)) {
+            feed_registration_t feeds[FEED_ELEMENT_SIZE];
+            attribute_t attributes[FEED_ELEMENT_SIZE];
+            size_t number_of_feeds = 0;
+            size_t number_of_attributes = 0;
+
+            if (parser_deserialize_details_synchronization(&ctx->parser, (char*)payload, (size_t)payload_len, feeds,
+                                                           &number_of_feeds, attributes, &number_of_attributes)) {
+                handle_details_synchronization_message(ctx, feeds, number_of_feeds, attributes, number_of_attributes);
             }
-        } else if (strstr(topic_str, FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC)) {
+        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_UPLOAD_INITIATE_TOPIC)) {
             file_management_parameter_t file_management_parameter;
             const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
                 &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
             if (num_deserialized_parameter != 0) {
                 handle_file_management_parameter(&ctx->file_management, &file_management_parameter);
             }
-        } else if (strstr(topic_str, FILE_MANAGEMENT_CHUNK_UPLOAD_TOPIC)) {
+        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_BINARY_RESPONSE_TOPIC)) {
             handle_file_management_packet(&ctx->file_management, (uint8_t*)payload, (size_t)payload_len);
-        } else if ((strstr(topic_str, FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC))
-                   || (strstr(topic_str, FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC))) {
-            file_management_parameter_t file_management_parameter;
-            const size_t num_deserialized_parameter = parser_deserialize_file_management_parameter(
-                &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
-            if (num_deserialized_parameter != 0) {
-                handle_file_management_abort(&ctx->file_management);
+        } else if ((strstr(topic_str, ctx->parser.FILE_MANAGEMENT_UPLOAD_ABORT_TOPIC))
+                   || (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_ABORT_TOPIC))) {
+            handle_file_management_abort(&ctx->file_management, (uint8_t*)payload, (size_t)payload_len);
+        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC)) {
+            char url_download[FILE_MANAGEMENT_URL_SIZE] = {0};
+            if (parser_deserialize_url_download(&ctx->parser, (char*)payload, (size_t)payload_len, url_download))
+                handle_file_management_url_download(&ctx->file_management, url_download);
+        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_FILE_LIST_TOPIC)) {
+            handle_file_management_file_list(&ctx->file_management);
+        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_FILE_DELETE_TOPIC)) {
+            file_list_t file_list[FILE_MANAGEMENT_FILE_LIST_SIZE];
+            const size_t number_deserialized =
+                parser_deserialize_file_delete(&ctx->parser, (char*)payload, (size_t)payload_len, file_list);
+            if (number_deserialized) {
+                handle_file_management_file_delete(&ctx->file_management, file_list, number_deserialized);
             }
-        } else if (strstr(topic_str, FILE_MANAGEMENT_URL_DOWNLOAD_INITIATE_TOPIC)) {
-            file_management_parameter_t file_management_parameter;
-            const size_t num_deserialized = parser_deserialize_file_management_parameter(
-                &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
-            if (num_deserialized != 0) {
-                handle_file_management_url_download(&ctx->file_management, &file_management_parameter);
-            }
-        } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_DELETE_TOPIC)) {
-            file_management_parameter_t file_management_parameter;
-            const size_t num_deserialized = parser_deserialize_file_management_parameter(
-                &ctx->parser, (char*)payload, (size_t)payload_len, &file_management_parameter);
-            if (num_deserialized != 0) {
-                handle_file_management_file_delete(&ctx->file_management, &file_management_parameter);
-            }
-        } else if (strstr(topic_str, FILE_MANAGEMENT_FILE_PURGE_TOPIC)) {
+        } else if (strstr(topic_str, ctx->parser.FILE_MANAGEMENT_FILE_PURGE_TOPIC)) {
             handle_file_management_file_purge(&ctx->file_management);
-        } else if (strstr(topic_str, FIRMWARE_UPDATE_INSTALL_TOPIC)) {
+        } else if (strstr(topic_str, ctx->parser.FIRMWARE_UPDATE_INSTALL_TOPIC)) {
             firmware_update_t firmware_update_parameter;
-            const size_t num_deserialized = parse_deserialize_firmware_update_parameter(
-                &ctx->parser, (char*)ctx->device_key, (char*)payload, (size_t)payload_len, &firmware_update_parameter);
-            if (num_deserialized != 0) {
+            if (parse_deserialize_firmware_update_parameter(&ctx->parser, (char*)payload, (size_t)payload_len,
+                                                            &firmware_update_parameter)) {
                 handle_firmware_update_installation(&ctx->firmware_update, &firmware_update_parameter);
             }
-        } else if (strstr(topic_str, FIRMWARE_UPDATE_ABORT_TOPIC)) {
+        } else if (strstr(topic_str, ctx->parser.FIRMWARE_UPDATE_ABORT_TOPIC)) {
             handle_firmware_update_abort(&ctx->firmware_update);
         }
     }
@@ -862,16 +689,14 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
 
 static WOLK_ERR_T publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message)
 {
-    int len;
-    unsigned char buf[MQTT_PACKET_SIZE];
-    memset(buf, 0, MQTT_PACKET_SIZE);
+    unsigned char buf[MQTT_PACKET_SIZE] = "";
 
     MQTTString mqtt_topic = MQTTString_initializer;
     mqtt_topic.cstring = outbound_message_get_topic(outbound_message);
 
     unsigned char* payload = (unsigned char*)outbound_message_get_payload(outbound_message);
-    len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 0, 0, 0, mqtt_topic, payload,
-                                (int)strlen((const char*)payload));
+    int len = MQTTSerialize_publish(buf, MQTT_PACKET_SIZE, 0, 0, 0, 0, mqtt_topic, payload,
+                                    (int)strlen((const char*)payload));
     transmission_buffer_nb_start(ctx->sock, buf, len);
 
     do {
@@ -895,8 +720,7 @@ static WOLK_ERR_T publish(wolk_ctx_t* ctx, outbound_message_t* outbound_message)
 
 static WOLK_ERR_T subscribe(wolk_ctx_t* ctx, const char* topic)
 {
-    unsigned char buf[MQTT_PACKET_SIZE];
-    memset(buf, 0, MQTT_PACKET_SIZE);
+    unsigned char buf[MQTT_PACKET_SIZE] = "";
 
     int req_qos = 0;
 
@@ -925,19 +749,6 @@ static WOLK_ERR_T subscribe(wolk_ctx_t* ctx, const char* topic)
     } while (true);
 }
 
-static void parser_init_parameters(wolk_ctx_t* ctx, protocol_t protocol)
-{
-    switch (protocol) {
-    case PROTOCOL_WOLKABOUT:
-        parser_init(&ctx->parser, PARSER_TYPE_WOLKABOUT);
-        break;
-
-    default:
-        /* Sanity check */
-        WOLK_ASSERT(false);
-    }
-}
-
 static bool is_wolk_initialized(wolk_ctx_t* ctx)
 {
     /* Sanity Check */
@@ -946,79 +757,23 @@ static bool is_wolk_initialized(wolk_ctx_t* ctx)
     return ctx->is_initialized && persistence_is_initialized(&ctx->persistence);
 }
 
-static void handle_actuator_command(wolk_ctx_t* ctx, actuator_command_t* actuator_command)
+static void handle_feeds(wolk_ctx_t* ctx, feed_t* feeds, size_t number_of_feeds)
 {
-    const char* reference = actuator_command_get_reference(actuator_command);
-    const char* value = actuator_command_get_value(actuator_command);
+    /* Sanity Check */
+    WOLK_ASSERT(ctx);
 
-    switch (actuator_command_get_type(actuator_command)) {
-    case ACTUATOR_COMMAND_TYPE_SET:
-        if (ctx->actuation_handler != NULL) {
-            ctx->actuation_handler(reference, value);
-        }
-
-        /* Fallthrough */
-        /* break; */
-
-    case ACTUATOR_COMMAND_TYPE_STATUS:
-        if (ctx->actuator_status_provider != NULL) {
-            actuator_status_t actuator_status = ctx->actuator_status_provider(reference);
-
-            outbound_message_t outbound_message;
-            if (!outbound_message_make_from_actuator_status(&ctx->parser, ctx->device_key, &actuator_status, reference,
-                                                            &outbound_message)) {
-                return;
-            }
-
-            if (publish(ctx, &outbound_message) != W_FALSE) {
-                persistence_push(&ctx->persistence, &outbound_message);
-            }
-        }
-        break;
-
-    case ACTUATOR_COMMAND_TYPE_UNKNOWN:
-        break;
+    if (ctx->feed_handler != NULL) {
+        ctx->feed_handler(feeds, number_of_feeds);
     }
 }
 
-static void handle_configuration_command(wolk_ctx_t* ctx, configuration_command_t* configuration_command)
+static void handle_parameter_message(wolk_ctx_t* ctx, parameter_t* parameter_message, size_t number_of_parameters)
 {
-    switch (configuration_command_get_type(configuration_command)) {
-    case CONFIGURATION_COMMAND_TYPE_SET:
-        if (ctx->configuration_handler != NULL) {
-            ctx->configuration_handler(configuration_command_get_references(configuration_command),
-                                       configuration_command_get_values(configuration_command),
-                                       configuration_command_get_number_of_items(configuration_command));
-        }
+    /* Sanity Check */
+    WOLK_ASSERT(ctx);
 
-        /* Fallthrough */
-        /* break; */
-
-    case CONFIGURATION_COMMAND_TYPE_GET:
-        if (ctx->configuration_provider != NULL) {
-            char references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE];
-            char values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE];
-
-            const size_t num_configuration_items =
-                ctx->configuration_provider(&references[0], &values[0], CONFIGURATION_ITEMS_SIZE);
-            if (num_configuration_items == 0) {
-                return;
-            }
-
-            outbound_message_t outbound_message;
-            if (!outbound_message_make_from_configuration(&ctx->parser, ctx->device_key, references, values,
-                                                          num_configuration_items, &outbound_message)) {
-                return;
-            }
-
-            if (publish(ctx, &outbound_message) != W_FALSE) {
-                persistence_push(&ctx->persistence, &outbound_message);
-            }
-        }
-        break;
-
-    case CONFIGURATION_COMMAND_TYPE_UNKNOWN:
-        break;
+    if (ctx->parameter_handler != NULL) {
+        ctx->parameter_handler(parameter_message, number_of_parameters);
     }
 }
 
@@ -1029,6 +784,23 @@ static void handle_utc_command(wolk_ctx_t* ctx, utc_command_t* utc)
     WOLK_ASSERT(utc);
 
     ctx->utc = utc_command_get(utc);
+}
+
+static void handle_details_synchronization_message(wolk_ctx_t* ctx, feed_registration_t* feeds, size_t number_of_feeds,
+                                                   attribute_t* attributes, size_t number_of_attributes)
+{
+    /* Sanity Check */
+    WOLK_ASSERT(ctx);
+
+    if (ctx->details_synchronization_handler != NULL) {
+        ctx->details_synchronization_handler(feeds, number_of_feeds, attributes, number_of_attributes);
+    }
+}
+
+static void handle_error_message(wolk_ctx_t* ctx, char* error)
+{
+    WOLK_UNUSED(ctx);
+    WOLK_UNUSED(error);
 }
 
 static void handle_file_management_parameter(file_management_t* file_management,
@@ -1050,32 +822,39 @@ static void handle_file_management_packet(file_management_t* file_management, ui
     file_management_handle_packet(file_management, packet, packet_size);
 }
 
-static void handle_file_management_abort(file_management_t* file_management)
+static void handle_file_management_abort(file_management_t* file_management, uint8_t* packet, size_t packet_size)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
 
-    file_management_handle_abort(file_management);
+    file_management_handle_abort(file_management, packet, packet_size);
 }
 
-static void handle_file_management_url_download(file_management_t* file_management,
-                                                file_management_parameter_t* parameter)
+static void handle_file_management_url_download(file_management_t* file_management, char* url_download)
 {
     /* Sanity check */
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    file_management_handle_url_download(file_management, parameter);
+    file_management_handle_url_download(file_management, url_download);
 }
 
-static void handle_file_management_file_delete(file_management_t* file_management,
-                                               file_management_parameter_t* parameter)
+static void handle_file_management_file_list(file_management_t* file_management)
+{
+    /* Sanity Check*/
+    WOLK_ASSERT(file_management);
+
+    file_management_handle_file_list(file_management);
+}
+
+static void handle_file_management_file_delete(file_management_t* file_management, file_list_t* file_list,
+                                               size_t number_of_files)
 {
     /* Sanity Check*/
     WOLK_ASSERT(file_management);
     WOLK_ASSERT(parameter);
 
-    file_management_handle_file_delete(file_management, parameter);
+    file_management_handle_file_delete(file_management, file_list, number_of_files);
 }
 
 static void handle_file_management_file_purge(file_management_t* file_management)
@@ -1093,7 +872,7 @@ static void listener_file_management_on_status(file_management_t* file_managemen
     WOLK_ASSERT(status);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_make_from_file_management_status(&wolk_ctx->parser, wolk_ctx->device_key,
                                                       file_management->file_name, &status, &outbound_message);
 
@@ -1109,7 +888,7 @@ static void listener_file_management_on_packet_request(file_management_t* file_m
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
 
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     outbound_message_make_from_file_management_packet_request(&wolk_ctx->parser, wolk_ctx->device_key, &request,
                                                               &outbound_message);
 
@@ -1124,7 +903,7 @@ static void listener_file_management_on_url_download_status(file_management_t* f
     WOLK_ASSERT(status);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
     file_management_parameter_t file_management_parameter;
 
     file_management_parameter_set_file_url(&file_management_parameter, file_management->file_url);
@@ -1136,7 +915,7 @@ static void listener_file_management_on_url_download_status(file_management_t* f
     publish(wolk_ctx, &outbound_message);
 }
 
-static void listener_file_management_on_file_list_status(file_management_t* file_management, char* file_list,
+static void listener_file_management_on_file_list_status(file_management_t* file_management, file_list_t* file_list,
                                                          size_t file_list_items)
 {
     /* Sanity check */
@@ -1145,7 +924,7 @@ static void listener_file_management_on_file_list_status(file_management_t* file
     WOLK_ASSERT(file_list_items);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)file_management->wolk_ctx;
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
 
     outbound_message_make_from_file_management_file_list(&wolk_ctx->parser, wolk_ctx->device_key, file_list,
                                                          file_list_items, &outbound_message);
@@ -1160,25 +939,10 @@ static void listener_firmware_update_on_status(firmware_update_t* firmware_updat
     WOLK_ASSERT(status);
 
     wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
-    outbound_message_t outbound_message;
+    outbound_message_t outbound_message = {0};
 
     outbound_message_make_from_firmware_update_status(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update,
                                                       &outbound_message);
-
-    publish(wolk_ctx, &outbound_message);
-}
-
-static void listener_firmware_update_on_version(firmware_update_t* firmware_update, char* firmware_update_version)
-{
-    /* Sanity check */
-    WOLK_ASSERT(firmware_update);
-    WOLK_ASSERT(firmware_update_version);
-
-    wolk_ctx_t* wolk_ctx = (wolk_ctx_t*)firmware_update->wolk_ctx;
-    outbound_message_t outbound_message;
-
-    outbound_message_make_from_firmware_update_version(&wolk_ctx->parser, wolk_ctx->device_key, firmware_update_version,
-                                                       &outbound_message);
 
     publish(wolk_ctx, &outbound_message);
 }
@@ -1206,4 +970,14 @@ static void handle_firmware_update_abort(firmware_update_t* firmware_update)
     WOLK_ASSERT(firmware_update);
 
     firmware_update_handle_abort(firmware_update);
+}
+
+static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[TOPIC_MESSAGE_TYPE_SIZE])
+{
+    char topic[TOPIC_SIZE] = "";
+    parser_create_topic(&ctx->parser, ctx->parser.P2D_TOPIC, ctx->device_key, message_type, topic);
+    if (subscribe(ctx, topic) != W_FALSE) {
+        return W_TRUE;
+    }
+    return W_FALSE;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 WolkAbout Technology s.r.o.
+ * Copyright 2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,30 @@
  * limitations under the License.
  */
 
+#ifndef IN_MEMORY_PERSISTENCE_H
+#define IN_MEMORY_PERSISTENCE_H
 
-#ifndef WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
-#define WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "model/outbound_message.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 
-bool firmware_update_start_installation(const char* file_name);
-bool firmware_update_is_installation_completed(bool* success);
-bool firmware_update_verification_store(uint8_t parameter);
-uint8_t firmware_update_verification_read(void);
-bool firmware_update_abort_installation(void);
+void in_memory_persistence_init(void* storage, uint32_t num_elements, bool wrap);
 
-#endif // WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+bool in_memory_persistence_push(outbound_message_t* outbound_message);
+
+bool in_memory_persistence_peek(outbound_message_t* outbound_message);
+
+bool in_memory_persistence_pop(outbound_message_t* outbound_message);
+
+bool in_memory_persistence_is_empty(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 WolkAbout Technology s.r.o.
+ * Copyright 2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
+#include "model/parameter.h"
+#include "utility/wolk_utils.h"
 
-#ifndef WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
-#define WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+#include <string.h>
 
-#include <stdbool.h>
+void parameter_init(parameter_t* message, char* name, char* value)
+{
+    strcpy(message->name, name);
+    parameter_set_value(message, value);
+}
 
-bool firmware_update_start_installation(const char* file_name);
-bool firmware_update_is_installation_completed(bool* success);
-bool firmware_update_verification_store(uint8_t parameter);
-uint8_t firmware_update_verification_read(void);
-bool firmware_update_abort_installation(void);
+void parameter_set_value(parameter_t* message, char* buffer)
+{
+    /* Sanity check */
+    WOLK_ASSERT(strlen(buffer) < CONFIGURATION_VALUE_SIZE);
 
-#endif // WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+    strcpy(message->value, buffer);
+}

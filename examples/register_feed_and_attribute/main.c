@@ -172,19 +172,26 @@ int main(int argc, char* argv[])
     }
     printf("Wolk client - Connected to server\n");
 
+    wolk_feed_registration_t feed_registration;
+    wolk_init_feed(&feed_registration, "New Feed", "NF", UNIT_NUMERIC, IN);
+    wolk_register_feed(&wolk, &feed_registration, 1);
+    if (wolk_publish(&wolk)) {
+        printf("Wolk client - Error publishing feed registration!\n");
+        return 1;
+    }
+
     int32_t tick_count = 0;
     wolk_numeric_feeds_t feed = {0};
     int32_t heartbeat = 60000; // 60 000ms == 1min
 
     while (keep_running) {
-        // Sending random values for reference "T"
         if (tick_count > heartbeat) {
             tick_count = 0;
             feed.value = rand() % 100 - 20;
-            if (wolk_add_numeric_feed(&wolk, "T", &feed, 1))
+            if (wolk_add_numeric_feed(&wolk, feed_registration.reference, &feed, 1))
                 printf("Wolk client - Error serializing numeric feed!\n");
             if (wolk_publish(&wolk))
-                printf("Wolk client - Error publishing data!\n");
+                printf("Wolk client - Error publishing numeric feed!\n");
             else
                 printf("Wolk client - for feed reference T published value is %lf\n", feed.value);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 WolkAbout Technology s.r.o.
+ * Copyright 2018 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
+#ifndef FILE_MANAGEMENT_STATUS_H
+#define FILE_MANAGEMENT_STATUS_H
 
-#ifndef WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
-#define WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+#include "types.h"
 
-#include <stdbool.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-bool firmware_update_start_installation(const char* file_name);
-bool firmware_update_is_installation_completed(bool* success);
-bool firmware_update_verification_store(uint8_t parameter);
-uint8_t firmware_update_verification_read(void);
-bool firmware_update_abort_installation(void);
+file_management_status_t file_management_status_ok(file_management_state_t state);
+file_management_status_t file_management_status_error(file_management_error_t error);
 
-#endif // WOLKCONNECTOR_C_FIRMWARE_UPDATE_IMPLEMENTATION_H
+file_management_state_t file_management_status_get_state(file_management_status_t* status);
+
+file_management_error_t file_management_status_get_error(file_management_status_t* status);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
