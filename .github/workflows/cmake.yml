@@ -43,10 +43,7 @@ jobs:
       run: make tests
 
     - name: Doxygen Action
-      run: doxygen
-      shell: bash
-    - name: Create .nojekyll
-      run: touch ${{ inputs.folder }}/.nojekyll
+      run: doxygen Doxyfile
       shell: bash
 
     - name: Documentation Deployment
