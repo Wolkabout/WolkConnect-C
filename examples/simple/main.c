@@ -35,8 +35,8 @@ static BIO* sockfd;
 /* WolkAbout Platform device connection parameters */
 static const char* device_key = "device_key";
 static const char* device_password = "some_password";
-static const char* hostname = "api-demo.wolkabout.com";
-static int portno = 8883;
+static const char* hostname = "insert_host";
+static int portno = 80; // TODO: insert port
 static char certs[] = "../ca.crt";
 
 /* Sample in-memory persistence storage - size 1MB */

@@ -15,7 +15,7 @@
 ```
 [![CMake](https:/*github.com/Wolkabout/WolkConnect-C/actions/workflows/cmake.yml/badge.svg?branch=development)](https:/*github.com/Wolkabout/WolkConnect-C/actions/workflows/cmake.yml)
 -----
-WolkAbout C99 Connector library for connecting devices to [WolkAbout IoT platform](https:/*demo.wolkabout.com/#/login).
+WolkAbout C99 Connector library for connecting devices to WolkAbout IoT platform instance.
 
 WolkConnect-C is transportation layer agnostic which means it is up to the user of the library to open socket to WolkAbout IoT platform,
 configure SSL if desired, and forward read/write implementation to WolkConnect-C Connector.
@@ -60,11 +60,12 @@ Create a device on WolkAbout IoT platform using [Full Feature Set example](https
 **Establishing connection with WolkAbout IoT platform:**
 
 ```c
-static const char* device_key = "device_key";
-static const char* device_password = "some_password";
-static const char* hostname = "api-demo.wolkabout.com";
-static int portno = 8883;
-static char certs[] = "../ca.crt";
+/* WolkAbout Platform device connection parameters */
+static const char* device_key       = "device_key";
+static const char* device_password  = "some_password";
+static const char* hostname         = "insert_host";
+static int portno                   = 80; // TODO: insert port
+static char certs[]                 = "../ca.crt";
 
 /* Sample in-memory persistence storage - size 1MB */
 static uint8_t persistence_storage[1024 * 1024];
