@@ -112,7 +112,7 @@ Sensor readings like GPS and accelerometers that hold more than one single infor
 ####Alarms
 
 
-Alarms are derived from some data on the device and are used to indicate the state of a condition, eg. high-temperature alarm which emerged as a result of exceeding a threshold value on the device. Alarm value can either be on or off.
+Alarms are derived from some data on the device and are used to indicate the state of a condition, eg. high-temperature_value alarm which emerged as a result of exceeding a threshold value on the device. Alarm value can either be on or off.
 
 Like sensor readings, alarm messages are stored on the device before being published to WolkAbout IoT Platform. Alarms can also have a UTC timestamp to denote when the alarm occurred, but if the timestamp is omitted then WolkAbout IoT Platform will assign a timestamp when it receives the alarm message.
 
@@ -141,7 +141,7 @@ To summarize, when the actuation command is issued from WolkAbout IoT Platform, 
 ####Configuration
 
 
-Configuration is the dynamical modification of the device properties from WolkAbout IoT Platform with the goal to change device behavior, eg. measurement heartbeat, sensors delivery reduction, enabling/disabling device interfaces, increase/decrease device logging level, etc.
+Configuration is the dynamical modification of the device properties from WolkAbout IoT Platform with the goal to change device behavior, eg. measurement heartbeat_value, sensors delivery reduction, enabling/disabling device interfaces, increase/decrease device logging level, etc.
 
 Configuration requires the same way of handling messages as actuations do. When a configuration command is issued from WolkAbout IoT Platform, it will be passed to the configuration handler that will attempt to execute the command. Then the configuration status provider will report back to WolkAbout IoT Platform with the current values of the configuration parameters, with the addition that configuration parameters are always sent as a whole, even when only one value changes.
 
@@ -179,5 +179,5 @@ This firmware handler will specify the following parameters:
 
 To see how to utilize WolkConnect library APIs, visit one of the following files and look up detailed information in the Example Usage section:
 
-- [Simple example README.md](https://github.com/Wolkabout/WolkConnect-C/blob/master/README.md) - demonstrates the sending of a temperature sensor reading
+- [Simple example README.md](https://github.com/Wolkabout/WolkConnect-C/blob/master/README.md) - demonstrates the sending of a temperature_value sensor reading
 - [Full feature set example README.md](https://github.com/Wolkabout/WolkConnect-C/blob/master/examples/full_feature_set/README.md) - demonstrates full WolkAbout IoT Platform potential 

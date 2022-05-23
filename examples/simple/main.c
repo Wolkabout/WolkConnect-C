@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 WolkAbout Technology s.r.o.
+ * Copyright 2022 WolkAbout Technology s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+#include "utility/wolk_utils.h"
 #include "wolk_connector.h"
-#include "wolk_utils.h"
 
 #include <signal.h>
 #include <stdbool.h>
@@ -33,11 +33,11 @@ static SSL_CTX* ctx;
 static BIO* sockfd;
 
 /* WolkAbout Platform device connection parameters */
-static const char* device_key = "device_key";
-static const char* device_password = "some_password";
-static const char* hostname = "insert_host";
-static int portno = 80; // TODO: insert port
-static char certs[] = "../ca.crt";
+static const char* device_key       = "device_key";
+static const char* device_password  = "some_password";
+static const char* hostname         = "insert_host";
+static int portno                   = 80; // TODO: insert port
+static char certs[]                 = "path/to/your/ca/crt/file";
 
 /* Sample in-memory persistence storage - size 1MB */
 static uint8_t persistence_storage[1024 * 1024];
@@ -155,15 +155,13 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init(&wolk, send_buffer, receive_buffer, NULL, ACTUATOR_STATE_READY, NULL, NULL, device_key,
-                  device_password, PROTOCOL_WOLKABOUT, NULL, 0)
-        != W_FALSE) {
-        printf("Error initializing WolkConnect-C\n");
+    if (wolk_init(&wolk, send_buffer, receive_buffer, device_key, device_password, PUSH, NULL, NULL, NULL) != W_FALSE) {
+        printf("Wolk client - Error initializing WolkConnect-C\n");
         return 1;
     }
 
     if (wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false) != W_FALSE) {
-        printf("Error initializing in-memory persistence\n");
+        printf("Wolk client - Error initializing in-memory persistence\n");
         return 1;
     }
 
@@ -174,15 +172,28 @@ int main(int argc, char* argv[])
     }
     printf("Wolk client - Connected to server\n");
 
-    wolk_add_numeric_sensor_reading(&wolk, "T", rand() % 100 - 20, 0);
-    wolk_publish(&wolk);
-
+    int32_t tick_count = 0;
+    wolk_numeric_feeds_t feed = {0};
+    int32_t heartbeat = 60000; // 60 000ms == 1min
 
     while (keep_running) {
-        // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
-        // you can change this parameters, but keep it's multiplication
+        // Sending random values for reference "T"
+        if (tick_count > heartbeat) {
+            tick_count = 0;
+            feed.value = rand() % 100 - 20;
+            if (wolk_add_numeric_feed(&wolk, "T", &feed, 1))
+                printf("Wolk client - Error serializing numeric feed!\n");
+            if (wolk_publish(&wolk))
+                printf("Wolk client - Error publishing data!\n");
+            else
+                printf("Wolk client - for feed reference T published value is %lf\n", feed.value);
+        }
+
+        // MANDATORY: keep looping for a new messages. Sleep(currently 1000us) and number of tick(currently 1)
+        // you can change this parameter, but keep it's multiplication
         usleep(1000);
         wolk_process(&wolk, 1);
+        tick_count++;
     }
 
     printf("Wolk client - Diconnecting\n");

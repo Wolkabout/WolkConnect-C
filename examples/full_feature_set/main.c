@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "utility/wolk_utils.h"
 #include "wolk_connector.h"
-#include "wolk_utils.h"
 
 #include <signal.h>
 #include <stdbool.h>
@@ -29,7 +29,6 @@
 
 #include "file_management_implementation.h"
 #include "firmware_update_implementation.h"
-#include "sensor_readings.h"
 
 #define DEFAULT_PUBLISH_PERIOD_SECONDS 15
 
@@ -37,17 +36,25 @@ static SSL_CTX* ctx;
 static BIO* sockfd;
 
 /* WolkAbout Platform device connection parameters */
-static const char* device_key = "device_key";
-static const char* device_password = "some_password";
-static const char* hostname = "insert_host";
-static int portno = 80; // TODO: insert port
-static char certs[] = "../ca.crt";
+static const char* device_key       = "device_key";
+static const char* device_password  = "some_password";
+static const char* hostname         = "insert_host";
+static int portno                   = 80; // TODO: insert port
+static char certs[]                 = "path/to/your/ca/crt/file";
 
 /* Sample in-memory persistence storage - size 1MB */
 static uint8_t persistence_storage[1024 * 1024];
 
 /* WolkConnect-C Connector context */
 static wolk_ctx_t wolk;
+
+wolk_numeric_feeds_t temperature_value = {0};
+wolk_numeric_feeds_t heartbeat_value = {0};
+wolk_boolean_feeds_t switch_value = {0};
+void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds);
+void parameter_value_handler(wolk_parameter_t* parameter_message, size_t number_of_parameters);
+void details_synchronization_value_handler(wolk_feed_registration_t* feeds, size_t number_of_received_feeds,
+                                           wolk_attribute_t* attributes, size_t number_of_received_attributes);
 
 /* System dependencies */
 static volatile bool keep_running = true;
@@ -132,94 +139,45 @@ static void open_socket(BIO** bio, SSL_CTX** ssl_ctx, const char* addr, const in
     }
 }
 
-/* Actuation setup and call-backs */
-static const char* actuator_references[] = {"SW", "SL"};
-static char actuator_value[READING_SIZE] = {"0"};
-static const uint32_t num_actuator_references = 2;
-
-static void actuation_handler(const char* reference, const char* value)
+void feed_value_handler(wolk_feed_t* feeds, size_t number_of_feeds)
 {
-    printf("Actuation handler - Reference: %s Value: %s\n", reference, value);
-
-    if ((strcmp(reference, actuator_references[0]) == 0) || (strcmp(reference, actuator_references[1]) == 0)) {
-        strcpy(actuator_value, value);
-    } else {
-        printf("Actuation handler - Wrong Reference\n");
-    }
-}
-
-static actuator_status_t actuator_status_provider(const char* reference)
-{
-    printf("Actuator status provider - Reference: %s\n", reference);
-
-    actuator_status_t actuator_status;
-    actuator_status_init(&actuator_status, "", ACTUATOR_STATE_ERROR);
-
-    if (strcmp(reference, "SW") == 0 || strcmp(reference, "SL") == 0) {
-        actuator_status_init(&actuator_status, actuator_value, ACTUATOR_STATE_READY);
-    }
-
-    return actuator_status;
-}
-
-/* Configuration setup and call-backs */
-static int publish_period_seconds = DEFAULT_PUBLISH_PERIOD_SECONDS;
-static char device_configuration_references[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_REFERENCE_SIZE] = {"HB", "LL",
-                                                                                                       "EF"};
-static char device_configuration_values[CONFIGURATION_ITEMS_SIZE][CONFIGURATION_VALUE_SIZE] = {"", "INFO", "P,T,H,ACL"};
-
-static void
-update_default_device_configuration_values(char (*default_device_configuration_values)[CONFIGURATION_VALUE_SIZE],
-                                           int default_value)
-{
-    char default_publish_period[10];
-
-    int number_size = snprintf(default_publish_period, 10, "%d", default_value);
-    strncpy(&default_device_configuration_values[0], default_publish_period, (unsigned long)number_size);
-    enable_feeds(&default_device_configuration_values[2]);
-}
-
-static void configuration_handler(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
-                                  char (*value)[CONFIGURATION_VALUE_SIZE], size_t num_configuration_items)
-{
-    for (size_t i = 0; i < num_configuration_items; ++i) {
-        size_t iteration_counter = 0;
-
-        for (size_t j = 0; j < CONFIGURATION_ITEMS_SIZE; ++j) {
-            if (!strcmp(reference[i], device_configuration_references[j])) {
-                strcpy(device_configuration_values[j], value[i]);
-                printf("Configuration handler - Reference: %s | Value: %s\n", reference[i], value[i]);
-
-                if (!strcmp(reference[i], device_configuration_references[0])) {
-                    publish_period_seconds = atoi(value[i]);
-                } else if (!strcmp(reference[i], device_configuration_references[2])) {
-                    enable_feeds(value[i]);
-                }
-            } else
-                iteration_counter++;
-
-            if (iteration_counter == CONFIGURATION_ITEMS_SIZE) {
-                printf("Unrecognised Reference received!\n");
-            }
+    for (int i = 0; i < (int)number_of_feeds; ++i) {
+        printf("Received is feed with reference %s and value %s\n", feeds->reference, feeds->data[0]);
+        if (strstr(feeds->reference, "SW")) {
+            if (strstr(feeds->data[0], "true"))
+                switch_value.value = (bool)true;
+            else
+                switch_value.value = (bool)false;
+        } else if (strstr(feeds->reference, "HB")) {
+            heartbeat_value.value = (double)atol(feeds->data[0]);
         }
+        feeds++;
     }
 }
 
-static size_t configuration_provider(char (*reference)[CONFIGURATION_REFERENCE_SIZE],
-                                     char (*value)[CONFIGURATION_VALUE_SIZE], size_t max_num_configuration_items)
+void parameter_value_handler(wolk_parameter_t* parameter_message, size_t number_of_parameters)
 {
-    WOLK_UNUSED(max_num_configuration_items);
-    WOLK_ASSERT(max_num_configuration_items >= NUMBER_OF_CONFIGURATION);
+    for (int i = 0; i < (int)number_of_parameters; ++i) {
+        printf("Received is parameter with name: %s and value: %s\n", parameter_message->name,
+               parameter_message->value);
 
-    for (size_t i = 0; i < CONFIGURATION_ITEMS_SIZE; ++i) {
-        strcpy(reference[i], device_configuration_references[i]);
-        strncpy(value[i], device_configuration_values[i], CONFIGURATION_VALUE_SIZE);
-        printf("Configuration provider - Reference: %s | Value: %s\n", reference[i], value[i]);
+        parameter_message++;
     }
-
-    return CONFIGURATION_ITEMS_SIZE;
 }
 
+void details_synchronization_value_handler(wolk_feed_registration_t* feeds, size_t number_of_received_feeds,
+                                           wolk_attribute_t* attributes, size_t number_of_received_attributes)
+{
+    for (int i = 0; i < (int)number_of_received_feeds; ++i) {
+        printf("Received is feed with name: %s\n", feeds->name);
+        feeds++;
+    }
+
+    for (int i = 0; i < (int)number_of_received_attributes; ++i) {
+        printf("Received is attributes with name: %s\n", attributes->name);
+        attributes++;
+    }
+}
 
 int main(int argc, char* argv[])
 {
@@ -228,6 +186,8 @@ int main(int argc, char* argv[])
 
     signal(SIGINT, int_handler);
     signal(SIGTERM, int_handler);
+
+    heartbeat_value.value = DEFAULT_PUBLISH_PERIOD_SECONDS;
 
     if (strcmp(device_key, "device_key") == 0) {
         printf("Wolk client - Error, device key not provided\n");
@@ -246,20 +206,19 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (wolk_init(&wolk, send_buffer, receive_buffer, actuation_handler, actuator_status_provider,
-                  configuration_handler, configuration_provider, device_key, device_password, PROTOCOL_WOLKABOUT,
-                  actuator_references, num_actuator_references)
+    if (wolk_init(&wolk, send_buffer, receive_buffer, device_key, device_password, PUSH, feed_value_handler,
+                  parameter_value_handler, details_synchronization_value_handler)
         != W_FALSE) {
-        printf("Error initializing WolkConnect-C\n");
+        printf("Wolk client - Error initializing WolkConnect-C\n");
         return 1;
     }
 
     if (wolk_init_in_memory_persistence(&wolk, persistence_storage, sizeof(persistence_storage), false) != W_FALSE) {
-        printf("Error initializing in-memory persistence\n");
+        printf("Wolk client - Error initializing in-memory persistence\n");
         return 1;
     }
 
-    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 500, file_management_start, file_management_chunk_write,
+    if (wolk_init_file_management(&wolk, 128 * 1024 * 1024, 1024, file_management_start, file_management_chunk_write,
                                   file_management_chunk_read, file_management_abort, file_management_finalize,
                                   file_management_start_url_download, file_management_is_url_download_done,
                                   file_management_get_file_list, file_management_remove_file,
@@ -271,31 +230,54 @@ int main(int argc, char* argv[])
 
     if (wolk_init_firmware_update(&wolk, firmware_update_start_installation, firmware_update_is_installation_completed,
                                   firmware_update_verification_store, firmware_update_verification_read,
-                                  firmware_update_get_version, firmware_update_abort_installation)
+                                  firmware_update_abort_installation)
         != W_FALSE) {
         printf("Error initializing Firmware Update");
         return 1;
     }
 
-    update_default_device_configuration_values(device_configuration_values, DEFAULT_PUBLISH_PERIOD_SECONDS);
-
     printf("Wolk client - Connecting to server\n");
     if (wolk_connect(&wolk) != W_FALSE) {
         printf("Wolk client - Error connecting to server\n");
-        return -1;
+        return 1;
     }
     printf("Wolk client - Connected to server\n");
 
-    wolk_add_alarm(&wolk, "HH", true, 0);
+    wolk_sync_time_request(&wolk);
+    wolk_details_synchronization(&wolk);
     wolk_publish(&wolk);
 
+    int32_t tick_count = 0;
+
     while (keep_running) {
+        // Sending feeds on heartbeat
+        if (tick_count > (heartbeat_value.value) * 100000) {
+            printf("Wolk client - Sending feed readings:\n");
+
+            temperature_value.value = rand() % 100 - 20;
+            printf("Temperature feed with value: %lf °C\n", temperature_value.value);
+            wolk_add_numeric_feed(&wolk, "T", &temperature_value, 1);
+
+            printf("Heartbeat feed with value: %lf seconds\n", heartbeat_value.value);
+            wolk_add_numeric_feed(&wolk, "HB", &heartbeat_value, 1);
+
+            printf("Switch feed with value: %s\n", switch_value.value == (bool)true ? "true" : "false");
+            wolk_add_bool_feeds(&wolk, "SW", &switch_value, 1);
+
+            if (wolk_publish(&wolk)) {
+                printf("Wolk client - Error publishing feeds!\n");
+                return 1;
+            }
+
+            tick_count = 0;
+        }
+
         // MANDATORY: sleep(currently 1000us) and number of tick(currently 1) when are multiplied needs to give 1ms.
         // you can change this parameters, but keep it's multiplication
-        usleep(1000);
+        usleep(10);
         wolk_process(&wolk, 1);
 
-        sensor_readings_process(&wolk, &publish_period_seconds, DEFAULT_PUBLISH_PERIOD_SECONDS);
+        tick_count++;
     }
 
     printf("Wolk client - Disconnecting\n");
