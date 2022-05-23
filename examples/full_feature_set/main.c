@@ -36,11 +36,11 @@ static SSL_CTX* ctx;
 static BIO* sockfd;
 
 /* WolkAbout Platform device connection parameters */
-static const char* device_key = "device_key";
-static const char* device_password = "some_password";
-static const char* hostname = "insert_host";
-static int portno = 80; // TODO: insert port
-static char certs[] = "../ca.crt";
+static const char* device_key       = "device_key";
+static const char* device_password  = "some_password";
+static const char* hostname         = "insert_host";
+static int portno                   = 80; // TODO: insert port
+static char certs[]                 = "path/to/your/ca/crt/file";
 
 /* Sample in-memory persistence storage - size 1MB */
 static uint8_t persistence_storage[1024 * 1024];
