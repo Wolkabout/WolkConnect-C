@@ -495,7 +495,7 @@ size_t json_deserialize_feeds_value_message(char* buffer, size_t buffer_size, fe
                         }
                         // get value
                         j++; // move one position to select value, regardless it's json type: PRIMITIVE or STRING
-                        if (snprintf(feeds_received->data, WOLK_ARRAY_LENGTH(feeds_received->data), "%.*s",
+                        if (snprintf(feeds_received->data, WOLK_ARRAY_LENGTH(feeds_received->data[0]), "%.*s",
                                      tokens[j].end - tokens[j].start, buffer + tokens[j].start)
                             >= (int)WOLK_ARRAY_LENGTH(feeds_received->data[0])) {
                             return false;
