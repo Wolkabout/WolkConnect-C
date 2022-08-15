@@ -225,4 +225,5 @@ void test_json_deserialize_feeds_value_message_with_quotes(void)
     TEST_ASSERT_EQUAL_STRING("ls", received_feeds.data[0]);
 }
 
+
 #endif // TEST
