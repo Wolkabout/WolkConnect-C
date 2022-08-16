@@ -15,14 +15,7 @@
  */
 
 #include "outbound_message_factory.h"
-#include "model/feed.h"
-#include "model/outbound_message.h"
-#include "protocol/parser.h"
-#include "utility/wolk_utils.h"
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <string.h>
 
 size_t outbound_message_make_from_feeds(parser_t* parser, const char* device_key, feed_t* readings, data_type_t type,
                                         size_t readings_number, size_t reading_element_size,

@@ -195,7 +195,6 @@ WOLK_ERR_T wolk_connect(wolk_ctx_t* ctx)
     /* Sanity check */
     WOLK_ASSERT(is_wolk_initialized(ctx));
 
-    uint64_t i;
     char buf[MQTT_PACKET_SIZE];
     char topic_buf[TOPIC_SIZE];
 

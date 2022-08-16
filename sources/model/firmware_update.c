@@ -38,7 +38,6 @@ static void handle(firmware_update_t* firmware_update, firmware_update_t* parame
 {
     /* Sanity Check */
     WOLK_ASSERT(firmware_update);
-    bool success;
 
     switch (firmware_update->state) {
     case STATE_IDLE:

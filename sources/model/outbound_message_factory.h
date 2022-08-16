@@ -17,6 +17,9 @@
 #ifndef OUTBOUND_MESSAGE_FACTORY_H
 #define OUTBOUND_MESSAGE_FACTORY_H
 
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "model/attribute.h"
 #include "model/feed.h"
 #include "model/file_management/file_management_status.h"
@@ -24,8 +27,6 @@
 #include "protocol/parser.h"
 #include "size_definitions.h"
 
-#include <stdbool.h>
-#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
