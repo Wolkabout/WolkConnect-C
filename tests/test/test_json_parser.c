@@ -5,7 +5,7 @@
 #include "MQTTPacket.h"
 #include "size_definitions.h"
 #include "string.h"
-#include "types.h"
+#include "wolk_types.h"
 
 #include "model/attribute.h"
 #include "model/feed.h"

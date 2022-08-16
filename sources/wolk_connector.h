@@ -36,7 +36,7 @@ extern "C" {
 #include "persistence/persistence.h"
 #include "protocol/parser.h"
 #include "size_definitions.h"
-#include "types.h"
+#include "wolk_types.h"
 
 #include <stdbool.h>
 #include <stdint.h>

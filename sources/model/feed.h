@@ -18,8 +18,8 @@
 #define FEED_H
 
 #include "size_definitions.h"
-#include "types.h"
 #include "utility/wolk_utils.h"
+#include "wolk_types.h"
 
 #include <stdbool.h>
 #include <stddef.h>
