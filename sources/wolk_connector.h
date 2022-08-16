@@ -30,7 +30,7 @@ extern "C" {
 #include "MQTTPacket.h"
 #include "connectivity/data_transmission.h"
 #include "model/attribute.h"
-#include "model/feed.h"
+//#include "model/feed.h"
 #include "model/file_management/file_management.h"
 #include "model/utc_command.h"
 #include "persistence/persistence.h"
