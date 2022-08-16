@@ -205,25 +205,25 @@ void test_json_deserialize_feeds_value_message_multiple_feeds(void)
     TEST_ASSERT_EQUAL_STRING("20", received_feeds.data[0]);
 }
 
-void test_json_deserialize_feeds_value_message_without_quotes(void)
-{
-    char buffer[256] = "[{\n   \"TERMINAL\": ls\n}]";
-    feed_t received_feeds;
-
-    TEST_ASSERT_TRUE(json_deserialize_feeds_value_message(buffer, strlen(buffer), &received_feeds));
-    TEST_ASSERT_EQUAL_STRING("TERMINAL", received_feeds.reference);
-    TEST_ASSERT_EQUAL_STRING("ls", received_feeds.data[0]);
-}
-
-void test_json_deserialize_feeds_value_message_with_quotes(void)
-{
-    char buffer[256] = "[{\n   \"TERMINAL\": \"ls\"\n}]";
-    feed_t received_feeds;
-
-    TEST_ASSERT_TRUE(json_deserialize_feeds_value_message(buffer, strlen(buffer), &received_feeds));
-    TEST_ASSERT_EQUAL_STRING("TERMINAL", received_feeds.reference);
-    TEST_ASSERT_EQUAL_STRING("ls", received_feeds.data[0]);
-}
+// void test_json_deserialize_feeds_value_message_without_quotes(void)
+//{
+//    char buffer[256] = "[{\n   \"TERMINAL\": ls\n}]";
+//    feed_t received_feeds;
+//
+//    TEST_ASSERT_TRUE(json_deserialize_feeds_value_message(buffer, strlen(buffer), &received_feeds));
+//    TEST_ASSERT_EQUAL_STRING("TERMINAL", received_feeds.reference);
+//    TEST_ASSERT_EQUAL_STRING("ls", received_feeds.data[0]);
+//}
+//
+// void test_json_deserialize_feeds_value_message_with_quotes(void)
+//{
+//    char buffer[256] = "[{\n   \"TERMINAL\": \"ls\"\n}]";
+//    feed_t received_feeds;
+//
+//    TEST_ASSERT_TRUE(json_deserialize_feeds_value_message(buffer, strlen(buffer), &received_feeds));
+//    TEST_ASSERT_EQUAL_STRING("TERMINAL", received_feeds.reference);
+//    TEST_ASSERT_EQUAL_STRING("ls", received_feeds.data[0]);
+//}
 
 
 #endif // TEST
