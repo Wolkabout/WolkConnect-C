@@ -72,7 +72,7 @@ size_t json_serialize_feeds(feed_t* feeds, data_type_t type, size_t number_of_fe
 
 size_t json_deserialize_feeds_value_message(char* buffer, size_t buffer_size, feed_t* feeds_received);
 
-bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
+bool json_create_topic(const char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                        char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
 
 bool json_serialize_feed_registration(const char* device_key, feed_registration_t* feed, size_t number_of_feeds,
