@@ -608,6 +608,11 @@ static WOLK_ERR_T receive(wolk_ctx_t* ctx)
         WOLK_ASSERT(TOPIC_SIZE > topic_mqtt_str.lenstring.len);
 
         char topic_str[TOPIC_SIZE] = "";
+
+        if (topic_mqtt_str.lenstring.len > TOPIC_SIZE) {
+            printf("Failed to parse received MQTT message. It is longer than topic buffer!\n");
+            return W_TRUE;
+        }
         strncpy(topic_str, topic_mqtt_str.lenstring.data, topic_mqtt_str.lenstring.len);
 
         if (strstr(topic_str, ctx->parser.FEED_VALUES_MESSAGE_TOPIC) != NULL) {
@@ -974,6 +979,7 @@ static void handle_firmware_update_abort(firmware_update_t* firmware_update)
 static WOLK_ERR_T subscribe_to(wolk_ctx_t* ctx, char message_type[TOPIC_MESSAGE_TYPE_SIZE])
 {
     char topic[TOPIC_SIZE] = "";
+
     parser_create_topic(&ctx->parser, ctx->parser.P2D_TOPIC, ctx->device_key, message_type, topic);
     if (subscribe(ctx, topic) != W_FALSE) {
         return W_TRUE;
