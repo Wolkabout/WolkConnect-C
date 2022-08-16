@@ -175,8 +175,8 @@ bool file_management_is_url_download_done(bool* success, char* downloaded_file_n
         return false;
     }
 
-    strncpy(downloaded_file_name, after_url_download_file_list[downloaded_file_position_in_list],
-            strlen(after_url_download_file_list[downloaded_file_position_in_list]));
+    size_t length = strlen(after_url_download_file_list[downloaded_file_position_in_list]);
+    strncpy(downloaded_file_name, after_url_download_file_list[downloaded_file_position_in_list], length);
 
     printf("File download from url done.\nDownloaded file name is: %s\n", downloaded_file_name);
 
@@ -200,7 +200,8 @@ size_t file_management_get_file_list(file_list_t* file_list)
             continue;
         } else {
             // getting file name
-            strncpy(file_list->file_name, de->d_name, strlen(de->d_name));
+            size_t number_of_characters = strlen(de->d_name);
+            strncpy(file_list->file_name, de->d_name, number_of_characters);
 
             // getting file size
             struct stat stats = {0};

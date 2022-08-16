@@ -143,7 +143,9 @@ static bool file_read(uint8_t* status, int8_t* version)
         return true;
     }
 
-    fread(file_content, FIRMWARE_UPDATE_VERSION_SIZE, 1, file_pointer);
+    if (fread(file_content, FIRMWARE_UPDATE_VERSION_SIZE, 1, file_pointer) != 1)
+        return false;
+
     if (strlen(file_content) == 0) {
         printf("Firmware Update verification file is empty!\n");
         return false;
