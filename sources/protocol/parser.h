@@ -97,7 +97,7 @@ typedef struct {
                                                 size_t* number_of_feeds, attribute_t* attributes,
                                                 size_t* number_of_attributes);
 
-    bool (*create_topic)(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
+    bool (*create_topic)(const char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                          char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE]);
     size_t (*deserialize_readings_value_message)(char* buffer, size_t buffer_size, feed_t* readings_received);
     size_t (*deserialize_parameter_message)(char* buffer, size_t buffer_size, parameter_t* parameter_message);

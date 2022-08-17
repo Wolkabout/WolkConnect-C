@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "types.h"
+#include "wolk_types.h"
 #include "utility/wolk_utils.h"
 
 const char UNIT_NUMERIC[] = "NUMERIC";

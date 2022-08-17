@@ -17,7 +17,7 @@
 #ifndef FILE_MANAGEMENT_STATUS_H
 #define FILE_MANAGEMENT_STATUS_H
 
-#include "types.h"
+#include "wolk_types.h"
 
 #ifdef __cplusplus
 extern "C" {

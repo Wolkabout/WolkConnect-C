@@ -443,7 +443,7 @@ bool json_deserialize_details_synchronization(char* buffer, size_t buffer_size, 
     }
 }
 
-bool json_create_topic(char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
+bool json_create_topic(const char direction[TOPIC_DIRECTION_SIZE], const char device_key[DEVICE_KEY_SIZE],
                        char message_type[TOPIC_MESSAGE_TYPE_SIZE], char topic[TOPIC_SIZE])
 {
     topic[0] = '\0';
@@ -494,9 +494,10 @@ size_t json_deserialize_feeds_value_message(char* buffer, size_t buffer_size, fe
                             return false;
                         }
                         // get value
-                        if (snprintf(feeds_received->data, WOLK_ARRAY_LENGTH(feeds_received->data), "%.*s",
-                                     tokens[j + 1].end - tokens[j + 1].start, buffer + tokens[j + 1].start)
-                            >= (int)WOLK_ARRAY_LENGTH(feeds_received->data)) {
+                        j++; // move one position to select value, regardless it's json type: PRIMITIVE or STRING
+                        if (snprintf(feeds_received->data, WOLK_ARRAY_LENGTH(feeds_received->data[0]), "%.*s",
+                                     tokens[j].end - tokens[j].start, buffer + tokens[j].start)
+                            >= (int)WOLK_ARRAY_LENGTH(feeds_received->data[0])) {
                             return false;
                         }
                     }
